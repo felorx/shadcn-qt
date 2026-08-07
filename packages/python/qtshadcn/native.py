@@ -30,9 +30,10 @@ def _refresh_style(widget: Any) -> None:
 
 
 def _is_internal_widget(widget: Any, widgets: Any) -> bool:
-    name = widget.objectName()
-    if name and name.startswith("qt_"):
-        return True
+    # Embedded editors are styled by their owning complex control. Applying a
+    # second Input frame would produce a visible double border. Other Qt-owned
+    # children are deliberately adopted so compatibility mode has no native
+    # visual gaps.
     if isinstance(widget, widgets.QLineEdit):
         parent = widget.parentWidget()
         if isinstance(parent, (widgets.QComboBox, widgets.QAbstractSpinBox)):
@@ -51,19 +52,53 @@ def _native_defaults(widget: Any, widgets: Any) -> Optional[Dict[str, Any]]:
         ),
         (widgets.QLineEdit, "input", {"invalid": False}),
         (widgets.QPlainTextEdit, "textarea", {"invalid": False}),
+        (widgets.QTextEdit, "text-edit", {"invalid": False}),
         (widgets.QCheckBox, "checkbox", {}),
         (widgets.QRadioButton, "radio", {}),
+        (widgets.QToolButton, "tool-button", {"variant": "default"}),
+        (widgets.QKeySequenceEdit, "key-sequence-edit", {"invalid": False}),
         (widgets.QDateEdit, "date-picker", {}),
+        (widgets.QDateTimeEdit, "date-picker", {}),
+        (widgets.QAbstractSpinBox, "spin-box", {"invalid": False}),
         (widgets.QComboBox, "select", {}),
         (widgets.QSlider, "slider", {}),
+        (widgets.QDial, "dial", {}),
+        (widgets.QScrollBar, "scrollbar", {}),
         (widgets.QProgressBar, "progress", {}),
         (widgets.QTabWidget, "tabs", {}),
+        (widgets.QTabBar, "tab-bar", {}),
+        (widgets.QToolBox, "toolbox", {}),
+        (widgets.QStackedWidget, "stacked-widget", {}),
         (widgets.QTableWidget, "table", {}),
         (widgets.QTableView, "data-table", {}),
+        (widgets.QTreeView, "tree-view", {}),
+        (widgets.QListView, "list-view", {}),
+        (widgets.QColumnView, "column-view", {}),
+        (widgets.QHeaderView, "header-view", {}),
         (widgets.QCalendarWidget, "calendar", {}),
+        (widgets.QMdiArea, "mdi-area", {}),
+        (widgets.QGraphicsView, "graphics-view", {}),
         (widgets.QScrollArea, "scroll-area", {}),
+        (widgets.QAbstractScrollArea, "scroll-area", {}),
         (widgets.QMenuBar, "menubar", {}),
+        (widgets.QMenu, "menu", {}),
+        (widgets.QToolBar, "toolbar", {}),
+        (widgets.QStatusBar, "statusbar", {}),
+        (widgets.QDockWidget, "dock-widget", {}),
+        (widgets.QGroupBox, "group-box", {}),
+        (widgets.QDialogButtonBox, "dialog-button-box", {}),
+        (widgets.QSplitter, "resizable", {}),
+        (widgets.QLCDNumber, "lcd-number", {}),
         (widgets.QLabel, "label", {"variant": "default"}),
+        (widgets.QFocusFrame, "focus-frame", {}),
+        (widgets.QFrame, "frame", {}),
+        (widgets.QMdiSubWindow, "mdi-subwindow", {}),
+        (widgets.QWizardPage, "wizard-page", {}),
+        (widgets.QDialog, "native-dialog", {}),
+        (widgets.QMainWindow, "main-window", {}),
+        (widgets.QSizeGrip, "size-grip", {}),
+        (widgets.QRubberBand, "rubber-band", {}),
+        (widgets.QWidget, "widget", {}),
     )
     for widget_type, component, defaults in specs:
         if isinstance(widget, widget_type):

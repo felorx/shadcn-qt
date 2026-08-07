@@ -28,7 +28,7 @@ window = MainWindow()
 apply_theme(app, "dark")
 ```
 
-The adapter assigns complete default qtshadcn properties to supported existing and future native widgets. Explicit component properties are preserved. Use `qtshadcn_native_styling=False` to exclude an individual widget, or `adopt_native_widgets(page)` for a one-time scoped migration.
+The adapter covers the complete QtWidgets QWidget family, including editors, item views, scrollbars, toolbars, docks, dialogs, containers, and dynamically created widgets. Known controls receive component-specific QSS; unknown QWidget subclasses receive a neutral theme fallback. Explicit component properties are preserved. Use `qtshadcn_native_styling=False` to exclude an individual widget, or `adopt_native_widgets(page)` for a one-time scoped migration.
 
 See the [existing-project migration guide](./migration.md) for mappings, semantic overrides, cleanup, and legacy QSS integration.
 

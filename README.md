@@ -8,7 +8,7 @@ Qt / PyQt / PySide component and style primitives aligned with [shadcn/ui](https
 - **Widgets:** 65 public Python widgets covering the current shadcn/ui catalog with Qt-native mappings, including dialogs, menus, forms, navigation, data display, charts, notifications, and conversation components.
 - **Qt Designer:** the Python widgets can appear in a `qtshadcn` Widget Box group, be dragged onto forms, laid out, and configured through native Qt properties.
 - **Themes:** built-in light/dark themes, process-wide configuration, per-application overrides, JSON themes, custom QSS, radius, and font overrides.
-- **Legacy adoption:** existing native Qt widgets can receive full default component styling without changing their classes.
+- **Legacy adoption:** the complete native QtWidgets family receives component-specific or neutral fallback styling without changing existing classes.
 - **C++:** Button, Input, Card, generated light/dark QSS, and CMake package support.
 
 See [docs/STATUS.md](docs/STATUS.md) for the verified matrix and remaining parity work.

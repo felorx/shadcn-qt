@@ -99,28 +99,23 @@ enable_native_widget_styling(app)
 apply_theme(app, "light")
 ```
 
-The adapter recognizes these safe native mappings:
+The adapter covers the complete `QtWidgets` QWidget family. Known controls receive component-specific styling; containers and uncommon/third-party QWidget subclasses receive a neutral themed fallback so they do not retain an unrelated platform appearance.
 
-| Native widget | Automatic component |
+| Native family | Automatic styling |
 |---|---|
-| `QPushButton` | Button with `variant=default`, `shadcnSize=default` |
-| `QLineEdit` | Input |
-| `QPlainTextEdit` | TextArea |
-| `QCheckBox` | Checkbox |
-| `QRadioButton` | RadioButton |
-| `QDateEdit` | DatePicker |
-| `QComboBox` | Select |
-| `QSlider` | Slider |
-| `QProgressBar` | Progress |
-| `QTabWidget` | Tabs |
-| `QTableWidget` | Table |
-| `QTableView` | DataTable |
-| `QCalendarWidget` | Calendar |
-| `QScrollArea` | ScrollArea |
-| `QMenuBar` | Menubar |
-| `QLabel` | Label with `variant=default` |
+| Buttons | `QPushButton`, `QCommandLinkButton`, `QToolButton`, `QCheckBox`, `QRadioButton`, dialog buttons |
+| Text and value editors | `QLineEdit`, `QPlainTextEdit`, `QTextEdit`, `QTextBrowser`, `QKeySequenceEdit`, all SpinBox and date/time editors |
+| Selection controls | `QComboBox`, `QFontComboBox`, `QSlider`, `QDial`, `QScrollBar` |
+| Data and progress | `QProgressBar`, `QLCDNumber`, `QCalendarWidget` |
+| Item views | Table, Tree, List, Column, Header, Widget, and Undo view variants |
+| Containers | `QTabWidget`, `QTabBar`, `QToolBox`, `QStackedWidget`, `QGroupBox`, `QSplitter`, scroll areas, graphics views, and MDI widgets |
+| Window chrome | `QMenu`, `QMenuBar`, `QToolBar`, `QStatusBar`, `QDockWidget`, and dialog button boxes |
+| Windows and dialogs | `QMainWindow`, `QDialog`, message/file/color/font/input/progress dialogs, Wizard and WizardPage |
+| Miscellaneous | `QFrame`, `QFocusFrame`, `QSizeGrip`, `QRubberBand`, splash/RHI/custom widgets, and any remaining `QWidget` subclass |
 
-The adapter skips Qt-owned internal editors, widgets that already have an explicit `qtshadcn_component`, and qtshadcn subclasses. Calling the function more than once returns the already installed adapter.
+Embedded `QLineEdit` instances owned by ComboBox and SpinBox controls are styled through their parent to avoid double borders. Existing explicit `qtshadcn_component` values and qtshadcn subclasses are preserved. Calling the enable function more than once returns the already installed adapter.
+
+Compatibility mode covers Qt Widgets. Qt Quick/QML scenes, web-page content, video frames, OpenGL/RHI drawing surfaces, and third-party controls that completely replace `paintEvent()` cannot be restyled internally by QSS; their surrounding QWidget chrome still receives the neutral fallback. Theme those rendering systems through their own APIs, or opt custom-painted widgets out when appropriate.
 
 ### Override semantics without changing classes
 
@@ -136,7 +131,7 @@ status_label.setProperty("variant", "secondary")
 
 Property changes on adopted widgets trigger a style refresh automatically.
 
-`QFrame`, generic `QWidget`, and `QToolButton` are not inferred because their role is ambiguous. Mark Card, Alert, Sidebar, Toggle, and similar semantics explicitly or use their qtshadcn classes.
+Ambiguous classes receive a neutral default: `QFrame` becomes a themed frame, `QToolButton` a standard tool button, and unknown QWidget subclasses use the base background/foreground. Mark Card, Alert, Sidebar, Toggle, Switch, Badge, and similar application semantics explicitly when the neutral default is not specific enough.
 
 ### Opt out one widget
 

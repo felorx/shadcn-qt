@@ -92,3 +92,87 @@ def test_global_adapter_handles_future_widgets_and_opt_out(runtime):
     after_disable.ensurePolished()
     app.processEvents()
     assert after_disable.property("qtshadcn_component") is None
+
+
+def test_native_qt_widget_families_are_covered(runtime):
+    app, QtWidgets = runtime
+    from qtshadcn import (
+        disable_native_widget_styling,
+        enable_native_widget_styling,
+    )
+    from qtshadcn._qt import QtCore
+
+    disable_native_widget_styling(app, clear=True)
+    root = QtWidgets.QWidget()
+    horizontal = getattr(QtCore.Qt, "Horizontal", None)
+    if horizontal is None:
+        horizontal = QtCore.Qt.Orientation.Horizontal
+
+    class ThirdPartyWidget(QtWidgets.QWidget):
+        pass
+
+    representatives = (
+        (root, "widget"),
+        (ThirdPartyWidget(root), "widget"),
+        (QtWidgets.QFrame(root), "frame"),
+        (QtWidgets.QLabel(root), "label"),
+        (QtWidgets.QPushButton(root), "button"),
+        (QtWidgets.QCommandLinkButton(root), "button"),
+        (QtWidgets.QToolButton(root), "tool-button"),
+        (QtWidgets.QCheckBox(root), "checkbox"),
+        (QtWidgets.QRadioButton(root), "radio"),
+        (QtWidgets.QLineEdit(root), "input"),
+        (QtWidgets.QPlainTextEdit(root), "textarea"),
+        (QtWidgets.QTextEdit(root), "text-edit"),
+        (QtWidgets.QTextBrowser(root), "text-edit"),
+        (QtWidgets.QKeySequenceEdit(root), "key-sequence-edit"),
+        (QtWidgets.QSpinBox(root), "spin-box"),
+        (QtWidgets.QDoubleSpinBox(root), "spin-box"),
+        (QtWidgets.QDateEdit(root), "date-picker"),
+        (QtWidgets.QTimeEdit(root), "date-picker"),
+        (QtWidgets.QDateTimeEdit(root), "date-picker"),
+        (QtWidgets.QComboBox(root), "select"),
+        (QtWidgets.QFontComboBox(root), "select"),
+        (QtWidgets.QSlider(root), "slider"),
+        (QtWidgets.QDial(root), "dial"),
+        (QtWidgets.QScrollBar(root), "scrollbar"),
+        (QtWidgets.QProgressBar(root), "progress"),
+        (QtWidgets.QTabWidget(root), "tabs"),
+        (QtWidgets.QTabBar(root), "tab-bar"),
+        (QtWidgets.QToolBox(root), "toolbox"),
+        (QtWidgets.QStackedWidget(root), "stacked-widget"),
+        (QtWidgets.QListView(root), "list-view"),
+        (QtWidgets.QListWidget(root), "list-view"),
+        (QtWidgets.QTreeView(root), "tree-view"),
+        (QtWidgets.QTreeWidget(root), "tree-view"),
+        (QtWidgets.QTableView(root), "data-table"),
+        (QtWidgets.QTableWidget(root), "table"),
+        (QtWidgets.QColumnView(root), "column-view"),
+        (QtWidgets.QHeaderView(horizontal, root), "header-view"),
+        (QtWidgets.QCalendarWidget(root), "calendar"),
+        (QtWidgets.QScrollArea(root), "scroll-area"),
+        (QtWidgets.QGraphicsView(root), "graphics-view"),
+        (QtWidgets.QMdiArea(root), "mdi-area"),
+        (QtWidgets.QMdiSubWindow(root), "mdi-subwindow"),
+        (QtWidgets.QMenuBar(root), "menubar"),
+        (QtWidgets.QMenu(root), "menu"),
+        (QtWidgets.QToolBar(root), "toolbar"),
+        (QtWidgets.QStatusBar(root), "statusbar"),
+        (QtWidgets.QDockWidget(root), "dock-widget"),
+        (QtWidgets.QGroupBox(root), "group-box"),
+        (QtWidgets.QDialogButtonBox(root), "dialog-button-box"),
+        (QtWidgets.QSplitter(root), "resizable"),
+        (QtWidgets.QLCDNumber(root), "lcd-number"),
+        (QtWidgets.QFocusFrame(root), "focus-frame"),
+        (QtWidgets.QSizeGrip(root), "size-grip"),
+        (QtWidgets.QDialog(root), "native-dialog"),
+        (QtWidgets.QMainWindow(root), "main-window"),
+        (QtWidgets.QWizard(root), "native-dialog"),
+        (QtWidgets.QWizardPage(root), "wizard-page"),
+    )
+
+    enable_native_widget_styling(app)
+    for widget, expected in representatives:
+        assert widget.property("qtshadcn_component") == expected, type(widget).__name__
+
+    disable_native_widget_styling(app, clear=True)

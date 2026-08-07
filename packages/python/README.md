@@ -32,7 +32,7 @@ JSON theme files can be loaded with `load_theme("brand.json")`.
 
 ## Existing native widgets
 
-Apply full default qtshadcn styling to existing and future standard Qt widgets without replacing their classes:
+Apply full default qtshadcn styling to the complete existing and future QtWidgets family without replacing classes. Known controls use component-specific rules; uncommon or third-party QWidget subclasses receive a neutral themed fallback:
 
 ```python
 from qtshadcn import apply_theme, enable_native_widget_styling
