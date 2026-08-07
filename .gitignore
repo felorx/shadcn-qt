@@ -1,0 +1,28 @@
+# Build
+build/
+cmake-build-*/
+*.user
+*.autosave
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+.venv/
+venv/
+
+# Node (docs)
+node_modules/
+**/node_modules/
+apps/docs/.vitepress/cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Generated (optional: keep committed for pip install without codegen)
+# packages/python/qtshadcn/_generated/

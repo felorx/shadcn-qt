@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "qtshadcn design tokens",
+  "type": "object",
+  "required": ["themes", "radius"],
+  "properties": {
+    "themes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": { "type": "string" }
+      }
+    },
+    "radius": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "font": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}

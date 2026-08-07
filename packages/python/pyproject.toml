@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qtshadcn"
+version = "0.1.0"
+description = "shadcn-aligned Qt widgets and design tokens for PySide and PyQt"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "qtshadcn contributors" }]
+keywords = ["qt", "pyside", "pyqt", "shadcn", "qss", "widgets"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+]
+
+dependencies = []
+
+[project.optional-dependencies]
+pyside6 = ["PySide6>=6.5.0"]
+pyqt6 = ["PyQt6>=6.5.0"]
+pyside2 = ["PySide2>=5.15.0"]
+pyqt5 = ["PyQt5>=5.15.0"]
+dev = ["pytest>=7.0"]
+
+[project.urls]
+Homepage = "https://github.com/qtshadcn/qtshadcn"
+Documentation = "https://github.com/qtshadcn/qtshadcn#readme"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["qtshadcn*"]
+
+[tool.setuptools.package-data]
+qtshadcn = ["_generated/*.qss", "_generated/*.py"]

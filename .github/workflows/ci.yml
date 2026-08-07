@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Regenerate artifacts
+        run: python tools/token-codegen/generate.py
+      - name: Install package (no Qt binding)
+        run: pip install -e "./packages/python"
+      - name: Unit tests
+        env:
+          PYTHONPATH: packages/python
+        run: python -m unittest discover -s packages/python/tests -p "test_*.py" -v
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build VitePress
+        working-directory: apps/docs
+        run: |
+          npm ci
+          npm run build
