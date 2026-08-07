@@ -71,6 +71,8 @@ window = load_ui("window.ui")
 
 See [the Designer guide](apps/docs/guide/designer.md) and the runnable [Designer example](examples/python_designer/run.py).
 
+Already have a PySide or PyQt application? Follow the [existing-project migration guide](apps/docs/guide/migration.md) to keep the current binding and `.ui` files, merge legacy QSS, and replace widgets incrementally.
+
 Regenerate theme artifacts after editing tokens:
 
 ```bash
@@ -94,7 +96,7 @@ Use Qt 5.15 by pointing `CMAKE_PREFIX_PATH` at a Qt5 kit; the same `CMakeLists.t
 
 ## Docs
 
-See `apps/docs` (VitePress), [docs/STATUS.md](docs/STATUS.md), and [docs/TIERS.md](docs/TIERS.md).
+See `apps/docs` (VitePress), the [migration guide](apps/docs/guide/migration.md), [docs/STATUS.md](docs/STATUS.md), and [docs/TIERS.md](docs/TIERS.md).
 
 ## License
 

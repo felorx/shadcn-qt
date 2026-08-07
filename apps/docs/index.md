@@ -9,8 +9,8 @@ hero:
       text: Install
       link: /guide/install
     - theme: alt
-      text: Button
-      link: /components/button
+      text: Migrate a project
+      link: /guide/migration
 features:
   - title: Token-driven QSS
     details: Edit packages/design-tokens/tokens.json and regenerate QSS for Python and C++.
@@ -20,6 +20,8 @@ features:
     details: One package; pick PySide6, PyQt6, PySide2, or PyQt5 via optional extras or QTSHADCN_QT_BINDING.
   - title: Qt Designer workflow
     details: Drag qtshadcn widgets onto forms, edit native properties, and load the same .ui file with PySide or PyQt.
+  - title: Incremental adoption
+    details: Keep an existing Qt binding and .ui files, merge legacy QSS, then migrate widgets page by page.
   - title: Custom themes
     details: Override semantic colors, radius, fonts, and QSS globally or load reusable JSON themes at runtime.
 ---
