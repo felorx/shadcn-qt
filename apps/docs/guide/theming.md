@@ -14,6 +14,24 @@ apply_theme(app, "dark")
 
 `apply_theme("dark")` is also valid after a `QApplication` exists.
 
+## Style existing native Qt widgets
+
+Existing projects can keep their `QPushButton`, `QLineEdit`, `QCheckBox`, and other standard widget classes. Enable compatibility mode before constructing the main window:
+
+```python
+from qtshadcn import apply_theme, enable_native_widget_styling
+
+app = QtWidgets.QApplication([])
+enable_native_widget_styling(app)
+
+window = MainWindow()
+apply_theme(app, "dark")
+```
+
+The adapter assigns complete default qtshadcn properties to supported existing and future native widgets. Explicit component properties are preserved. Use `qtshadcn_native_styling=False` to exclude an individual widget, or `adopt_native_widgets(page)` for a one-time scoped migration.
+
+See the [existing-project migration guide](./migration.md) for mappings, semantic overrides, cleanup, and legacy QSS integration.
+
 ## Global configuration
 
 Call `configure()` once near application startup. All later parameterless `apply_theme()` calls use this configuration.

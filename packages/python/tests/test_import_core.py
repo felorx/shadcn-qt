@@ -9,6 +9,7 @@ class TestImportCore(unittest.TestCase):
 
         self.assertTrue(hasattr(qtshadcn, "apply_theme"))
         self.assertTrue(hasattr(qtshadcn, "detect_binding"))
+        self.assertTrue(hasattr(qtshadcn, "enable_native_widget_styling"))
 
     def test_generated_qss_strings_exist(self):
         from qtshadcn._generated import base_qss

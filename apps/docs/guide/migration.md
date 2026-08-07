@@ -66,12 +66,113 @@ configure(
 apply_theme(app)
 ```
 
-This immediately supplies the global palette, window colors, menus, tooltips, table headers, and shared tokens. Component variants become available as individual widgets are migrated.
+This immediately supplies the global palette, window colors, menus, tooltips, table headers, and shared tokens. Enable native-widget styling for full default component styling without replacing widget classes.
 
 If the application relies heavily on its existing `QPalette`, begin with palette changes disabled:
 
 ```python
 apply_theme(app, "light", apply_palette=False)
+```
+
+## Level 2: automatically style native widgets
+
+Compatibility mode applies qtshadcn's complete default component properties to existing standard Qt widgets. It also watches widgets created later, so dialogs and pages constructed on demand receive the same styling.
+
+Enable it after creating `QApplication`; enabling it before constructing windows avoids an extra repolish pass:
+
+```python
+from qtshadcn import apply_theme, enable_native_widget_styling
+
+app = QApplication([])
+enable_native_widget_styling(app)
+
+window = MainWindow()
+apply_theme(app, "light")
+window.show()
+```
+
+Calling it after windows already exist is also supported. Existing widgets are scanned immediately:
+
+```python
+window = MainWindow()
+enable_native_widget_styling(app)
+apply_theme(app, "light")
+```
+
+The adapter recognizes these safe native mappings:
+
+| Native widget | Automatic component |
+|---|---|
+| `QPushButton` | Button with `variant=default`, `shadcnSize=default` |
+| `QLineEdit` | Input |
+| `QPlainTextEdit` | TextArea |
+| `QCheckBox` | Checkbox |
+| `QRadioButton` | RadioButton |
+| `QDateEdit` | DatePicker |
+| `QComboBox` | Select |
+| `QSlider` | Slider |
+| `QProgressBar` | Progress |
+| `QTabWidget` | Tabs |
+| `QTableWidget` | Table |
+| `QTableView` | DataTable |
+| `QCalendarWidget` | Calendar |
+| `QScrollArea` | ScrollArea |
+| `QMenuBar` | Menubar |
+| `QLabel` | Label with `variant=default` |
+
+The adapter skips Qt-owned internal editors, widgets that already have an explicit `qtshadcn_component`, and qtshadcn subclasses. Calling the function more than once returns the already installed adapter.
+
+### Override semantics without changing classes
+
+The widget type determines only a safe default. Set dynamic properties when application semantics require a different component or variant:
+
+```python
+delete_button.setProperty("variant", "destructive")
+secondary_button.setProperty("variant", "outline")
+notifications_checkbox.setProperty("qtshadcn_component", "switch")
+status_label.setProperty("qtshadcn_component", "badge")
+status_label.setProperty("variant", "secondary")
+```
+
+Property changes on adopted widgets trigger a style refresh automatically.
+
+`QFrame`, generic `QWidget`, and `QToolButton` are not inferred because their role is ambiguous. Mark Card, Alert, Sidebar, Toggle, and similar semantics explicitly or use their qtshadcn classes.
+
+### Opt out one widget
+
+Set the preference before or after enabling compatibility mode:
+
+```python
+custom_control.setProperty("qtshadcn_native_styling", False)
+```
+
+Setting it to `False` after adoption removes unchanged defaults immediately. Set it to `True` to adopt the widget again.
+
+### Adopt only one window or page
+
+For a scoped migration without a global event filter:
+
+```python
+from qtshadcn import adopt_native_widgets, theme_stylesheet
+
+adopt_native_widgets(settings_page)
+settings_page.setStyleSheet(theme_stylesheet("light"))
+```
+
+`adopt_native_widgets()` returns the number of newly adopted widgets. It accepts either a `QWidget` or `QApplication` root.
+
+### Disable compatibility mode
+
+```python
+from qtshadcn import disable_native_widget_styling
+
+disable_native_widget_styling(app)
+```
+
+By default this stops future adoption and removes adapter-added properties that the application has not changed. User overrides are preserved. Use `clear=False` to stop watching while keeping current styling properties:
+
+```python
+disable_native_widget_styling(app, clear=False)
 ```
 
 ### Try one page first
@@ -114,7 +215,7 @@ settings_page.setStyleSheet(
 )
 ```
 
-## Level 2: migrate simple widgets gradually
+## Level 3: migrate simple widgets gradually
 
 qtshadcn primitives subclass standard Qt widgets, so their inherited signals, slots, methods, models, and accessibility properties remain available.
 
@@ -157,7 +258,7 @@ save_button.clicked.connect(save_record)
 
 Migrate primitives independently. Compound components such as `Dialog`, `Accordion`, `Sidebar`, `Command`, and `DataTable` add structure and behavior, so adopt them as intentional page-level changes rather than global search-and-replace operations.
 
-## Level 3: promote widgets in existing `.ui` files
+## Level 4: promote widgets in existing `.ui` files
 
 Existing Qt Designer forms can be migrated without recreating their layouts:
 
@@ -239,18 +340,22 @@ apply_theme(app, theme=load_theme("themes/brand.json"))
 1. add qtshadcn to the existing environment without a Qt extra;
 2. pin `QTSHADCN_QT_BINDING` at the application entry point;
 3. merge the existing QSS through `extra_qss`;
-4. apply the theme to one low-risk page;
-5. migrate Button, Input, Card, Label, and Tabs first;
-6. promote matching widgets in existing `.ui` files;
-7. use compound components for new screens;
-8. remove obsolete legacy QSS only after visual and interaction checks pass;
-9. move from page-level styling to `apply_theme(app)` when the application is ready.
+4. enable native-widget styling globally, or adopt one low-risk page;
+5. mark special semantics such as Switch, Badge, Card, and destructive Button;
+6. migrate classes only where typed properties or compound APIs add value;
+7. promote matching widgets in existing `.ui` files when desired;
+8. use compound components for new screens;
+9. remove obsolete legacy QSS only after visual and interaction checks pass;
+10. move from page-level styling to `apply_theme(app)` when the application is ready.
 
 ## Migration checklist
 
 - Only one PySide/PyQt binding is imported in the process.
 - `QTSHADCN_QT_BINDING` is set before importing qtshadcn widgets.
 - `QApplication` exists before calling `apply_theme()`.
+- Native compatibility mode is enabled before constructing most windows when possible.
+- Ambiguous widgets such as Switch, Badge, and Card are marked explicitly.
+- Third-party or custom-painted widgets opt out with `qtshadcn_native_styling=False` when necessary.
 - Legacy QSS is appended through `extra_qss`, not applied afterward.
 - Promoted `.ui` classes use the header `qtshadcn.widgets`.
 - Generated Python UI files are regenerated after `.ui` changes.

@@ -6,6 +6,11 @@ from typing import Any, TYPE_CHECKING
 
 from qtshadcn._qt import app_exec, detect_binding
 from qtshadcn.designer.loader import load_ui
+from qtshadcn.native import (
+    adopt_native_widgets,
+    disable_native_widget_styling,
+    enable_native_widget_styling,
+)
 from qtshadcn.theme import (
     Theme,
     ThemeConfig,
@@ -98,11 +103,14 @@ __all__ = sorted(_WIDGET_NAMES) + [
     "apply_palette_from_tokens",
     "apply_theme",
     "app_exec",
+    "adopt_native_widgets",
     "available_themes",
     "configure",
     "create_theme",
     "current_theme",
     "detect_binding",
+    "disable_native_widget_styling",
+    "enable_native_widget_styling",
     "load_theme",
     "load_ui",
     "register_theme",

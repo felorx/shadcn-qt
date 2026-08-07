@@ -13,8 +13,9 @@ Last verified: 2026-08-08.
 | Designer Widget Box | Available | Registration catalog, container metadata, DOM XML, and `qtshadcn-designer` launcher |
 | `.ui` runtime loading | Available | Unified `load_ui()` path for PyQt `uic` and PySide `QUiLoader` |
 | Global themes | Available | Light/dark, semantic token overrides, radius/font overrides, custom QSS, reusable Theme objects, JSON loader |
+| Existing-project compatibility | Available | Automatic default styling for existing and future native Qt widgets, scoped adoption, semantic overrides, per-widget opt-out, and reversible cleanup |
 | Token generation | Available | One renderer generates packaged Python and embedded C++ QSS |
-| Python automated tests | Passing | 15/15 under PySide6 6.11, PyQt6 6.11, and PyQt5 5.15: imports, themes, all 65 constructors, composite behavior, Designer metadata, and real `.ui` reconstruction |
+| Python automated tests | Passing | 17/17 under PySide6 6.11, PyQt6 6.11, and PyQt5 5.15: imports, themes, all 65 constructors, native-widget adoption, composite behavior, Designer metadata, and real `.ui` reconstruction |
 | Designer host smoke test | Passing on macOS | `pyside6-designer` opened a custom-widget `.ui` offscreen with no registration/import errors |
 | Python wheel | Passing | Built wheel, inspected packaged plugin/QSS contents, and loaded a Designer form from a clean target install |
 | C++ foundation | Available | Button, Input, Card, CMake install package, generated QSS resources; compiled with Qt 6.9 |

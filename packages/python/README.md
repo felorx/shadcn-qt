@@ -30,6 +30,19 @@ apply_theme()  # uses the current QApplication
 
 JSON theme files can be loaded with `load_theme("brand.json")`.
 
+## Existing native widgets
+
+Apply full default qtshadcn styling to existing and future standard Qt widgets without replacing their classes:
+
+```python
+from qtshadcn import apply_theme, enable_native_widget_styling
+
+enable_native_widget_styling(app)
+apply_theme(app, "light")
+```
+
+Use `adopt_native_widgets(page)` for one subtree, and `disable_native_widget_styling(app)` to remove unchanged adapter defaults. Set `qtshadcn_native_styling=False` on custom-painted or third-party widgets that should be left alone.
+
 ## Qt Designer
 
 Install the recommended plugin host, then launch Designer with the registration path already configured:
