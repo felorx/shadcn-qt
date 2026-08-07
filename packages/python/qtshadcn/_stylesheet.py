@@ -114,6 +114,17 @@ QLabel[qtshadcn_component="label"][variant="muted"] {{ color: {c["mutedForegroun
 QLabel[qtshadcn_component="label"][variant="lead"] {{ color: {c["mutedForeground"]}; font-size: 16px; }}
 QLabel[qtshadcn_component="label"][variant="large"] {{ font-size: 18px; font-weight: 600; }}
 QLabel[qtshadcn_component="label"][variant="small"] {{ font-size: 12px; font-weight: 600; }}
+QLabel[qtshadcn_component="label"][variant="destructive"] {{ color: {c["destructive"]}; }}
+QLabel[qtshadcn_component="typography"][level="h1"] {{ font-size: 32px; font-weight: 700; }}
+QLabel[qtshadcn_component="typography"][level="h2"] {{ font-size: 26px; font-weight: 700; }}
+QLabel[qtshadcn_component="typography"][level="h3"] {{ font-size: 22px; font-weight: 600; }}
+QLabel[qtshadcn_component="typography"][level="h4"] {{ font-size: 18px; font-weight: 600; }}
+QLabel[qtshadcn_component="typography"][level="lead"] {{ font-size: 17px; color: {c["mutedForeground"]}; }}
+QLabel[qtshadcn_component="typography"][level="large"] {{ font-size: 18px; font-weight: 600; }}
+QLabel[qtshadcn_component="typography"][level="small"] {{ font-size: 12px; font-weight: 600; }}
+QLabel[qtshadcn_component="typography"][level="muted"] {{ color: {c["mutedForeground"]}; }}
+QLabel[qtshadcn_component="typography"][level="blockquote"] {{ color: {c["mutedForeground"]}; border-left: 3px solid {c["border"]}; padding-left: 10px; }}
+QLabel[qtshadcn_component="typography"][level="code"] {{ background: {c["muted"]}; border-radius: {r_sm}; padding: 4px 6px; }}
 QLabel[qtshadcn_component="badge"] {{ border-radius: {r_lg}; padding: 2px 8px; font-weight: 600; }}
 QLabel[qtshadcn_component="badge"][variant="default"] {{ background: {c["primary"]}; color: {c["primaryForeground"]}; }}
 QLabel[qtshadcn_component="badge"][variant="secondary"] {{ background: {c["secondary"]}; color: {c["secondaryForeground"]}; }}
@@ -134,12 +145,18 @@ QCheckBox[qtshadcn_component="switch"]::indicator {{
 }}
 QCheckBox[qtshadcn_component="switch"]::indicator:checked {{ background: {c["primary"]}; border-color: {c["primary"]}; }}
 
-QComboBox[qtshadcn_component="select"] {{
+QComboBox[qtshadcn_component="select"],
+QComboBox[qtshadcn_component="combobox"],
+QComboBox[qtshadcn_component="native-select"],
+QDateEdit[qtshadcn_component="date-picker"] {{
   background: {c["background"]}; color: {c["foreground"]}; border: 1px solid {c["input"]};
   border-radius: {r_sm}; padding: 6px 10px; min-height: 20px;
 }}
-QComboBox[qtshadcn_component="select"]:focus {{ border-color: {c["ring"]}; }}
-QComboBox[qtshadcn_component="select"] QAbstractItemView {{
+QComboBox[qtshadcn_component="select"]:focus,
+QComboBox[qtshadcn_component="combobox"]:focus,
+QComboBox[qtshadcn_component="native-select"]:focus,
+QDateEdit[qtshadcn_component="date-picker"]:focus {{ border-color: {c["ring"]}; }}
+QComboBox[qtshadcn_component] QAbstractItemView {{
   background: {c["popover"]}; color: {c["popoverForeground"]};
   border: 1px solid {c["border"]}; selection-background-color: {c["accent"]};
   selection-color: {c["accentForeground"]};
@@ -160,6 +177,76 @@ QTabWidget[qtshadcn_component="tabs"]::pane {{ border: 1px solid {c["border"]}; 
 {tab_bar}::tab:hover {{ color: {c["foreground"]}; background: {c["accent"]}; }}
 
 QFrame[qtshadcn_component="separator"] {{ background: {c["border"]}; border: none; }}
+
+QFrame[qtshadcn_component="collapsible"],
+QFrame[qtshadcn_component="accordion"],
+QFrame[qtshadcn_component="item"],
+QFrame[qtshadcn_component="attachment"],
+QFrame[qtshadcn_component="command"],
+QFrame[qtshadcn_component="input-group"] {{
+  background: {c["card"]}; color: {c["cardForeground"]};
+  border: 1px solid {c["border"]}; border-radius: {r_md};
+}}
+QFrame[qtshadcn_component="collapsible"][expanded="true"] {{ border-color: {c["ring"]}; }}
+QFrame[qtshadcn_component="input-group"] QLineEdit {{ border: none; background: transparent; }}
+QFrame[qtshadcn_component="field"][invalid="true"] {{ color: {c["destructive"]}; }}
+
+QToolButton[qtshadcn_component="toggle"] {{
+  padding: 6px 10px; border-radius: {r_sm}; background: transparent;
+  color: {c["foreground"]}; border: 1px solid transparent;
+}}
+QToolButton[qtshadcn_component="toggle"][variant="outline"] {{ border-color: {c["border"]}; }}
+QToolButton[qtshadcn_component="toggle"]:checked {{ background: {c["accent"]}; color: {c["accentForeground"]}; }}
+
+QLabel[qtshadcn_component="avatar"] {{
+  background: {c["muted"]}; color: {c["mutedForeground"]}; border: 1px solid {c["border"]};
+  border-radius: {r_lg}; font-weight: 600;
+}}
+QFrame[qtshadcn_component="skeleton"] {{ background: {c["muted"]}; border: none; border-radius: {r_md}; }}
+QLabel[qtshadcn_component="kbd"] {{
+  background: {c["muted"]}; color: {c["mutedForeground"]}; border: 1px solid {c["border"]};
+  border-radius: {r_sm}; padding: 2px 6px; font-size: 11px; font-weight: 600;
+}}
+QProgressBar[qtshadcn_component="spinner"] {{ border: none; background: {c["muted"]}; border-radius: 4px; }}
+QProgressBar[qtshadcn_component="spinner"]::chunk {{ background: {c["primary"]}; border-radius: 4px; }}
+QFrame[qtshadcn_component="empty"] {{ border: 1px dashed {c["border"]}; border-radius: {r_lg}; }}
+QFrame[qtshadcn_component="chart"] {{ background: {c["card"]}; border: 1px solid {c["border"]}; border-radius: {r_md}; }}
+
+QTableView[qtshadcn_component="data-table"], QTableWidget[qtshadcn_component="table"],
+QCalendarWidget[qtshadcn_component="calendar"] {{
+  background: {c["card"]}; color: {c["cardForeground"]}; border: 1px solid {c["border"]};
+  border-radius: {r_md}; selection-background-color: {c["primary"]}; selection-color: {c["primaryForeground"]};
+}}
+QHeaderView::section {{ background: {c["muted"]}; color: {c["mutedForeground"]}; border: none; border-bottom: 1px solid {c["border"]}; padding: 7px; font-weight: 600; }}
+
+QFrame[qtshadcn_component="bubble"] {{ background: {c["secondary"]}; color: {c["secondaryForeground"]}; border-radius: {r_lg}; }}
+QFrame[qtshadcn_component="bubble"][variant="outline"] {{ background: transparent; border: 1px solid {c["border"]}; }}
+QFrame[qtshadcn_component="bubble"][alignment="end"] {{ background: {c["primary"]}; color: {c["primaryForeground"]}; }}
+QLabel[qtshadcn_component="marker"] {{ color: {c["mutedForeground"]}; padding: 4px 8px; }}
+QLabel[qtshadcn_component="marker"][variant="separator"] {{ border-bottom: 1px solid {c["border"]}; }}
+
+QDialog[qtshadcn_component="dialog"], QDialog[qtshadcn_component="alert-dialog"],
+QDialog[qtshadcn_component="sheet"], QDialog[qtshadcn_component="drawer"],
+QFrame[qtshadcn_component="popover"], QFrame[qtshadcn_component="hover-card"],
+QFrame[qtshadcn_component="toast"] {{
+  background: {c["popover"]}; color: {c["popoverForeground"]};
+  border: 1px solid {c["border"]}; border-radius: {r_lg};
+}}
+QFrame[qtshadcn_component="toast"][variant="destructive"] {{ border-color: {c["destructive"]}; }}
+QFrame[qtshadcn_component="toast"][variant="success"] {{ border-color: {c["primary"]}; }}
+QLabel[qtshadcn_component="tooltip"] {{
+  background: {c["foreground"]}; color: {c["background"]}; border-radius: {r_sm}; padding: 4px 8px;
+}}
+
+QFrame[qtshadcn_component="sidebar"] {{ background: {c["card"]}; border: 1px solid {c["border"]}; border-radius: {r_md}; }}
+QFrame[qtshadcn_component="navigation-menu"], QFrame[qtshadcn_component="breadcrumb"],
+QFrame[qtshadcn_component="pagination"], QFrame[qtshadcn_component="button-group"],
+QFrame[qtshadcn_component="toggle-group"] {{ background: transparent; border: none; }}
+QSplitter[qtshadcn_component="resizable"]::handle {{ background: {c["border"]}; width: 2px; height: 2px; }}
+QScrollArea[qtshadcn_component="scroll-area"], QScrollArea[qtshadcn_component="message-scroller"] {{ border: 1px solid {c["border"]}; border-radius: {r_md}; }}
+
+QMenuBar[qtshadcn_component="menubar"] {{ background: {c["card"]}; border-bottom: 1px solid {c["border"]}; }}
+QMenuBar[qtshadcn_component="menubar"]::item:selected {{ background: {c["accent"]}; border-radius: {r_sm}; }}
 {menu_rules}
 """
 

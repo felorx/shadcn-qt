@@ -79,6 +79,28 @@ SPECS = (
     Spec(widget_module.Separator, "separator", "Horizontal or vertical separator"),
 )
 
+_CONTAINERS = {
+    "Alert",
+    "AspectRatio",
+    "Card",
+    "Direction",
+    "Resizable",
+    "ScrollArea",
+    "Sidebar",
+    "Tabs",
+}
+_registered = {spec.widget.__name__ for spec in SPECS}
+SPECS += tuple(
+    Spec(
+        getattr(widget_module, name),
+        name[0].lower() + name[1:],
+        f"shadcn-style {name}",
+        name in _CONTAINERS,
+    )
+    for name in widget_module.__all__
+    if name not in _registered
+)
+
 
 def apply_designer_preview() -> None:
     app = QtWidgets.QApplication.instance()

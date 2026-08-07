@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CompositeForm</class>
+ <widget class="QWidget" name="CompositeForm">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>640</width><height>480</height></rect>
+  </property>
+  <property name="windowTitle"><string>qtshadcn composite components</string></property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="Typography" name="heading">
+     <property name="text"><string>Dashboard</string></property>
+     <property name="level"><string>h1</string></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Chart" name="activityChart">
+     <property name="chartType"><string>bar</string></property>
+     <property name="values"><string>8, 16, 12, 24, 20</string></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Collapsible" name="details">
+     <property name="title"><string>Details</string></property>
+     <property name="expanded"><bool>true</bool></property>
+    </widget>
+   </item>
+   <item>
+    <widget class="Pagination" name="pagination">
+     <property name="currentPage"><number>2</number></property>
+     <property name="pageCount"><number>5</number></property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget><class>Chart</class><extends>QFrame</extends><header>qtshadcn.widgets</header></customwidget>
+  <customwidget><class>Collapsible</class><extends>QFrame</extends><header>qtshadcn.widgets</header></customwidget>
+  <customwidget><class>Pagination</class><extends>QFrame</extends><header>qtshadcn.widgets</header></customwidget>
+  <customwidget><class>Typography</class><extends>QLabel</extends><header>qtshadcn.widgets</header></customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

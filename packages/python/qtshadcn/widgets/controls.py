@@ -21,7 +21,7 @@ def _text_parent(text: Any, parent: Optional[Any]) -> tuple[str, Optional[Any]]:
 
 
 class Label(QtWidgets.QLabel):
-    VARIANTS = ("default", "muted", "lead", "large", "small")
+    VARIANTS = ("default", "muted", "lead", "large", "small", "destructive")
 
     def __init__(
         self,

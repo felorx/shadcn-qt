@@ -36,11 +36,17 @@ The preview stylesheet is scoped to qtshadcn components and does not restyle Des
 | Button | `variant`, `shadcnSize`, plus all QPushButton properties |
 | Input / TextArea | `invalid`, plus inherited text properties |
 | Card | `elevated` |
-| Label / Badge / Alert | `variant` |
+| Label / Badge / Alert / Toggle / Bubble / Toast | `variant` |
 | Separator | `orientation` (`horizontal` or `vertical`) |
+| Accordion / Collapsible | `exclusive`, `title`, `expanded` |
+| Sheet / Sidebar | `side`, `collapsed` |
+| Direction | `direction` (`ltr` or `rtl`) |
+| Chart | `chartType`, comma-separated `values` |
+| Typography | `level` (`h1`–`h4`, `p`, `lead`, `code`, and other presets) |
+| Pagination / InputOTP | `currentPage`, `pageCount`, `codeLength`, `value` |
 | Other widgets | Their normal Qt properties, such as `checked`, `value`, `items`, and `currentIndex` |
 
-Card, Alert, and Tabs are registered as containers. Normal Qt layout tools remain responsible for margins, spacing, stretch, and alignment.
+Card, Alert, Tabs, AspectRatio, Direction, Resizable, ScrollArea, and Sidebar are registered as containers. Normal Qt layout tools remain responsible for margins, spacing, stretch, and alignment.
 
 ## Use the saved form
 

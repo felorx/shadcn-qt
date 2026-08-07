@@ -5,7 +5,7 @@ This repository documents how **qtshadcn** splits scope between the open-source 
 ## Community (free / OSS)
 
 - **License**: MIT (see repository root `LICENSE`).
-- **Components**: Core primitives aligned with [shadcn/ui](https://ui.shadcn.com/) — Button, Input, TextArea, Card, Label, Checkbox, RadioButton, Switch, Select, Slider, Progress, Tabs, Badge, Alert, and Separator.
+- **Components**: The complete 65-class Python catalog aligned with the current named [shadcn/ui](https://ui.shadcn.com/) index, including primitives, compound controls, dialogs, menus, navigation, data display, charts, notifications, and conversation widgets.
 - **Theming**: Light/dark from shared design tokens; `tools/token-codegen` generates QSS + Python + C++ artifacts.
 - **Bindings**: Python (`PySide6`, `PyQt6`, `PySide2`, `PyQt5`) and C++ (Qt 5.15+ and Qt 6.x).
 - **Tooling**: Token/codegen CLI, Qt Designer drag/drop registration and `.ui` loader, public documentation site source under `apps/docs`.
@@ -13,7 +13,7 @@ This repository documents how **qtshadcn** splits scope between the open-source 
 ## Pro (planned commercial)
 
 - **License**: Commercial license (sold separately); not included in the default OSS build.
-- **Components**: Heavy widgets — virtualized DataTable, advanced navigation shells, charts, rich text toolbars, advanced Designer extensions, full page templates.
+- **Components**: Optional enterprise-scale extensions — virtualized/remote DataTable adapters, advanced chart backends, navigation shells, rich text toolbars, advanced Designer extensions, and full page templates.
 - **Theming**: Multi-brand packs, design-tool sync, contrast/accessibility preset bundles.
 - **Tooling**: Private component registry, team theme sync, visual regression CI integrations, SLA support.
 

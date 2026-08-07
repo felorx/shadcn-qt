@@ -5,7 +5,7 @@ Qt / PyQt / PySide component and style primitives aligned with [shadcn/ui](https
 ## Current status
 
 - **Python:** PySide6, PyQt6, PySide2, and PyQt5 through one public API.
-- **Widgets:** Button, Input, TextArea, Card, Label, Checkbox, RadioButton, Switch, Select, Slider, Progress, Tabs, Badge, Alert, and Separator.
+- **Widgets:** 65 public Python widgets covering the current shadcn/ui catalog with Qt-native mappings, including dialogs, menus, forms, navigation, data display, charts, notifications, and conversation components.
 - **Qt Designer:** the Python widgets can appear in a `qtshadcn` Widget Box group, be dragged onto forms, laid out, and configured through native Qt properties.
 - **Themes:** built-in light/dark themes, process-wide configuration, per-application overrides, JSON themes, custom QSS, radius, and font overrides.
 - **C++:** Button, Input, Card, generated light/dark QSS, and CMake package support.
@@ -62,7 +62,7 @@ pip install -e ".[designer]"
 qtshadcn-designer
 ```
 
-The `qtshadcn` group contains all Python widgets. Properties such as `variant`, `shadcnSize`, `invalid`, `elevated`, and `orientation` are editable in the Property Editor. Load the resulting form without a code-generation step:
+The `qtshadcn` group contains all 65 Python widgets. Properties such as `variant`, `shadcnSize`, `invalid`, `expanded`, `side`, `direction`, `chartType`, and `level` are editable in the Property Editor. Load the resulting form without a code-generation step:
 
 ```python
 from qtshadcn.designer import load_ui
