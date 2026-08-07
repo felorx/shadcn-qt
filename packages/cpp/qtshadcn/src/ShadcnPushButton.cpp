@@ -8,20 +8,33 @@ ShadcnPushButton::ShadcnPushButton(const QString& text, QWidget* parent)
     : QPushButton(text, parent)
 {
     setObjectName(QStringLiteral("qtshadcn-button"));
+    setProperty("qtshadcn_component", QStringLiteral("button"));
     setVariant(QStringLiteral("default"));
     setShadcnSize(QStringLiteral("default"));
 }
 
 void ShadcnPushButton::setVariant(const QString& variant)
 {
-    setProperty("qtshadcn_variant", variant);
+    m_variant = variant;
+    setProperty("qtshadcn_variant", m_variant);
     refreshStyle();
+}
+
+QString ShadcnPushButton::variant() const
+{
+    return m_variant;
 }
 
 void ShadcnPushButton::setShadcnSize(const QString& size)
 {
-    setProperty("qtshadcn_size", size);
+    m_shadcnSize = size;
+    setProperty("qtshadcn_size", m_shadcnSize);
     refreshStyle();
+}
+
+QString ShadcnPushButton::shadcnSize() const
+{
+    return m_shadcnSize;
 }
 
 void ShadcnPushButton::refreshStyle()

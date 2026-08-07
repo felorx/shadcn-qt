@@ -29,4 +29,4 @@ btn->setVariant(QStringLiteral("outline"));
 btn->setShadcnSize(QStringLiteral("sm"));
 ```
 
-Under the hood the control sets `objectName` to `qtshadcn-button` and properties `qtshadcn_variant` / `qtshadcn_size` for stylesheet selectors.
+The Qt properties are named `variant` and `shadcnSize`, so Qt Designer and `.ui` generators can edit and restore them. The widget also sets `qtshadcn_component="button"`; styling therefore continues to work when an application changes its `objectName`.

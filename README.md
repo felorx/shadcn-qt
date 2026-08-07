@@ -1,6 +1,16 @@
 # qtshadcn
 
-Qt / PyQt / PySide component and style primitives aligned with [shadcn/ui](https://ui.shadcn.com/) semantics (design tokens, variants, composable widgets).
+Qt / PyQt / PySide component and style primitives aligned with [shadcn/ui](https://ui.shadcn.com/) semantics: semantic design tokens, variants, composable widgets, global themes, and Qt Designer drag-and-drop integration.
+
+## Current status
+
+- **Python:** PySide6, PyQt6, PySide2, and PyQt5 through one public API.
+- **Widgets:** Button, Input, TextArea, Card, Label, Checkbox, RadioButton, Switch, Select, Slider, Progress, Tabs, Badge, Alert, and Separator.
+- **Qt Designer:** the Python widgets can appear in a `qtshadcn` Widget Box group, be dragged onto forms, laid out, and configured through native Qt properties.
+- **Themes:** built-in light/dark themes, process-wide configuration, per-application overrides, JSON themes, custom QSS, radius, and font overrides.
+- **C++:** Button, Input, Card, generated light/dark QSS, and CMake package support.
+
+See [docs/STATUS.md](docs/STATUS.md) for the verified matrix and remaining parity work.
 
 ## Layout
 
@@ -29,6 +39,38 @@ cd packages/python
 pip install -e ".[pyside6]"
 ```
 
+Create and theme widgets:
+
+```python
+from qtshadcn import Button, Input, apply_theme, configure
+from qtshadcn._qt import QtWidgets
+
+configure(theme="dark", colors={"primary": "#7c3aed"}, radius={"md": "10px"})
+app = QtWidgets.QApplication([])
+apply_theme(app)
+
+button = Button("Save", variant="outline", size="sm")
+field = Input()
+```
+
+## Qt Designer
+
+For the most predictable Designer plugin host, install the Designer extra and launch Designer through qtshadcn:
+
+```bash
+pip install -e ".[designer]"
+qtshadcn-designer
+```
+
+The `qtshadcn` group contains all Python widgets. Properties such as `variant`, `shadcnSize`, `invalid`, `elevated`, and `orientation` are editable in the Property Editor. Load the resulting form without a code-generation step:
+
+```python
+from qtshadcn.designer import load_ui
+window = load_ui("window.ui")
+```
+
+See [the Designer guide](apps/docs/guide/designer.md) and the runnable [Designer example](examples/python_designer/run.py).
+
 Regenerate theme artifacts after editing tokens:
 
 ```bash
@@ -52,7 +94,7 @@ Use Qt 5.15 by pointing `CMAKE_PREFIX_PATH` at a Qt5 kit; the same `CMakeLists.t
 
 ## Docs
 
-See `apps/docs` (VitePress) and [docs/TIERS.md](docs/TIERS.md) for Community vs Pro scope.
+See `apps/docs` (VitePress), [docs/STATUS.md](docs/STATUS.md), and [docs/TIERS.md](docs/TIERS.md).
 
 ## License
 

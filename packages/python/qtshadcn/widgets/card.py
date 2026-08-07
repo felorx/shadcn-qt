@@ -1,24 +1,40 @@
-"""shadcn-style Card container (QFrame)."""
+"""shadcn-style Card container."""
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any, Optional
 
-from qtshadcn._qt import QtWidgets, detect_binding
+from qtshadcn import _qt
+from qtshadcn.widgets._helpers import initialize_component, refresh_style
 
-detect_binding()
+_, _, QtWidgets = _qt.qt_modules()
 
 
 class Card(QtWidgets.QFrame):
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
+    def __init__(self, parent: Optional[Any] = None) -> None:
         super().__init__(parent)
-        self.setObjectName("qtshadcn-card")
-        F = QtWidgets.QFrame
-        shape = getattr(F, "StyledPanel", None)
+        initialize_component(self, "card")
+        frame = QtWidgets.QFrame
+        shape = getattr(frame, "StyledPanel", None)
+        shadow = getattr(frame, "Plain", None)
         if shape is None:
-            shape = F.Shape.StyledPanel
-        shadow = getattr(F, "Plain", None)
+            shape = frame.Shape.StyledPanel
         if shadow is None:
-            shadow = F.Shadow.Plain
+            shadow = frame.Shadow.Plain
         self.setFrameShape(shape)
         self.setFrameShadow(shadow)
+        self._elevated = False
+
+    def is_elevated(self) -> bool:
+        return self._elevated
+
+    def set_elevated(self, elevated: bool) -> None:
+        self._elevated = bool(elevated)
+        refresh_style(self)
+
+    isElevated = is_elevated
+    setElevated = set_elevated
+    elevated = _qt.qt_property(bool, fget=is_elevated, fset=set_elevated)
+
+
+__all__ = ["Card"]

@@ -12,3 +12,31 @@ Regenerate styles after editing `packages/design-tokens/tokens.json`:
 ```bash
 python ../../tools/token-codegen/generate.py
 ```
+
+## Global and custom themes
+
+```python
+from qtshadcn import apply_theme, configure, create_theme
+
+brand = create_theme(
+    "brand",
+    base="light",
+    colors={"primary": "#7c3aed", "ring": "#8b5cf6"},
+    radius={"md": "10px"},
+)
+configure(theme=brand, extra_qss="QWidget#sidebar { border: none; }")
+apply_theme()  # uses the current QApplication
+```
+
+JSON theme files can be loaded with `load_theme("brand.json")`.
+
+## Qt Designer
+
+Install the recommended plugin host, then launch Designer with the registration path already configured:
+
+```bash
+pip install -e ".[designer]"
+qtshadcn-designer
+```
+
+Use `from qtshadcn.designer import load_ui` to load the saved form under PySide or PyQt.

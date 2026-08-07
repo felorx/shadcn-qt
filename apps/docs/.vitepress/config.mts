@@ -15,11 +15,15 @@ export default defineConfig({
         items: [
           { text: "Install", link: "/guide/install" },
           { text: "Theming", link: "/guide/theming" },
+          { text: "Qt Designer", link: "/guide/designer" },
         ],
       },
       {
         text: "Components",
-        items: [{ text: "Button", link: "/components/button" }],
+        items: [
+          { text: "Catalog", link: "/components/catalog" },
+          { text: "Button", link: "/components/button" },
+        ],
       },
       { text: "Community vs Pro", link: "/tiers" },
     ],

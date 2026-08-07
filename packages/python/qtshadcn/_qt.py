@@ -1,77 +1,128 @@
-"""Detect and re-export Qt modules from a single installed binding (PySide6/PyQt6/PySide2/PyQt5)."""
+"""Lazy, single-binding Qt compatibility helpers.
+
+Importing :mod:`qtshadcn` must not require Qt to be installed.  Accessing one
+of ``QtCore``, ``QtGui`` or ``QtWidgets`` loads the selected binding lazily.
+"""
 
 from __future__ import annotations
 
+import importlib
 import os
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 
 _BINDING: Optional[str] = None
-QtWidgets: Any = None
-QtCore: Any = None
-QtGui: Any = None
-
 _VALID = frozenset({"PySide6", "PyQt6", "PySide2", "PyQt5"})
+_ORDER = ("PySide6", "PyQt6", "PySide2", "PyQt5")
 
 
 def _load(binding: str) -> None:
-    global QtWidgets, QtCore, QtGui, _BINDING
-    if binding == "PySide6":
-        from PySide6 import QtCore as _QtCore  # type: ignore
-        from PySide6 import QtGui as _QtGui  # type: ignore
-        from PySide6 import QtWidgets as _QtWidgets  # type: ignore
-    elif binding == "PyQt6":
-        from PyQt6 import QtCore as _QtCore  # type: ignore
-        from PyQt6 import QtGui as _QtGui  # type: ignore
-        from PyQt6 import QtWidgets as _QtWidgets  # type: ignore
-    elif binding == "PySide2":
-        from PySide2 import QtCore as _QtCore  # type: ignore
-        from PySide2 import QtGui as _QtGui  # type: ignore
-        from PySide2 import QtWidgets as _QtWidgets  # type: ignore
-    elif binding == "PyQt5":
-        from PyQt5 import QtCore as _QtCore  # type: ignore
-        from PyQt5 import QtGui as _QtGui  # type: ignore
-        from PyQt5 import QtWidgets as _QtWidgets  # type: ignore
-    else:
-        raise ValueError(f"Unknown binding {binding}")
-    QtCore, QtGui, QtWidgets, _BINDING = _QtCore, _QtGui, _QtWidgets, binding
+    global _BINDING
+    core = importlib.import_module(f"{binding}.QtCore")
+    gui = importlib.import_module(f"{binding}.QtGui")
+    widgets = importlib.import_module(f"{binding}.QtWidgets")
+    globals()["QtCore"] = core
+    globals()["QtGui"] = gui
+    globals()["QtWidgets"] = widgets
+    _BINDING = binding
 
 
 def detect_binding(preferred: Optional[str] = None) -> str:
-    """Load Qt modules. Respect QTSHADCN_QT_BINDING if set."""
-    global _BINDING
+    """Load and return the active Qt binding.
+
+    ``preferred`` and ``QTSHADCN_QT_BINDING`` are strict: a requested binding
+    is never silently replaced by another one.
+    """
+
     if _BINDING is not None:
-        return _BINDING
-    env = preferred or os.environ.get("QTSHADCN_QT_BINDING")
-    order = ("PySide6", "PyQt6", "PySide2", "PyQt5")
-    if env:
-        if env not in _VALID:
-            raise ValueError(
-                f"QTSHADCN_QT_BINDING must be one of {sorted(_VALID)}, got {env!r}"
+        if preferred is not None and preferred != _BINDING:
+            raise RuntimeError(
+                f"Qt binding {_BINDING} is already loaded; cannot switch to {preferred}."
             )
-        _load(env)
-        return env
-    last_err: Optional[BaseException] = None
-    for name in order:
+        return _BINDING
+
+    requested = preferred or os.environ.get("QTSHADCN_QT_BINDING")
+    if requested:
+        if requested not in _VALID:
+            raise ValueError(
+                f"QTSHADCN_QT_BINDING must be one of {sorted(_VALID)}, got {requested!r}"
+            )
+        try:
+            _load(requested)
+        except ImportError as exc:
+            raise ImportError(
+                f"qtshadcn was configured to use {requested}, but it is not importable."
+            ) from exc
+        return requested
+
+    errors = []
+    for name in _ORDER:
         try:
             _load(name)
             return name
-        except Exception as e:  # noqa: BLE001
-            last_err = e
-            continue
+        except ImportError as exc:
+            errors.append(f"{name}: {exc}")
+
     raise ImportError(
-        "qtshadcn requires PySide6, PyQt6, PySide2, or PyQt5. "
-        f"Last error: {last_err!r}"
+        "qtshadcn requires one of PySide6, PyQt6, PySide2, or PyQt5. "
+        "Install qtshadcn with one binding extra, for example "
+        "`pip install qtshadcn[pyside6]`. Attempts: " + "; ".join(errors)
     )
 
 
-def app_exec(app: Any) -> None:
-    """Qt6: app.exec(); Qt5 PyQt: app.exec_()."""
-    exe = getattr(app, "exec", None)
-    if callable(exe):
-        exe()
-        return
-    exe_old = getattr(app, "exec_", None)
-    if callable(exe_old):
-        exe_old()
-        return
-    raise AttributeError("QApplication has neither exec nor exec_")
+def qt_modules() -> Tuple[Any, Any, Any]:
+    """Return ``(QtCore, QtGui, QtWidgets)`` for the active binding."""
+
+    detect_binding()
+    return globals()["QtCore"], globals()["QtGui"], globals()["QtWidgets"]
+
+
+def qt_property(*args: Any, **kwargs: Any) -> Any:
+    """Cross-binding alias for ``Property`` / ``pyqtProperty``."""
+
+    core, _, _ = qt_modules()
+    factory = getattr(core, "Property", None) or getattr(core, "pyqtProperty")
+    return factory(*args, **kwargs)
+
+
+def qt_signal(*args: Any, **kwargs: Any) -> Any:
+    """Cross-binding alias for ``Signal`` / ``pyqtSignal``."""
+
+    core, _, _ = qt_modules()
+    factory = getattr(core, "Signal", None) or getattr(core, "pyqtSignal")
+    return factory(*args, **kwargs)
+
+
+def import_qt_module(module: str) -> Any:
+    """Import an optional module (for example ``QtUiTools``) from the binding."""
+
+    binding = detect_binding()
+    return importlib.import_module(f"{binding}.{module}")
+
+
+def app_exec(app: Any) -> Any:
+    """Run a QApplication on both Qt 5 and Qt 6."""
+
+    execute = getattr(app, "exec", None) or getattr(app, "exec_", None)
+    if not callable(execute):
+        raise AttributeError("QApplication has neither exec nor exec_")
+    return execute()
+
+
+def __getattr__(name: str) -> Any:
+    if name in {"QtCore", "QtGui", "QtWidgets"}:
+        detect_binding()
+        return globals()[name]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+__all__ = [
+    "QtCore",
+    "QtGui",
+    "QtWidgets",
+    "app_exec",
+    "detect_binding",
+    "import_qt_module",
+    "qt_modules",
+    "qt_property",
+    "qt_signal",
+]

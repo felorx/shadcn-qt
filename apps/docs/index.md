@@ -18,4 +18,8 @@ features:
     details: Button variants mirror shadcn — default, secondary, outline, ghost, destructive, link.
   - title: Multi-binding Python
     details: One package; pick PySide6, PyQt6, PySide2, or PyQt5 via optional extras or QTSHADCN_QT_BINDING.
+  - title: Qt Designer workflow
+    details: Drag qtshadcn widgets onto forms, edit native properties, and load the same .ui file with PySide or PyQt.
+  - title: Custom themes
+    details: Override semantic colors, radius, fonts, and QSS globally or load reusable JSON themes at runtime.
 ---

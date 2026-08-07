@@ -10,6 +10,13 @@ pip install -e ".[pyside6]"
 # or: pip install -e ".[pyqt6]" | ".[pyside2]" | ".[pyqt5]"
 ```
 
+Install the recommended Qt Designer integration (includes PySide6):
+
+```bash
+pip install -e ".[designer]"
+qtshadcn-designer
+```
+
 Force a binding explicitly:
 
 ```bash
@@ -20,6 +27,12 @@ Run a minimal window:
 
 ```bash
 python ../../examples/python_minimal/run_pyside6.py
+```
+
+Run a form created with Qt Designer:
+
+```bash
+python ../../examples/python_designer/run.py
 ```
 
 **Note:** PyQt5 is GPL-licensed from Riverbank; evaluate license fit for closed-source apps separately from this library’s MIT license.

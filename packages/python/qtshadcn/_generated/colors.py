@@ -53,6 +53,6 @@ RADIUS = {
 }
 
 FONT = {
-  "sansFamily": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+  "sansFamily": "sans-serif",
   "monoFamily": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
 }

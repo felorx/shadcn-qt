@@ -1,24 +1,8 @@
 # Theming
 
-Semantic colors follow [shadcn/ui](https://ui.shadcn.com/) naming: `background`, `foreground`, `primary`, `destructive`, `muted`, `border`, `ring`, etc.
+qtshadcn uses the same semantic vocabulary as shadcn/ui: `background`, `foreground`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `border`, `input`, and `ring`. Widgets consume those roles instead of hard-coded brand colors.
 
-## Source of truth
-
-Edit [`packages/design-tokens/tokens.json`](https://github.com/qtshadcn/qtshadcn/blob/main/packages/design-tokens/tokens.json) (light and dark palettes, radius scale).
-
-## Code generation
-
-```bash
-python tools/token-codegen/generate.py
-```
-
-Outputs:
-
-- `packages/python/qtshadcn/_generated/base_light.qss` and `base_dark.qss`
-- `packages/python/qtshadcn/_generated/base_qss.py` (`LIGHT_QSS` / `DARK_QSS`)
-- `packages/cpp/qtshadcn/include/qtshadcn/ThemeTokens.h`
-
-## Python
+## Apply a built-in theme
 
 ```python
 from qtshadcn import apply_theme
@@ -28,16 +12,70 @@ app = QtWidgets.QApplication([])
 apply_theme(app, "dark")
 ```
 
-Optional palette hints:
+`apply_theme("dark")` is also valid after a `QApplication` exists.
+
+## Global configuration
+
+Call `configure()` once near application startup. All later parameterless `apply_theme()` calls use this configuration.
 
 ```python
-from qtshadcn.theme import apply_palette_from_tokens
-apply_palette_from_tokens(app, "light")
+from qtshadcn import configure, apply_theme
+
+configure(
+    theme="light",
+    colors={"primary": "#7c3aed", "ring": "#8b5cf6"},
+    radius={"sm": "6px", "md": "10px"},
+    font={"sansFamily": "Inter, 'Segoe UI', sans-serif"},
+    extra_qss="QWidget#sidebar { border-right: 1px solid #ddd; }",
+)
+apply_theme()
 ```
 
-## C++
+## Reusable custom themes
 
-```cpp
-#include <qtshadcn/Theme.h>
-qtshadcn::applyTheme(&app, QStringLiteral("dark"));
+```python
+from qtshadcn import create_theme, register_theme, apply_theme
+
+ocean = create_theme(
+    "ocean",
+    base="dark",
+    colors={
+        "primary": "#38bdf8",
+        "primaryForeground": "#082f49",
+        "ring": "#7dd3fc",
+    },
+)
+register_theme(ocean)
+apply_theme("ocean")
 ```
+
+`create_theme()` merges the override into a complete light or dark base, so all semantic tokens remain defined.
+
+## JSON theme
+
+```json
+{
+  "name": "brand",
+  "base": "light",
+  "colors": {
+    "primary": "#7c3aed",
+    "ring": "#8b5cf6"
+  },
+  "radius": { "md": "10px" }
+}
+```
+
+```python
+from qtshadcn import load_theme, apply_theme
+apply_theme(load_theme("brand.json"))
+```
+
+## Token source and code generation
+
+The repository's built-in palette lives in `packages/design-tokens/tokens.json`. After editing it, run:
+
+```bash
+python tools/token-codegen/generate.py
+```
+
+This writes Python QSS, the C++ resource QSS, and the C++ token header from the same source. Application-specific themes do not require regeneration; they are rendered at runtime.
