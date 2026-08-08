@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Minimal demo using PySide6 (install: pip install -e '.[pyside6]' from packages/python)."""
+"""Minimal demo using PySide6 (install: pip install 'shadcn-qt[pyside6]')."""
 
 import os
 
-os.environ.setdefault("QTSHADCN_QT_BINDING", "PySide6")
+os.environ.setdefault("SHADCN_QT_BINDING", "PySide6")
 
-from qtshadcn import Button, Card, Input, apply_theme, app_exec
-from qtshadcn._qt import QtWidgets
+from shadcn_qt import Button, Card, Input, apply_theme, app_exec
+from shadcn_qt._qt import QtWidgets
 
 
 def main() -> None:
@@ -14,7 +14,7 @@ def main() -> None:
     apply_theme(app, "light")
 
     w = QtWidgets.QWidget()
-    w.setWindowTitle("qtshadcn — PySide6")
+    w.setWindowTitle("shadcn-qt — PySide6")
     root = QtWidgets.QVBoxLayout(w)
 
     card = Card(w)

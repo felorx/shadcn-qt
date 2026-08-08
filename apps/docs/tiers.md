@@ -1,8 +1,21 @@
-# Community vs Pro
+# License paths and tiers
 
-See the canonical document in the repository: [docs/TIERS.md](https://github.com/qtshadcn/qtshadcn/blob/main/docs/TIERS.md).
+The complete public `shadcn-qt` package has two alternative license paths:
 
-**Summary**
+| Path | Intended use | Key requirement |
+| --- | --- | --- |
+| GPL-3.0-only | GPL-compatible open-source applications | Comply with GPLv3, including corresponding-source and combined-work obligations when distributing |
+| Commercial | Proprietary applications | Hold a valid Order Form for every active developer seat |
+| Evaluation | Internal evaluation | No production development or distribution; stop at the stated date |
 
-- **Community (MIT)**: the 65-class shadcn-aligned Python catalog, custom themes, Qt Designer integration, token codegen, Python + C++, and docs site source.
-- **Pro (commercial, planned)**: enterprise-scale DataTable/chart adapters, advanced Designer extensions, multi-brand tooling, and a private registry — shipped as a separate artifact; `qtshadcn.pro` is not included in OSS builds.
+The standard commercial grant allows unlimited applications and end-user
+copies with no runtime royalty. A customer buys developer seats and an update
+period. The package does not use online activation: the Order Form or license
+certificate is proof of entitlement.
+
+Downloading from PyPI does not itself grant commercial rights. A shadcn-qt
+license also does not include Qt, PySide, or PyQt rights. See
+[Licensing and dependencies](/guide/licensing) for the complete decision guide.
+
+Future `shadcn_qt.pro` add-ons, if released, are separately ordered and are not
+implied by a commercial license for the public package.

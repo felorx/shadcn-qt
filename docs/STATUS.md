@@ -10,7 +10,7 @@ Last verified: 2026-08-08.
 | Python component catalog | 65 available | Qt-native mappings cover every named entry in the current shadcn/ui component index, plus Qt-specific conveniences such as `RadioButton` and `TextArea` |
 | Composite behavior | Available | Accordion, Collapsible, Carousel, dialogs/sheets/drawers, popovers, menus, command filtering, pagination, OTP, data tables, toast stacking, and message scrolling |
 | Designer Property Editor | Available | Custom Qt properties include variants, sizes, validation, expansion, side, direction, chart type/data, typography level, and inherited Qt properties |
-| Designer Widget Box | Available | Registration catalog, container metadata, DOM XML, and `qtshadcn-designer` launcher |
+| Designer Widget Box | Available | Registration catalog, container metadata, DOM XML, and `shadcn-qt-designer` launcher |
 | `.ui` runtime loading | Available | Unified `load_ui()` path for PyQt `uic` and PySide `QUiLoader` |
 | Global themes | Available | Light/dark, semantic token overrides, radius/font overrides, custom QSS, reusable Theme objects, JSON loader |
 | Existing-project compatibility | Available | QtWidgets-wide automatic styling with component-specific mappings, neutral fallback, dynamic widget coverage, scoped adoption, semantic overrides, per-widget opt-out, and reversible cleanup |

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "qtshadcn design tokens",
+  "title": "shadcn-qt design tokens",
   "type": "object",
   "required": ["themes", "radius"],
   "properties": {

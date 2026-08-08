@@ -5,7 +5,7 @@
   <property name="geometry">
    <rect><x>0</x><y>0</y><width>640</width><height>480</height></rect>
   </property>
-  <property name="windowTitle"><string>qtshadcn composite components</string></property>
+  <property name="windowTitle"><string>shadcn-qt composite components</string></property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="Typography" name="heading">
@@ -34,10 +34,10 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget><class>Chart</class><extends>QFrame</extends><header>qtshadcn.widgets</header></customwidget>
-  <customwidget><class>Collapsible</class><extends>QFrame</extends><header>qtshadcn.widgets</header></customwidget>
-  <customwidget><class>Pagination</class><extends>QFrame</extends><header>qtshadcn.widgets</header></customwidget>
-  <customwidget><class>Typography</class><extends>QLabel</extends><header>qtshadcn.widgets</header></customwidget>
+  <customwidget><class>Chart</class><extends>QFrame</extends><header>shadcn_qt.widgets</header></customwidget>
+  <customwidget><class>Collapsible</class><extends>QFrame</extends><header>shadcn_qt.widgets</header></customwidget>
+  <customwidget><class>Pagination</class><extends>QFrame</extends><header>shadcn_qt.widgets</header></customwidget>
+  <customwidget><class>Typography</class><extends>QLabel</extends><header>shadcn_qt.widgets</header></customwidget>
  </customwidgets>
  <resources/>
  <connections/>

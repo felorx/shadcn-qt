@@ -1,12 +1,12 @@
 # Theming
 
-qtshadcn uses the same semantic vocabulary as shadcn/ui: `background`, `foreground`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `border`, `input`, and `ring`. Widgets consume those roles instead of hard-coded brand colors.
+shadcn-qt uses the same semantic vocabulary as shadcn/ui: `background`, `foreground`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `border`, `input`, and `ring`. Widgets consume those roles instead of hard-coded brand colors.
 
 ## Apply a built-in theme
 
 ```python
-from qtshadcn import apply_theme
-from qtshadcn._qt import QtWidgets
+from shadcn_qt import apply_theme
+from shadcn_qt._qt import QtWidgets
 
 app = QtWidgets.QApplication([])
 apply_theme(app, "dark")
@@ -19,7 +19,7 @@ apply_theme(app, "dark")
 Existing projects can keep their `QPushButton`, `QLineEdit`, `QCheckBox`, and other standard widget classes. Enable compatibility mode before constructing the main window:
 
 ```python
-from qtshadcn import apply_theme, enable_native_widget_styling
+from shadcn_qt import apply_theme, enable_native_widget_styling
 
 app = QtWidgets.QApplication([])
 enable_native_widget_styling(app)
@@ -28,7 +28,7 @@ window = MainWindow()
 apply_theme(app, "dark")
 ```
 
-The adapter covers the complete QtWidgets QWidget family, including editors, item views, scrollbars, toolbars, docks, dialogs, containers, and dynamically created widgets. Known controls receive component-specific QSS; unknown QWidget subclasses receive a neutral theme fallback. Explicit component properties are preserved. Use `qtshadcn_native_styling=False` to exclude an individual widget, or `adopt_native_widgets(page)` for a one-time scoped migration.
+The adapter covers the complete QtWidgets QWidget family, including editors, item views, scrollbars, toolbars, docks, dialogs, containers, and dynamically created widgets. Known controls receive component-specific QSS; unknown QWidget subclasses receive a neutral theme fallback. Explicit component properties are preserved. Use `shadcn_qt_native_styling=False` to exclude an individual widget, or `adopt_native_widgets(page)` for a one-time scoped migration.
 
 See the [existing-project migration guide](./migration.md) for mappings, semantic overrides, cleanup, and legacy QSS integration.
 
@@ -37,7 +37,7 @@ See the [existing-project migration guide](./migration.md) for mappings, semanti
 Call `configure()` once near application startup. All later parameterless `apply_theme()` calls use this configuration.
 
 ```python
-from qtshadcn import configure, apply_theme
+from shadcn_qt import configure, apply_theme
 
 configure(
     theme="light",
@@ -52,7 +52,7 @@ apply_theme()
 ## Reusable custom themes
 
 ```python
-from qtshadcn import create_theme, register_theme, apply_theme
+from shadcn_qt import create_theme, register_theme, apply_theme
 
 ocean = create_theme(
     "ocean",
@@ -84,7 +84,7 @@ apply_theme("ocean")
 ```
 
 ```python
-from qtshadcn import load_theme, apply_theme
+from shadcn_qt import load_theme, apply_theme
 apply_theme(load_theme("brand.json"))
 ```
 

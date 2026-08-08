@@ -1,23 +1,40 @@
-# Community vs Pro
+# License and product tiers
 
-This repository documents how **qtshadcn** splits scope between the open-source **Community** edition and a future **Pro** (commercial) offering.
+The public shadcn-qt codebase has one feature set and two alternative license
+paths. Paying for a commercial license changes the legal rights for proprietary
+use; it does not unlock the public widgets with a runtime key.
 
-## Community (free / OSS)
+| Path | Cost | May ship a closed-source application? | Main obligations |
+| --- | --- | --- | --- |
+| GPL-3.0-only | Free | No, unless the complete combined work is distributed compatibly with GPLv3 | Preserve notices, provide corresponding source, license the covered combined work under GPLv3 |
+| Commercial | Paid by active developer seat | Yes | Retain a valid Order Form, stay within the seat count, do not redistribute shadcn-qt as a standalone/competing library |
+| Evaluation | Time-limited when issued | No production distribution | Internal evaluation only for the period on the Order Form |
 
-- **License**: MIT (see repository root `LICENSE`).
-- **Components**: The complete 65-class Python catalog aligned with the current named [shadcn/ui](https://ui.shadcn.com/) index, including primitives, compound controls, dialogs, menus, navigation, data display, charts, notifications, and conversation widgets.
-- **Theming**: Light/dark from shared design tokens; `tools/token-codegen` generates QSS + Python + C++ artifacts.
-- **Bindings**: Python (`PySide6`, `PyQt6`, `PySide2`, `PyQt5`) and C++ (Qt 5.15+ and Qt 6.x).
-- **Tooling**: Token/codegen CLI, Qt Designer drag/drop registration and `.ui` loader, public documentation site source under `apps/docs`.
+## Standard commercial packaging
 
-## Pro (planned commercial)
+- **Individual**: one Authorized Developer.
+- **Team**: a stated number of Authorized Developers under one organization and
+  Order Form.
+- **Enterprise**: negotiated seat or site scope, procurement terms, support,
+  and optional SLA.
 
-- **License**: Commercial license (sold separately); not included in the default OSS build.
-- **Components**: Optional enterprise-scale extensions — virtualized/remote DataTable adapters, advanced chart backends, navigation shells, rich text toolbars, advanced Designer extensions, and full page templates.
-- **Theming**: Multi-brand packs, design-tool sync, contrast/accessibility preset bundles.
-- **Tooling**: Private component registry, team theme sync, visual regression CI integrations, SLA support.
+The standard commercial agreement permits unlimited Applications and unlimited
+end-user copies, with no runtime royalty. Unless an Order Form says the license
+itself expires, customers keep the right to use versions obtained during the
+paid update period; renewal is needed for later versions and continued support.
+Prices, currency, tax, support, governing law, and the legal licensor identity
+belong in the Order Form rather than source code.
 
-## Code layout
+## Public package and future add-ons
 
-- Community code lives under `packages/python/qtshadcn` and `packages/cpp/qtshadcn`.
-- The `packages/python/qtshadcn/pro` package is reserved; importing it in OSS builds raises a clear error directing users to Pro distribution (see `pro/__init__.py`).
+The public `shadcn-qt` distribution contains the complete current 65-class
+catalog, native-widget compatibility, themes, and Qt Designer integration. The
+same artifact can be used under GPL or a commercial Order Form.
+
+`shadcn_qt.pro` remains reserved for possible separately ordered enterprise
+extensions such as specialized remote-data adapters, advanced Designer
+tooling, private theme registries, or SLA integrations. A commercial license
+for the public package does not automatically include a future Pro artifact.
+
+See [COMMERCIAL.md](COMMERCIAL.md), [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md),
+and the repository [LICENSE](../LICENSE).

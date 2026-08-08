@@ -3,9 +3,9 @@
 
 from pathlib import Path
 
-from qtshadcn import apply_theme, app_exec
-from qtshadcn._qt import QtWidgets
-from qtshadcn.designer import load_ui
+from shadcn_qt import apply_theme, app_exec
+from shadcn_qt._qt import QtWidgets
+from shadcn_qt.designer import load_ui
 
 
 def main() -> None:

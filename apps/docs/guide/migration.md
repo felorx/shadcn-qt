@@ -1,6 +1,7 @@
 # Migrate an existing Qt project
 
-An existing PySide or PyQt application does not need to be rewritten to adopt qtshadcn. The safest path is incremental:
+An existing PySide or PyQt application does not need to be rewritten to adopt
+shadcn-qt. The safest path is incremental:
 
 1. keep the current Qt binding and application structure;
 2. introduce the theme at one controlled entry point;
@@ -9,31 +10,31 @@ An existing PySide or PyQt application does not need to be rewritten to adopt qt
 
 ## Install without replacing Qt
 
-If the project already has PySide or PyQt installed, install qtshadcn without a binding extra. The base package has no Qt dependency and therefore does not upgrade or replace the project's existing binding.
+If the project already has PySide or PyQt installed, install shadcn-qt without a binding extra. The base package has no Qt dependency and therefore does not upgrade or replace the project's existing binding.
 
-From this repository:
+From PyPI:
 
 ```bash
-python -m pip install -e /path/to/qtshadcn/packages/python
+python -m pip install shadcn-qt
 ```
 
 Use an optional extra only when creating a new environment that does not already contain Qt:
 
 ```bash
-python -m pip install -e "/path/to/qtshadcn/packages/python[pyside6]"
+python -m pip install "shadcn-qt[pyside6]"
 ```
 
 ## Select exactly one Qt binding
 
-Set `QTSHADCN_QT_BINDING` before the first import from `qtshadcn`. This is especially important when more than one Qt binding is installed in the environment.
+Set `SHADCN_QT_BINDING` before the first import from `shadcn_qt`. This is especially important when more than one Qt binding is installed in the environment.
 
 ```python
 import os
 
-os.environ.setdefault("QTSHADCN_QT_BINDING", "PyQt5")
+os.environ.setdefault("SHADCN_QT_BINDING", "PyQt5")
 
 from PyQt5.QtWidgets import QApplication
-from qtshadcn import apply_theme
+from shadcn_qt import apply_theme
 ```
 
 Valid values are `PySide6`, `PyQt6`, `PySide2`, and `PyQt5`. Do not import widgets from two different bindings in the same process.
@@ -41,7 +42,7 @@ Valid values are `PySide6`, `PyQt6`, `PySide2`, and `PyQt5`. Do not import widge
 For deployed applications, the same setting can be supplied by the launcher instead of application code:
 
 ```bash
-QTSHADCN_QT_BINDING=PyQt5 python main.py
+SHADCN_QT_BINDING=PyQt5 python main.py
 ```
 
 ## Level 1: add the theme without replacing widgets
@@ -51,10 +52,10 @@ Create the existing `QApplication` as usual, then apply the theme once at applic
 ```python
 import os
 
-os.environ.setdefault("QTSHADCN_QT_BINDING", "PyQt5")
+os.environ.setdefault("SHADCN_QT_BINDING", "PyQt5")
 
 from PyQt5.QtWidgets import QApplication
-from qtshadcn import apply_theme, configure
+from shadcn_qt import apply_theme, configure
 
 app = QApplication([])
 
@@ -76,12 +77,12 @@ apply_theme(app, "light", apply_palette=False)
 
 ## Level 2: automatically style native widgets
 
-Compatibility mode applies qtshadcn's complete default component properties to existing standard Qt widgets. It also watches widgets created later, so dialogs and pages constructed on demand receive the same styling.
+Compatibility mode applies shadcn-qt's complete default component properties to existing standard Qt widgets. It also watches widgets created later, so dialogs and pages constructed on demand receive the same styling.
 
 Enable it after creating `QApplication`; enabling it before constructing windows avoids an extra repolish pass:
 
 ```python
-from qtshadcn import apply_theme, enable_native_widget_styling
+from shadcn_qt import apply_theme, enable_native_widget_styling
 
 app = QApplication([])
 enable_native_widget_styling(app)
@@ -113,7 +114,7 @@ The adapter covers the complete `QtWidgets` QWidget family. Known controls recei
 | Windows and dialogs | `QMainWindow`, `QDialog`, message/file/color/font/input/progress dialogs, Wizard and WizardPage |
 | Miscellaneous | `QFrame`, `QFocusFrame`, `QSizeGrip`, `QRubberBand`, splash/RHI/custom widgets, and any remaining `QWidget` subclass |
 
-Embedded `QLineEdit` instances owned by ComboBox and SpinBox controls are styled through their parent to avoid double borders. Existing explicit `qtshadcn_component` values and qtshadcn subclasses are preserved. Calling the enable function more than once returns the already installed adapter.
+Embedded `QLineEdit` instances owned by ComboBox and SpinBox controls are styled through their parent to avoid double borders. Existing explicit `shadcn_qt_component` values and shadcn-qt subclasses are preserved. Calling the enable function more than once returns the already installed adapter.
 
 Compatibility mode covers Qt Widgets. Qt Quick/QML scenes, web-page content, video frames, OpenGL/RHI drawing surfaces, and third-party controls that completely replace `paintEvent()` cannot be restyled internally by QSS; their surrounding QWidget chrome still receives the neutral fallback. Theme those rendering systems through their own APIs, or opt custom-painted widgets out when appropriate.
 
@@ -124,8 +125,8 @@ The widget type determines only a safe default. Set dynamic properties when appl
 ```python
 delete_button.setProperty("variant", "destructive")
 secondary_button.setProperty("variant", "outline")
-notifications_checkbox.setProperty("qtshadcn_component", "switch")
-status_label.setProperty("qtshadcn_component", "badge")
+notifications_checkbox.setProperty("shadcn_qt_component", "switch")
+status_label.setProperty("shadcn_qt_component", "badge")
 status_label.setProperty("variant", "secondary")
 ```
 
@@ -138,7 +139,7 @@ Ambiguous classes receive a neutral default: `QFrame` becomes a themed frame, `Q
 Set the preference before or after enabling compatibility mode:
 
 ```python
-custom_control.setProperty("qtshadcn_native_styling", False)
+custom_control.setProperty("shadcn_qt_native_styling", False)
 ```
 
 Setting it to `False` after adoption removes unchanged defaults immediately. Set it to `True` to adopt the widget again.
@@ -148,7 +149,7 @@ Setting it to `False` after adoption removes unchanged defaults immediately. Set
 For a scoped migration without a global event filter:
 
 ```python
-from qtshadcn import adopt_native_widgets, theme_stylesheet
+from shadcn_qt import adopt_native_widgets, theme_stylesheet
 
 adopt_native_widgets(settings_page)
 settings_page.setStyleSheet(theme_stylesheet("light"))
@@ -159,7 +160,7 @@ settings_page.setStyleSheet(theme_stylesheet("light"))
 ### Disable compatibility mode
 
 ```python
-from qtshadcn import disable_native_widget_styling
+from shadcn_qt import disable_native_widget_styling
 
 disable_native_widget_styling(app)
 ```
@@ -175,7 +176,7 @@ disable_native_widget_styling(app, clear=False)
 To limit the first trial to one page or panel, set the generated stylesheet on that widget rather than on `QApplication`:
 
 ```python
-from qtshadcn import theme_stylesheet
+from shadcn_qt import theme_stylesheet
 
 settings_page.setStyleSheet(theme_stylesheet("light"))
 ```
@@ -184,12 +185,12 @@ Widget stylesheets cascade to descendants, while the rest of the application rem
 
 ## Preserve existing QSS
 
-Pass the legacy stylesheet through `extra_qss`. It is appended after qtshadcn's generated rules, so existing object-name selectors and deliberate overrides win.
+Pass the legacy stylesheet through `extra_qss`. It is appended after shadcn-qt's generated rules, so existing object-name selectors and deliberate overrides win.
 
 ```python
 from pathlib import Path
 
-from qtshadcn import apply_theme, configure
+from shadcn_qt import apply_theme, configure
 
 legacy_qss = Path("resources/legacy.qss").read_text(encoding="utf-8")
 
@@ -212,9 +213,9 @@ settings_page.setStyleSheet(
 
 ## Level 3: migrate simple widgets gradually
 
-qtshadcn primitives subclass standard Qt widgets, so their inherited signals, slots, methods, models, and accessibility properties remain available.
+shadcn-qt primitives subclass standard Qt widgets, so their inherited signals, slots, methods, models, and accessibility properties remain available.
 
-| Existing Qt widget | qtshadcn replacement | Notes |
+| Existing Qt widget | shadcn-qt replacement | Notes |
 |---|---|---|
 | `QPushButton` | `Button` | Adds `variant` and `shadcnSize` |
 | `QLineEdit` | `Input` | Adds the `invalid` state |
@@ -244,7 +245,7 @@ save_button.clicked.connect(save_record)
 After:
 
 ```python
-from qtshadcn import Button, Input
+from shadcn_qt import Button, Input
 
 name_input = Input()
 save_button = Button("Save", variant="default")
@@ -261,7 +262,7 @@ Existing Qt Designer forms can be migrated without recreating their layouts:
 2. select a widget such as `QPushButton`;
 3. choose **Promote to…** from the context menu;
 4. enter `Button` as the promoted class name;
-5. enter `qtshadcn.widgets` as the header file;
+5. enter `shadcn_qt.widgets` as the header file;
 6. choose **Add**, then **Promote**;
 7. save the form.
 
@@ -269,25 +270,27 @@ Common promotions:
 
 | Base class | Promoted class | Header |
 |---|---|---|
-| `QPushButton` | `Button` | `qtshadcn.widgets` |
-| `QLineEdit` | `Input` | `qtshadcn.widgets` |
-| `QPlainTextEdit` | `TextArea` | `qtshadcn.widgets` |
-| `QFrame` | `Card` | `qtshadcn.widgets` |
-| `QLabel` | `Label` | `qtshadcn.widgets` |
-| `QCheckBox` | `Switch` | `qtshadcn.widgets` |
-| `QTabWidget` | `Tabs` | `qtshadcn.widgets` |
+| `QPushButton` | `Button` | `shadcn_qt.widgets` |
+| `QLineEdit` | `Input` | `shadcn_qt.widgets` |
+| `QPlainTextEdit` | `TextArea` | `shadcn_qt.widgets` |
+| `QFrame` | `Card` | `shadcn_qt.widgets` |
+| `QLabel` | `Label` | `shadcn_qt.widgets` |
+| `QCheckBox` | `Switch` | `shadcn_qt.widgets` |
+| `QTabWidget` | `Tabs` | `shadcn_qt.widgets` |
 
-After promotion, properties such as `variant`, `shadcnSize`, `invalid`, and `elevated` appear in the Property Editor. Use the `qtshadcn` Widget Box group for new compound components.
+After promotion, properties such as `variant`, `shadcnSize`, `invalid`, and
+`elevated` appear in the Property Editor. Use the `shadcn-qt` Widget Box group
+for new compound components.
 
 Load the saved form through the binding-independent loader:
 
 ```python
-from qtshadcn.designer import load_ui
+from shadcn_qt.designer import load_ui
 
 window = load_ui("mainwindow.ui")
 ```
 
-PyQt uses its native `uic.loadUi`; PySide uses `QUiLoader` with all qtshadcn classes registered automatically. If the project generates Python files with `pyuic` or `pyside-uic`, regenerate those files after changing the `.ui` file.
+PyQt uses its native `uic.loadUi`; PySide uses `QUiLoader` with all shadcn-qt classes registered automatically. If the project generates Python files with `pyuic` or `pyside-uic`, regenerate those files after changing the `.ui` file.
 
 ## Keep Designer separate from a legacy runtime
 
@@ -297,8 +300,8 @@ The recommended Python custom-widget host is `pyside6-designer`. A PyQt5 or PySi
 python3 -m venv .designer-venv
 source .designer-venv/bin/activate
 
-python -m pip install -e "/path/to/qtshadcn/packages/python[designer]"
-qtshadcn-designer path/to/mainwindow.ui
+python -m pip install "shadcn-qt[designer]"
+shadcn-qt-designer path/to/mainwindow.ui
 ```
 
 The `.ui` format is binding-independent. A form saved by the PySide6 Designer host can still be loaded by a PyQt5, PyQt6, PySide2, or PySide6 application.
@@ -310,7 +313,7 @@ Do not import PySide6 Designer modules inside the PyQt/PySide runtime process. T
 Centralize theme switching so pages do not manipulate stylesheets independently:
 
 ```python
-from qtshadcn import apply_theme, configure
+from shadcn_qt import apply_theme, configure
 
 configure(
     colors={"primary": "#7c3aed", "ring": "#8b5cf6"},
@@ -325,15 +328,15 @@ def set_theme(name: str) -> None:
 Application-specific themes can also be stored as JSON and loaded at runtime:
 
 ```python
-from qtshadcn import apply_theme, load_theme
+from shadcn_qt import apply_theme, load_theme
 
 apply_theme(app, theme=load_theme("themes/brand.json"))
 ```
 
 ## Recommended rollout
 
-1. add qtshadcn to the existing environment without a Qt extra;
-2. pin `QTSHADCN_QT_BINDING` at the application entry point;
+1. add shadcn-qt to the existing environment without a Qt extra;
+2. pin `SHADCN_QT_BINDING` at the application entry point;
 3. merge the existing QSS through `extra_qss`;
 4. enable native-widget styling globally, or adopt one low-risk page;
 5. mark special semantics such as Switch, Badge, Card, and destructive Button;
@@ -346,13 +349,13 @@ apply_theme(app, theme=load_theme("themes/brand.json"))
 ## Migration checklist
 
 - Only one PySide/PyQt binding is imported in the process.
-- `QTSHADCN_QT_BINDING` is set before importing qtshadcn widgets.
+- `SHADCN_QT_BINDING` is set before importing `shadcn_qt` widgets.
 - `QApplication` exists before calling `apply_theme()`.
 - Native compatibility mode is enabled before constructing most windows when possible.
 - Ambiguous widgets such as Switch, Badge, and Card are marked explicitly.
-- Third-party or custom-painted widgets opt out with `qtshadcn_native_styling=False` when necessary.
+- Third-party or custom-painted widgets opt out with `shadcn_qt_native_styling=False` when necessary.
 - Legacy QSS is appended through `extra_qss`, not applied afterward.
-- Promoted `.ui` classes use the header `qtshadcn.widgets`.
+- Promoted `.ui` classes use the header `shadcn_qt.widgets`.
 - Generated Python UI files are regenerated after `.ui` changes.
 - Light and dark themes are checked on at least one representative form.
 - Keyboard focus, disabled states, validation states, tables, and popup menus are smoke-tested.

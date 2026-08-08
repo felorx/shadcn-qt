@@ -8,7 +8,7 @@ import pytest
 @pytest.fixture(scope="module")
 def runtime():
     try:
-        from qtshadcn._qt import QtWidgets
+        from shadcn_qt._qt import QtWidgets
     except ImportError as exc:
         pytest.skip(str(exc))
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
@@ -16,15 +16,15 @@ def runtime():
 
 
 def test_full_catalog_constructs(runtime):
-    from qtshadcn import widgets
+    from shadcn_qt import widgets
 
     instances = [getattr(widgets, name)() for name in widgets.__all__]
     assert len(instances) >= 65
-    assert all(widget.property("qtshadcn_component") for widget in instances)
+    assert all(widget.property("shadcn_qt_component") for widget in instances)
 
 
 def test_special_catalog_mappings(runtime):
-    from qtshadcn.widgets import Chart, Direction, Typography
+    from shadcn_qt.widgets import Chart, Direction, Typography
 
     chart = Chart(chart_type="bar", values="1, 3, 2")
     assert chart.valuesList() == [1.0, 3.0, 2.0]
@@ -44,7 +44,7 @@ def test_special_catalog_mappings(runtime):
 
 def test_accordion_carousel_and_pagination(runtime):
     _, QtWidgets = runtime
-    from qtshadcn import Accordion, Carousel, Pagination
+    from shadcn_qt import Accordion, Carousel, Pagination
 
     accordion = Accordion()
     first = accordion.addItem(QtWidgets.QLabel("One"), "First")
@@ -70,7 +70,7 @@ def test_accordion_carousel_and_pagination(runtime):
 
 
 def test_form_compositions(runtime):
-    from qtshadcn import Field, Input, InputOTP, RadioGroup, ToggleGroup
+    from shadcn_qt import Field, Input, InputOTP, RadioGroup, ToggleGroup
 
     otp = InputOTP(length=4)
     otp.setText("1234")
@@ -99,7 +99,7 @@ def test_form_compositions(runtime):
 
 
 def test_data_command_and_conversation(runtime):
-    from qtshadcn import Command, DataTable, Message, MessageScroller
+    from shadcn_qt import Command, DataTable, Message, MessageScroller
 
     table = DataTable()
     table.setRows(["Name", "Role"], [["Ada", "Admin"], ["Lin", "User"]])
@@ -122,7 +122,7 @@ def test_data_command_and_conversation(runtime):
 
 def test_overlay_and_theme_styles(runtime):
     app, _ = runtime
-    from qtshadcn import AlertDialog, Sheet, Sonner, apply_theme
+    from shadcn_qt import AlertDialog, Sheet, Sonner, apply_theme
 
     dialog = AlertDialog()
     assert dialog.title == "Are you sure?"
@@ -134,6 +134,6 @@ def test_overlay_and_theme_styles(runtime):
 
     apply_theme(app, "dark")
     stylesheet = app.styleSheet()
-    assert 'qtshadcn_component="dialog"' in stylesheet
-    assert 'qtshadcn_component="skeleton"' in stylesheet
-    assert 'qtshadcn_component="data-table"' in stylesheet
+    assert 'shadcn_qt_component="dialog"' in stylesheet
+    assert 'shadcn_qt_component="skeleton"' in stylesheet
+    assert 'shadcn_qt_component="data-table"' in stylesheet

@@ -8,20 +8,29 @@ on:
 
 jobs:
   python:
+    name: python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
       - name: Regenerate artifacts
         run: python tools/token-codegen/generate.py
-      - name: Install package (no Qt binding)
-        run: pip install -e "./packages/python"
+      - name: Check synchronized licenses
+        run: python tools/check_licenses.py
+      - name: Check synchronized versions
+        run: python tools/check_versions.py
+      - name: Install package and test tools (no Qt binding)
+        run: pip install -e "./packages/python[dev]"
       - name: Unit tests
         env:
           PYTHONPATH: packages/python
-        run: python -m unittest discover -s packages/python/tests -p "test_*.py" -v
+        run: python -m pytest packages/python/tests -q
 
   docs:
     runs-on: ubuntu-latest

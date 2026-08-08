@@ -1,13 +1,13 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
-  title: "qtshadcn",
+  title: "qtshadcn-ui",
   description: "shadcn-aligned Qt widgets for PySide, PyQt, and C++",
   themeConfig: {
     nav: [
       { text: "Guide", link: "/guide/install" },
       { text: "Components", link: "/components/button" },
-      { text: "Tiers", link: "/tiers" },
+      { text: "License", link: "/guide/licensing" },
     ],
     sidebar: [
       {
@@ -17,6 +17,8 @@ export default defineConfig({
           { text: "Existing Projects", link: "/guide/migration" },
           { text: "Theming", link: "/guide/theming" },
           { text: "Qt Designer", link: "/guide/designer" },
+          { text: "Licensing", link: "/guide/licensing" },
+          { text: "Publishing", link: "/guide/releasing" },
         ],
       },
       {
@@ -26,7 +28,7 @@ export default defineConfig({
           { text: "Button", link: "/components/button" },
         ],
       },
-      { text: "Community vs Pro", link: "/tiers" },
+      { text: "License Tiers", link: "/tiers" },
     ],
   },
 });

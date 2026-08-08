@@ -1,0 +1,25 @@
+# Publishing to PyPI
+
+The PyPI name `qtshadcn` belongs to an unrelated project. This repository
+publishes as `shadcn-qt`, while Python uses `import shadcn_qt`. The more generic
+names `shadcn` and `shadcn-ui` are intentionally avoided because they could
+imply that this independent Qt implementation is an official upstream package.
+The runtime requires Python 3.9 or newer; the CI matrix covers Python 3.9,
+3.11, and 3.13.
+
+Releases use PyPI Trusted Publishing rather than a stored API token:
+
+1. configure protected GitHub environments `testpypi` and `pypi`;
+2. register the exact repository/workflow/environment as Trusted Publishers;
+3. run the manual TestPyPI workflow;
+4. update the matching versions in `packages/python/pyproject.toml` and
+   `packages/cpp/shadcn_qt/CMakeLists.txt`, then tag exactly `v<version>`;
+5. approve the protected `pypi` deployment after tests and artifact checks.
+
+The workflow validates GPL/commercial metadata and confirms that all license
+files are inside both the wheel and sdist. See the repository's
+`docs/PYPI_RELEASE.md` for one-time setup, commands, verification, and recovery.
+
+Uploads remain blocked until the generic package author and LICENSE copyright
+owner are replaced, the public source/documentation/commercial URLs are set,
+and a real public `origin` remote is configured.

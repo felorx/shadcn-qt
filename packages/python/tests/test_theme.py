@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from qtshadcn.theme import (
+from shadcn_qt.theme import (
     Theme,
     available_themes,
     create_theme,

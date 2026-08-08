@@ -8,7 +8,7 @@ import pytest
 @pytest.fixture(scope="module")
 def qt():
     try:
-        from qtshadcn._qt import QtWidgets
+        from shadcn_qt._qt import QtWidgets
     except ImportError as exc:
         pytest.skip(str(exc))
 
@@ -18,7 +18,7 @@ def qt():
 
 def test_widget_catalog_and_designer_properties(qt):
     app, QtWidgets = qt
-    from qtshadcn import (
+    from shadcn_qt import (
         Alert,
         Badge,
         Button,
@@ -63,7 +63,7 @@ def test_widget_catalog_and_designer_properties(qt):
         Tabs(),
         TextArea(),
     ]
-    assert all(widget.property("qtshadcn_component") for widget in instances)
+    assert all(widget.property("shadcn_qt_component") for widget in instances)
     applied = apply_theme(app, "dark", colors={"primary": "#7c3aed"})
     assert applied.colors["primary"] == "#7c3aed"
     assert "#7c3aed" in app.styleSheet()

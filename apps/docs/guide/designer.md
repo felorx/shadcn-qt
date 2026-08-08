@@ -1,33 +1,35 @@
 # Qt Designer
 
-qtshadcn ships a Python custom-widget registration catalog. In Designer, widgets appear in a **qtshadcn** group and can be dragged into forms, arranged with normal Qt layouts, and configured in the Property Editor.
+shadcn-qt ships a Python custom-widget registration catalog. In Designer,
+widgets appear in a **shadcn-qt** group and can be dragged into forms,
+arranged with normal Qt layouts, and configured in the Property Editor.
 
 ## Launch
 
-PySide6 provides the supported Python plugin host used by `pyside6-designer`. The qtshadcn launcher sets `PYSIDE_DESIGNER_PLUGINS`, `PYQTDESIGNERPATH`, and the binding selection before starting it.
+PySide6 provides the supported Python plugin host used by `pyside6-designer`. The shadcn-qt launcher sets `PYSIDE_DESIGNER_PLUGINS`, `PYQTDESIGNERPATH`, and the binding selection before starting it.
 
 ```bash
-pip install -e ".[designer]"
-qtshadcn-designer
+pip install "shadcn-qt[designer]"
+shadcn-qt-designer
 ```
 
 Diagnostics:
 
 ```bash
-qtshadcn-designer --print-plugin-path
-qtshadcn-designer --print-command
+shadcn-qt-designer --print-plugin-path
+shadcn-qt-designer --print-command
 ```
 
-If Designer is in a nonstandard location, set `QTSHADCN_DESIGNER` to its executable.
+If Designer is in a nonstandard location, set `SHADCN_QT_DESIGNER` to its executable.
 
 Designer previews the light theme by default. Select dark mode or a custom JSON theme before launch:
 
 ```bash
-QTSHADCN_DESIGNER_THEME=dark qtshadcn-designer
-QTSHADCN_DESIGNER_THEME=./brand.json qtshadcn-designer
+SHADCN_QT_DESIGNER_THEME=dark shadcn-qt-designer
+SHADCN_QT_DESIGNER_THEME=./brand.json shadcn-qt-designer
 ```
 
-The preview stylesheet is scoped to qtshadcn components and does not restyle Designer itself. The application still chooses its runtime theme with `configure()` / `apply_theme()`.
+The preview stylesheet is scoped to shadcn-qt components and does not restyle Designer itself. The application still chooses its runtime theme with `configure()` / `apply_theme()`.
 
 ## Editable custom properties
 
@@ -53,9 +55,9 @@ Card, Alert, Tabs, AspectRatio, Direction, Resizable, ScrollArea, and Sidebar ar
 The same `.ui` file works with PySide and PyQt:
 
 ```python
-from qtshadcn import apply_theme
-from qtshadcn._qt import QtWidgets
-from qtshadcn.designer import load_ui
+from shadcn_qt import apply_theme
+from shadcn_qt._qt import QtWidgets
+from shadcn_qt.designer import load_ui
 
 app = QtWidgets.QApplication([])
 apply_theme(app, "dark")
@@ -63,11 +65,11 @@ window = load_ui("mainwindow.ui")
 window.show()
 ```
 
-PyQt uses `uic.loadUi`; PySide uses `QUiLoader` with all qtshadcn classes registered automatically. A complete example is in `examples/python_designer`.
+PyQt uses `uic.loadUi`; PySide uses `QUiLoader` with all shadcn-qt classes registered automatically. A complete example is in `examples/python_designer`.
 
 ## Troubleshooting
 
-- Launch through `qtshadcn-designer`; a standalone Designer that is ABI-incompatible with the selected Python binding cannot load Python plugins.
+- Launch through `shadcn-qt-designer`; a standalone Designer that is ABI-incompatible with the selected Python binding cannot load Python plugins.
 - Check **Help → About Plugins** for import errors.
-- Ensure the environment used to launch Designer can import `qtshadcn`.
-- Set `QTSHADCN_QT_BINDING=PySide6` (or the intended binding) before importing any Qt module.
+- Ensure the environment used to launch Designer can import `shadcn_qt`.
+- Set `SHADCN_QT_BINDING=PySide6` (or the intended binding) before importing any Qt module.

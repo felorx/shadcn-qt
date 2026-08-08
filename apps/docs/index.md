@@ -1,7 +1,7 @@
 ---
 layout: home
 hero:
-  name: qtshadcn
+  name: shadcn-qt
   text: shadcn-aligned Qt UI
   tagline: Design tokens and widgets for PySide, PyQt (5 & 6), and C++ (Qt 5.15+ / 6).
   actions:
@@ -17,11 +17,14 @@ features:
   - title: Variants
     details: Button variants mirror shadcn — default, secondary, outline, ghost, destructive, link.
   - title: Multi-binding Python
-    details: One package; pick PySide6, PyQt6, PySide2, or PyQt5 via optional extras or QTSHADCN_QT_BINDING.
+    details: One package; pick PySide6, PyQt6, PySide2, or PyQt5 via optional extras or SHADCN_QT_BINDING.
   - title: Qt Designer workflow
-    details: Drag qtshadcn widgets onto forms, edit native properties, and load the same .ui file with PySide or PyQt.
+    details: Drag shadcn-qt widgets onto forms, edit native properties, and load the same .ui file with PySide or PyQt.
   - title: Incremental adoption
     details: Keep an existing Qt binding and .ui files, merge legacy QSS, then migrate widgets page by page.
   - title: Custom themes
     details: Override semantic colors, radius, fonts, and QSS globally or load reusable JSON themes at runtime.
 ---
+
+shadcn-qt is an independent Qt implementation inspired by shadcn/ui. It is not
+affiliated with or endorsed by the upstream project.

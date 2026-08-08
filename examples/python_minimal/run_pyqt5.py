@@ -3,10 +3,10 @@
 
 import os
 
-os.environ.setdefault("QTSHADCN_QT_BINDING", "PyQt5")
+os.environ.setdefault("SHADCN_QT_BINDING", "PyQt5")
 
-from qtshadcn import Button, Card, Input, apply_theme, app_exec
-from qtshadcn._qt import QtWidgets
+from shadcn_qt import Button, Card, Input, apply_theme, app_exec
+from shadcn_qt._qt import QtWidgets
 
 
 def main() -> None:
@@ -14,7 +14,7 @@ def main() -> None:
     apply_theme(app, "dark")
 
     w = QtWidgets.QWidget()
-    w.setWindowTitle("qtshadcn — PyQt5 (dark)")
+    w.setWindowTitle("shadcn-qt — PyQt5 (dark)")
     root = QtWidgets.QVBoxLayout(w)
 
     card = Card(w)

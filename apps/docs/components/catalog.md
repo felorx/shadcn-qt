@@ -1,6 +1,8 @@
 # Component catalog
 
-All 65 Python widgets are importable from either `qtshadcn` or `qtshadcn.widgets`. The catalog follows the current shadcn/ui component index while translating browser-only primitives into native Qt behavior.
+All 65 Python widgets are importable from either `shadcn_qt` or
+`shadcn_qt.widgets`. The catalog follows the current shadcn/ui component
+index while translating browser-only primitives into native Qt behavior.
 
 | Area | Components | Qt mapping |
 |---|---|---|

@@ -1,21 +1,24 @@
 [build-system]
-requires = ["setuptools>=61", "wheel"]
+requires = ["setuptools>=77.0.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "qtshadcn"
+name = "shadcn-qt"
 version = "0.1.0"
 description = "shadcn-aligned Qt widgets and design tokens for PySide and PyQt"
 readme = "README.md"
-requires-python = ">=3.8"
-license = { text = "MIT" }
-authors = [{ name = "qtshadcn contributors" }]
+requires-python = ">=3.9"
+license = "GPL-3.0-only OR LicenseRef-Shadcn-Qt-Commercial"
+license-files = ["LICENSE", "LICENSES/*.txt", "NOTICE.md"]
+authors = [{ name = "shadcn-qt contributors" }]
 keywords = ["qt", "pyside", "pyqt", "shadcn", "qss", "widgets"]
 classifiers = [
   "Development Status :: 3 - Alpha",
-  "License :: OSI Approved :: MIT License",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development :: User Interfaces",
 ]
 
 dependencies = []
@@ -29,26 +32,25 @@ dev = ["pytest>=7.0", "ruff>=0.9"]
 designer = ["PySide6>=6.5.0"]
 
 [project.scripts]
-qtshadcn-designer = "qtshadcn.designer.launcher:main"
+shadcn-qt-designer = "shadcn_qt.designer.launcher:main"
 
 [project.urls]
-Homepage = "https://github.com/qtshadcn/qtshadcn"
-Documentation = "https://github.com/qtshadcn/qtshadcn#readme"
+Homepage = "https://pypi.org/project/shadcn-qt/"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["qtshadcn*"]
+include = ["shadcn_qt*"]
 
 [tool.setuptools.package-data]
-qtshadcn = ["_generated/*.qss", "_generated/*.py"]
+shadcn_qt = ["_generated/*.qss", "_generated/*.py"]
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 line-length = 88
-extend-exclude = ["qtshadcn/_generated"]
+extend-exclude = ["shadcn_qt/_generated"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F"]
 
 [tool.ruff.lint.per-file-ignores]
-"qtshadcn/_qt.py" = ["F822"]
+"shadcn_qt/_qt.py" = ["F822"]

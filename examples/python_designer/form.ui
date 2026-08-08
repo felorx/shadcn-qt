@@ -5,7 +5,7 @@
   <property name="geometry">
    <rect><x>0</x><y>0</y><width>480</width><height>320</height></rect>
   </property>
-  <property name="windowTitle"><string>qtshadcn Designer form</string></property>
+  <property name="windowTitle"><string>shadcn-qt Designer form</string></property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="Card" name="settingsCard">
@@ -32,11 +32,11 @@
   </layout>
  </widget>
  <customwidgets>
-  <customwidget><class>Button</class><extends>QPushButton</extends><header>qtshadcn.widgets</header></customwidget>
-  <customwidget><class>Card</class><extends>QFrame</extends><header>qtshadcn.widgets</header><container>1</container></customwidget>
-  <customwidget><class>Input</class><extends>QLineEdit</extends><header>qtshadcn.widgets</header></customwidget>
-  <customwidget><class>Label</class><extends>QLabel</extends><header>qtshadcn.widgets</header></customwidget>
-  <customwidget><class>Switch</class><extends>QCheckBox</extends><header>qtshadcn.widgets</header></customwidget>
+  <customwidget><class>Button</class><extends>QPushButton</extends><header>shadcn_qt.widgets</header></customwidget>
+  <customwidget><class>Card</class><extends>QFrame</extends><header>shadcn_qt.widgets</header><container>1</container></customwidget>
+  <customwidget><class>Input</class><extends>QLineEdit</extends><header>shadcn_qt.widgets</header></customwidget>
+  <customwidget><class>Label</class><extends>QLabel</extends><header>shadcn_qt.widgets</header></customwidget>
+  <customwidget><class>Switch</class><extends>QCheckBox</extends><header>shadcn_qt.widgets</header></customwidget>
  </customwidgets>
  <resources/>
  <connections/>

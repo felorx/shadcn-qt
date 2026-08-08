@@ -1,0 +1,23 @@
+shadcn-qt licensing
+
+Copyright (c) 2025-2026 shadcn-qt copyright holders
+
+Except for third-party material identified in NOTICE.md, each current release of
+shadcn-qt is offered under your choice of one of these licenses:
+
+1. GNU General Public License version 3.0 only (GPL-3.0-only). The complete
+   terms are in LICENSES/GPL-3.0-only.txt.
+
+2. The shadcn-qt Commercial License. This alternative is available only to a
+   customer covered by a valid Order Form issued by the copyright holder. The
+   complete standard terms are in
+   LICENSES/LicenseRef-Shadcn-Qt-Commercial.txt. An Order Form may add or change
+   commercial terms.
+
+Merely downloading shadcn-qt from PyPI or another public source does not grant a
+commercial license. Without a valid Order Form, GPL-3.0-only is the applicable
+license for current releases.
+
+The commercial license covers shadcn-qt only. It does not license Qt, PySide,
+PyQt, or any other dependency. You must obtain and comply with those licenses
+separately.

@@ -1,4 +1,4 @@
-# qtshadcn documentation (VitePress)
+# shadcn-qt documentation (VitePress)
 
 ```bash
 npm install
@@ -17,3 +17,5 @@ Key guides:
 - [Migrate an existing project](guide/migration.md)
 - [Theming](guide/theming.md)
 - [Qt Designer](guide/designer.md)
+- [Licensing and dependencies](guide/licensing.md)
+- [Publishing to PyPI](guide/releasing.md)

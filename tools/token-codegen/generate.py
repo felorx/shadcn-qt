@@ -1,27 +1,26 @@
-#!/usr/bin/env python3
 """Generate QSS, Python theme dict, and C++ token header from packages/design-tokens/tokens.json."""
 
 from __future__ import annotations
 
-import json
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 TOKENS_PATH = ROOT / "packages" / "design-tokens" / "tokens.json"
-OUT_PY_DIR = ROOT / "packages" / "python" / "qtshadcn" / "_generated"
+OUT_PY_DIR = ROOT / "packages" / "python" / "shadcn_qt" / "_generated"
 OUT_CPP = (
-    ROOT / "packages" / "cpp" / "qtshadcn" / "include" / "qtshadcn" / "ThemeTokens.h"
+    ROOT / "packages" / "cpp" / "shadcn_qt" / "include" / "shadcn_qt" / "ThemeTokens.h"
 )
 OUT_QSS_LIGHT = OUT_PY_DIR / "base_light.qss"
 OUT_QSS_DARK = OUT_PY_DIR / "base_dark.qss"
-STYLESHEET_RENDERER = ROOT / "packages" / "python" / "qtshadcn" / "_stylesheet.py"
+STYLESHEET_RENDERER = ROOT / "packages" / "python" / "shadcn_qt" / "_stylesheet.py"
 
 
 def _load_renderer():
     spec = importlib.util.spec_from_file_location(
-        "qtshadcn_stylesheet", STYLESHEET_RENDERER
+        "shadcn_qt_stylesheet", STYLESHEET_RENDERER
     )
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Unable to load {STYLESHEET_RENDERER}")
@@ -80,7 +79,7 @@ def write_cpp_header(themes: dict, radius: dict) -> None:
         "",
         "#include <QtGlobal>",
         "",
-        "namespace qtshadcn {",
+        "namespace shadcn_qt {",
         "",
         "struct ThemeTokens {",
     ]
@@ -96,7 +95,7 @@ def write_cpp_header(themes: dict, radius: dict) -> None:
     lines.append("    };")
     lines.append("};")
     lines.append("")
-    lines.append("} // namespace qtshadcn")
+    lines.append("} // namespace shadcn_qt")
     lines.append("")
     OUT_CPP.write_text("\n".join(lines), encoding="utf-8")
 

@@ -1,7 +1,0 @@
-<!DOCTYPE RCC>
-<RCC version="1.0">
-  <qresource prefix="/qtshadcn">
-    <file alias="base_light.qss">../../python/qtshadcn/_generated/base_light.qss</file>
-    <file alias="base_dark.qss">../../python/qtshadcn/_generated/base_dark.qss</file>
-  </qresource>
-</RCC>

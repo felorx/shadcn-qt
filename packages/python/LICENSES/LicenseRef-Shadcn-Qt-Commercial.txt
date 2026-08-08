@@ -1,0 +1,177 @@
+shadcn-qt Commercial License Agreement
+Version 1.0, 8 August 2026
+
+This Commercial License Agreement ("Agreement") governs a Customer's use of
+the shadcn-qt software identified in an Order Form. It is effective only when a
+valid Order Form has been issued by the Licensor and accepted by the Customer,
+and all fees then due have been paid.
+
+1. DEFINITIONS
+
+"Application" means a software product created by or for Customer that uses
+the Software as a component and provides substantial functionality beyond the
+Software itself.
+
+"Authorized Developer" means an employee or individual contractor of Customer
+who accesses the Software's source code or uses it to design, develop, test,
+maintain, or build an Application. Automated CI and build agents are not
+Authorized Developers.
+
+"Customer" means the person or legal entity identified as customer in the
+applicable Order Form.
+
+"Licensor" means the copyright holder or authorized licensing entity identified
+as licensor in the applicable Order Form.
+
+"Order Form" means an invoice, license certificate, checkout receipt, or signed
+ordering document issued or approved by Licensor that identifies Customer, the
+Software or edition, the number of licensed seats, and any subscription,
+maintenance, evaluation, or special terms.
+
+"Software" means the shadcn-qt source code, object code, documentation, and
+updates identified in the applicable Order Form. Third-party components are
+excluded.
+
+2. COMMERCIAL LICENSE GRANT
+
+Subject to this Agreement and the Order Form, Licensor grants Customer a
+worldwide, non-exclusive, non-transferable license during the applicable term:
+
+a. to install, copy, use, and internally modify the Software;
+
+b. to use the Software to design, develop, test, maintain, and build any number
+   of Applications;
+
+c. to distribute the Software, including necessary source or object form, only
+   as a bundled, embedded, or otherwise non-standalone dependency of an
+   Application; and
+
+d. to distribute any number of copies of those Applications to end users,
+   without per-device, per-application, or runtime royalties.
+
+Customer may license its own Application code under terms of its choice. This
+commercial grant does not require Customer to disclose the source code of its
+Application or modifications to the Software.
+
+3. DEVELOPER SEATS
+
+The number of Authorized Developers must not exceed the seat count in the
+Order Form. Seats may be reassigned when a developer permanently leaves the
+team or role, but may not be shared concurrently. Contractors count as
+Authorized Developers and must use the Software only for Customer and comply
+with this Agreement. Customer is responsible for their compliance.
+
+4. PERPETUAL USE AND UPDATES
+
+Unless the Order Form states that the license itself is a subscription, after
+the paid update or maintenance period ends Customer may continue using and
+distributing Applications with Software versions obtained while the period was
+active. Access to later versions, maintenance, and support requires renewal.
+Security fixes are updates unless the Order Form states otherwise.
+
+5. EVALUATION
+
+If an Order Form identifies an evaluation, Customer may use the Software only
+for internal evaluation and testing for the stated period. Evaluation copies
+may not be used for production development or distributed. At the end of the
+period Customer must obtain a paid license or stop using and delete the
+evaluation copy.
+
+6. RESTRICTIONS
+
+Except as expressly allowed by this Agreement, Customer must not:
+
+a. sell, sublicense, publish, host, or redistribute the Software as a
+   standalone library, component collection, template, SDK, or competing
+   product;
+
+b. make the Software available to more Authorized Developers than licensed;
+
+c. remove or misrepresent copyright, license, trademark, or attribution
+   notices;
+
+d. use Licensor's names or marks to imply sponsorship or endorsement; or
+
+e. transfer this Agreement or an Order Form without Licensor's prior written
+   consent, except as part of a merger or sale of substantially all relevant
+   assets when the successor accepts this Agreement in writing.
+
+These restrictions do not limit rights independently received under the GPL
+for a GPL-licensed copy.
+
+7. OWNERSHIP AND FEEDBACK
+
+Licensor and its contributors retain all rights in the Software not expressly
+granted here. Customer retains all rights in Customer's Applications and its
+original modifications. If Customer voluntarily provides feedback, Customer
+grants Licensor a perpetual, worldwide, irrevocable, royalty-free right to use
+it without identifying Customer or disclosing Customer confidential
+information.
+
+8. THIRD-PARTY SOFTWARE
+
+The Software can interoperate with Qt, PySide, PyQt, and other third-party
+software. Those components are not licensed under this Agreement. Customer is
+solely responsible for obtaining and complying with all required third-party
+licenses. A shadcn-qt commercial license does not grant a commercial Qt or PyQt
+license and does not excuse LGPL, GPL, or other obligations.
+
+9. SUPPORT
+
+Support, service levels, updates, and maintenance are provided only as stated
+in the Order Form. Unless stated there, Licensor has no obligation to provide
+support, fixes, or updates.
+
+10. CONFIDENTIALITY
+
+Each party will protect the other party's non-public information marked or
+reasonably understood as confidential using reasonable care and will use it
+only to perform this Agreement. This obligation does not cover information
+that is public without breach, already lawfully known, independently developed,
+or lawfully received without restriction. Legally required disclosure is
+permitted after reasonable prior notice when lawful.
+
+11. WARRANTY DISCLAIMER
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE AND SERVICES ARE PROVIDED
+"AS IS" AND "AS AVAILABLE." LICENSOR DISCLAIMS ALL EXPRESS, IMPLIED, AND
+STATUTORY WARRANTIES, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, TITLE, AND NON-INFRINGEMENT. LICENSOR DOES NOT WARRANT THAT THE
+SOFTWARE WILL BE ERROR-FREE, SECURE, OR UNINTERRUPTED. MANDATORY CONSUMER
+RIGHTS, IF ANY, ARE NOT EXCLUDED.
+
+12. LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, NEITHER PARTY IS LIABLE FOR INDIRECT,
+SPECIAL, INCIDENTAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR FOR
+LOST PROFITS, REVENUE, DATA, OR BUSINESS INTERRUPTION. EACH PARTY'S TOTAL
+LIABILITY ARISING OUT OF THIS AGREEMENT WILL NOT EXCEED THE FEES CUSTOMER PAID
+FOR THE SOFTWARE DURING THE TWELVE MONTHS BEFORE THE EVENT GIVING RISE TO THE
+CLAIM. THESE LIMITS DO NOT APPLY TO CUSTOMER'S PAYMENT OBLIGATIONS, A PARTY'S
+FRAUD OR WILLFUL MISCONDUCT, OR LIABILITY THAT LAW DOES NOT ALLOW TO BE
+LIMITED.
+
+13. TERMINATION
+
+Either party may terminate an affected Order Form for a material breach not
+cured within thirty days after written notice. Licensor may terminate
+immediately for deliberate unlicensed copying or distribution. On termination,
+the commercial rights granted by the affected Order Form end and Customer must
+stop using and delete the affected Software, except that properly distributed
+Application copies may remain with end users unless the breach involved those
+copies. Sections intended by their nature to survive will survive, including
+ownership, restrictions, disclaimers, liability limits, and payment terms.
+
+14. GENERAL
+
+Customer will comply with applicable export-control and sanctions laws. The
+governing law, courts, notices, taxes, and payment terms are those in the Order
+Form. If a provision is unenforceable, it will be limited to the minimum extent
+necessary and the remainder stays effective. A waiver must be in writing. The
+Order Form, this Agreement, and documents expressly incorporated by them form
+the entire agreement for the commercial license. In a conflict, negotiated
+Order Form terms control, followed by this Agreement.
+
+This standard agreement is part of the Software distribution so prospective
+customers can review it. Possession of this text alone is not proof of a paid
+license; the Customer must retain its Order Form or license certificate.
