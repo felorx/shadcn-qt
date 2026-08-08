@@ -5,7 +5,8 @@ is `shadcn_qt`. Python 3.9 or newer is required. Install with exactly **one**
 Qt binding extra:
 
 This is an independent Qt implementation and is not affiliated with or
-endorsed by the upstream shadcn project.
+endorsed by the upstream shadcn project. It is published by
+[Felorx](https://felorx.com).
 
 ```bash
 pip install "shadcn-qt[pyside6]"

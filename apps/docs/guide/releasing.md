@@ -20,6 +20,7 @@ The workflow validates GPL/commercial metadata and confirms that all license
 files are inside both the wheel and sdist. See the repository's
 `docs/PYPI_RELEASE.md` for one-time setup, commands, verification, and recovery.
 
-Uploads remain blocked until the generic package author and LICENSE copyright
-owner are replaced, the public source/documentation/commercial URLs are set,
-and a real public `origin` remote is configured.
+Publisher metadata is configured for Felorx. Before the first upload, ensure
+`https://github.com/felorx/shadcn-qt` exists publicly, configure its protected
+environments and Trusted Publishers, and replace the temporary Felorx homepage
+commercial link when a dedicated sales page is available.

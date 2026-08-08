@@ -2,6 +2,8 @@
 
 Current shadcn-qt releases use
 `GPL-3.0-only OR LicenseRef-Shadcn-Qt-Commercial`.
+The current publisher and commercial licensing contact is
+[Felorx](https://felorx.com).
 
 ## Choose a shadcn-qt path
 

@@ -4,6 +4,7 @@ Qt / PyQt / PySide component and style primitives aligned with [shadcn/ui](https
 
 shadcn-qt is an independent Qt implementation. It is not affiliated with or
 endorsed by shadcn, Vercel, The Qt Company, or Riverbank Computing.
+The project is published by [Felorx](https://felorx.com).
 
 ## Current status
 

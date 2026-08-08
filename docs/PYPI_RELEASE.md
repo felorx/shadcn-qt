@@ -32,9 +32,11 @@ publish a second distribution name for the same release.
 
 ## One-time publisher setup
 
-1. Publish this repository to the intended GitHub organization and update
-   `[project.urls]` in `packages/python/pyproject.toml` with the real source,
-   issue, documentation, and commercial-sales URLs.
+1. Create and make public the configured repository at
+   `https://github.com/felorx/shadcn-qt`. Confirm the source, issue, and
+   documentation URLs in `packages/python/pyproject.toml` resolve after the
+   initial push. The commercial URL temporarily points to the Felorx homepage;
+   replace it with a dedicated sales page when one is available.
 2. Create protected GitHub environments named `testpypi` and `pypi`. Require a
    reviewer for `pypi`, restrict deployment branches/tags, and prevent
    self-review where the organization supports it.
@@ -49,10 +51,11 @@ publish a second distribution name for the same release.
    GitHub secrets when Trusted Publishing is available.
 
 The upload workflows intentionally run `tools/check_release_readiness.py` and
-will fail until the generic package author and LICENSE copyright owner are
-replaced, real `Source`, `Documentation`, and `Commercial` HTTPS URLs are
-present in `pyproject.toml`, and a real public `origin` remote is configured.
-This prevents an anonymous or misdirected commercial release.
+require the Felorx publisher identity, public `Source`, `Documentation`, and
+`Commercial` HTTPS URLs, and a real public `origin` remote. This prevents an
+anonymous or misdirected commercial release. The checker cannot create the
+GitHub repository or verify ownership, so confirm both before enabling Trusted
+Publishing.
 
 Official setup documentation:
 

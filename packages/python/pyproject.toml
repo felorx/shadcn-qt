@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = "GPL-3.0-only OR LicenseRef-Shadcn-Qt-Commercial"
 license-files = ["LICENSE", "LICENSES/*.txt", "NOTICE.md"]
-authors = [{ name = "shadcn-qt contributors" }]
+authors = [{ name = "Felorx" }]
 keywords = ["qt", "pyside", "pyqt", "shadcn", "qss", "widgets"]
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -35,7 +35,11 @@ designer = ["PySide6>=6.5.0"]
 shadcn-qt-designer = "shadcn_qt.designer.launcher:main"
 
 [project.urls]
-Homepage = "https://pypi.org/project/shadcn-qt/"
+Homepage = "https://felorx.com"
+Source = "https://github.com/felorx/shadcn-qt"
+Issues = "https://github.com/felorx/shadcn-qt/issues"
+Documentation = "https://github.com/felorx/shadcn-qt/tree/main/apps/docs"
+Commercial = "https://felorx.com"
 
 [tool.setuptools.packages.find]
 where = ["."]

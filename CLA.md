@@ -3,8 +3,8 @@
 Version 1.0, 8 August 2026
 
 This agreement is between the individual or entity submitting a Contribution
-("Contributor") and the shadcn-qt copyright holder or authorized licensing
-entity that accepts it ("Project").
+("Contributor") and Felorx, or the legal person/entity operating Felorx and
+authorized to license shadcn-qt, that accepts it ("Project").
 
 1. "Contribution" means any original work of authorship intentionally
    submitted by Contributor for inclusion in shadcn-qt.

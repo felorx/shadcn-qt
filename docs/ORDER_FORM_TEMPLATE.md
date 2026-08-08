@@ -9,7 +9,7 @@ and should be reviewed by counsel for the seller and target markets.
 | --- | --- |
 | Order ID | `[unique-id]` |
 | Effective date | `[YYYY-MM-DD]` |
-| Licensor legal name | `[full legal person/entity name]` |
+| Licensor legal name | `Felorx — replace with the full legal person/entity name if Felorx is a brand` |
 | Licensor address | `[registered or business address]` |
 | Licensor notice email | `[email]` |
 | Customer legal name | `[full legal entity name]` |
