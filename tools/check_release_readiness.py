@@ -15,17 +15,11 @@ PROJECT_FILE = ROOT / "packages" / "python" / "pyproject.toml"
 LICENSE_FILES = [ROOT / "LICENSE", ROOT / "packages" / "python" / "LICENSE"]
 GENERIC_AUTHORS = {
     "",
-    "qtshadcn contributors",
-    "qtshadcn copyright holders",
-    "qtshadcn-ui contributors",
-    "qtshadcn-ui copyright holders",
     "shadcn-qt contributors",
     "shadcn-qt copyright holders",
 }
 GENERIC_COPYRIGHT_MARKERS = {
     "shadcn-qt copyright holders",
-    "qtshadcn copyright holders",
-    "qtshadcn-ui copyright holders",
 }
 REQUIRED_URLS = {"Source", "Documentation", "Commercial"}
 

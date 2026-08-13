@@ -1,11 +1,9 @@
 # Publishing to PyPI
 
-The PyPI name `qtshadcn` belongs to an unrelated project. This repository
-publishes as `shadcn-qt`, while Python uses `import shadcn_qt`. The more generic
-names `shadcn` and `shadcn-ui` are intentionally avoided because they could
-imply that this independent Qt implementation is an official upstream package.
-The runtime requires Python 3.9 or newer; the CI matrix covers Python 3.9,
-3.11, and 3.13.
+This repository publishes as `shadcn-qt`, while Python uses
+`import shadcn_qt`. The distribution and import names are the only supported
+public names. The runtime requires Python 3.9 or newer; the CI matrix covers
+Python 3.9, 3.11, and 3.13.
 
 Releases use PyPI Trusted Publishing rather than a stored API token:
 

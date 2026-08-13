@@ -44,7 +44,7 @@
 - Test: three fresh, read-only agent scenarios recorded in the task transcript
 
 **Interfaces:**
-- Consumes: the repository at `/Users/j/repos/qtshadcn` without a project skill.
+- Consumes: the repository at `/path/to/shadcn-qt` without a project skill.
 - Produces: verbatim baseline answers for scenarios `P1`, `P2`, and `P3`, plus a list of repository-specific gaps.
 
 - [ ] **Step 1: Run the new-widget pressure scenario without a skill**
@@ -52,7 +52,7 @@
 Use a fresh agent with this exact prompt. The agent may inspect files but must not edit them:
 
 ```text
-You are working in /Users/j/repos/qtshadcn. Under time pressure, propose the exact repository changes needed to add a public Python `Tag` widget: a lightweight QLabel-derived status component with `default`, `secondary`, `outline`, and `destructive` variants that works in Qt Designer. Do not edit files. List every file to change and every validation command you would run.
+You are working in /path/to/shadcn-qt. Under time pressure, propose the exact repository changes needed to add a public Python `Tag` widget: a lightweight QLabel-derived status component with `default`, `secondary`, `outline`, and `destructive` variants that works in Qt Designer. Do not edit files. List every file to change and every validation command you would run.
 ```
 
 Record the answer verbatim under `P1`. Mark these omissions if they occur: the public widget catalogue, lazy root API catalogue, shared helper/property conventions, QSS renderer, Designer registry behavior, widget tests, or component documentation.
@@ -62,7 +62,7 @@ Record the answer verbatim under `P1`. Mark these omissions if they occur: the p
 Use a different fresh agent with this exact prompt:
 
 ```text
-You are working in /Users/j/repos/qtshadcn. A maintainer asks for the default `primary` token to change in both built-in themes and wants Python, QSS, and C++ distributions to remain synchronized. Do not edit files. Give the exact source file, generated outputs that must not be edited manually, commands to run, and checks to run before a pull request.
+You are working in /path/to/shadcn-qt. A maintainer asks for the default `primary` token to change in both built-in themes and wants Python, QSS, and C++ distributions to remain synchronized. Do not edit files. Give the exact source file, generated outputs that must not be edited manually, commands to run, and checks to run before a pull request.
 ```
 
 Record the answer verbatim under `P2`. Mark whether it identifies
@@ -74,7 +74,7 @@ generated artifacts, `tools/check_licenses.py`, and `tools/check_versions.py`.
 Use a third fresh agent with this exact prompt:
 
 ```text
-You are working in /Users/j/repos/qtshadcn. Add a Qt Designer-editable string property named `tone` to Button, restricted to a finite allowed set. It must refresh QSS correctly and must not recurse when Designer calls Qt's property system. Do not edit files. Identify the existing implementation pattern, the forbidden setter pattern, and the focused tests to run.
+You are working in /path/to/shadcn-qt. Add a Qt Designer-editable string property named `tone` to Button, restricted to a finite allowed set. It must refresh QSS correctly and must not recurse when Designer calls Qt's property system. Do not edit files. Identify the existing implementation pattern, the forbidden setter pattern, and the focused tests to run.
 ```
 
 Record the answer verbatim under `P3`. Mark whether it finds

@@ -1,7 +1,7 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
-  title: "qtshadcn-ui",
+  title: "shadcn-qt",
   description: "shadcn-aligned Qt widgets for PySide, PyQt, and C++",
   themeConfig: {
     nav: [

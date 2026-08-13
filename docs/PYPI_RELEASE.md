@@ -2,9 +2,8 @@
 
 ## Names
 
-The PyPI project name `qtshadcn` is already owned by an unrelated publisher.
-This repository therefore uses the distribution name `shadcn-qt` and the
-Python import package `shadcn_qt`:
+The distribution name is `shadcn-qt` and the Python import package is
+`shadcn_qt`:
 
 ```bash
 pip install "shadcn-qt[pyside6]"
@@ -17,18 +16,12 @@ import shadcn_qt
 The published runtime requires Python 3.9 or newer. CI covers Python 3.9,
 3.11, and 3.13; use Python 3.11 or newer for the release tooling itself.
 
-Names such as `shadcn` and `shadcn-ui` were deliberately not selected: they
-are broad enough to imply an official relationship with the upstream web
-project. `shadcn-qt` describes both the design influence and the target UI
-toolkit. The project metadata and documentation must continue to state that
-this is an independent Qt implementation and is not affiliated with the
-upstream shadcn project.
-
 The `shadcn-qt` JSON endpoint returned “not found” during preparation on
 2026-08-08, but PyPI can reserve or normalize names and availability is not
 guaranteed until the project is registered. Recheck immediately before launch.
-Do not upload this project to the unrelated `qtshadcn` PyPI project, and do not
-publish a second distribution name for the same release.
+Do not publish a second distribution name for the same release. The project
+metadata and documentation must continue to state that this is an independent
+Qt implementation and is not affiliated with the upstream shadcn project.
 
 ## One-time publisher setup
 
@@ -69,6 +62,7 @@ Use Python 3.11+ for release tooling:
 
 ```bash
 python tools/token-codegen/generate.py
+python tools/check_branding.py
 python tools/check_licenses.py
 python tools/check_versions.py
 python tools/check_release_readiness.py

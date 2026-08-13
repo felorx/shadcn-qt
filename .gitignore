@@ -25,4 +25,4 @@ apps/docs/.vitepress/cache/
 *.swp
 
 # Generated (optional: keep committed for pip install without codegen)
-# packages/python/qtshadcn/_generated/
+# packages/python/shadcn_qt/_generated/

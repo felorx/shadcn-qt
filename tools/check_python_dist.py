@@ -23,8 +23,6 @@ REQUIRED_LICENSE_BASENAMES = {
     "GPL-3.0-only.txt",
     "LicenseRef-Shadcn-Qt-Commercial.txt",
 }
-REMOVED_IMPORT_PACKAGES = ("qtshadcn/", "qtshadcn_ui/")
-REMOVED_DESIGNER_COMMANDS = ("qtshadcn-designer", "qtshadcn-ui-designer")
 
 
 def project_version(project_file: Path) -> str:
@@ -78,17 +76,6 @@ def validate_wheel(path: Path, version: str) -> list[str]:
             failures.append(f"wheel is missing license files: {sorted(missing)}")
         if not any(name == "shadcn_qt/__init__.py" for name in names):
             failures.append("wheel does not contain the shadcn_qt import package")
-        removed_packages = {
-            package
-            for package in REMOVED_IMPORT_PACKAGES
-            if any(name.startswith(package) for name in names)
-        }
-        if removed_packages:
-            failures.append(
-                "wheel unexpectedly contains removed import packages: "
-                f"{sorted(removed_packages)}"
-            )
-
         entry_point_names = [
             name for name in names if name.endswith(".dist-info/entry_points.txt")
         ]
@@ -101,16 +88,6 @@ def validate_wheel(path: Path, version: str) -> list[str]:
             if EXPECTED_DESIGNER_ENTRY_POINT not in entry_points:
                 failures.append(
                     "wheel does not declare the shadcn-qt-designer entry point"
-                )
-            removed_commands = {
-                command
-                for command in REMOVED_DESIGNER_COMMANDS
-                if command in entry_points
-            }
-            if removed_commands:
-                failures.append(
-                    "wheel unexpectedly declares removed Designer commands: "
-                    f"{sorted(removed_commands)}"
                 )
     return failures
 
@@ -127,16 +104,6 @@ def validate_sdist(path: Path, version: str) -> list[str]:
         missing = REQUIRED_LICENSE_BASENAMES - basenames
         if missing:
             failures.append(f"sdist is missing license files: {sorted(missing)}")
-        removed_packages = {
-            package
-            for package in REMOVED_IMPORT_PACKAGES
-            if any(f"/{package}" in name for name in names)
-        }
-        if removed_packages:
-            failures.append(
-                "sdist unexpectedly contains removed import packages: "
-                f"{sorted(removed_packages)}"
-            )
     return failures
 
 

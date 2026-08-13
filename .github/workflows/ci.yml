@@ -25,6 +25,8 @@ jobs:
         run: python tools/check_licenses.py
       - name: Check synchronized versions
         run: python tools/check_versions.py
+      - name: Check project naming
+        run: python tools/check_branding.py
       - name: Install package and test tools (no Qt binding)
         run: pip install -e "./packages/python[dev]"
       - name: Unit tests

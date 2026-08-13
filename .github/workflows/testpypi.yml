@@ -21,6 +21,8 @@ jobs:
         run: python tools/check_licenses.py
       - name: Check synchronized versions
         run: python tools/check_versions.py
+      - name: Check project naming
+        run: python tools/check_branding.py
       - name: Check publisher identity and URLs
         run: python tools/check_release_readiness.py
       - name: Build distributions
