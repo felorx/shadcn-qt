@@ -97,13 +97,13 @@ Already have a PySide or PyQt application? Follow the [existing-project migratio
 Regenerate theme artifacts after editing tokens:
 
 ```bash
-python ../../tools/token-codegen/generate.py
+python tools/token-codegen/generate.py
 ```
 
 Run the smoke example:
 
 ```bash
-python ../../examples/python_minimal/run_pyside6.py
+python examples/python_minimal/run_pyside6.py
 ```
 
 ## Quick start (C++)
