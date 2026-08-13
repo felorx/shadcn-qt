@@ -13,6 +13,7 @@
 | Core/Pro boundary | `docs/PRO.md` | `packages/python/shadcn_qt/pro.py`, `tools/check_core_boundary.py` |
 | Installation and release | `packages/python/pyproject.toml` | `README.md`, `packages/python/README.md`, `apps/docs/guide/install.md`, `docs/PYPI_RELEASE.md` |
 | Component docs | `apps/docs/components/catalog.md` | `apps/docs/guide/designer.md`, `apps/docs/guide/migration.md` |
+| Component gallery | `examples/python_gallery/run.py` | `examples/python_gallery/README.md`, `packages/python/tests/test_gallery.py` |
 
 ## Installation Guidance
 
@@ -30,6 +31,9 @@
   repository root.
 - Qt Designer: use `python -m pip install "shadcn-qt[designer]"`, which selects
   the supported PySide6 Designer host.
+- Complete catalog preview: run `python examples/python_gallery/run.py` from a
+  source checkout. The gallery covers all public components and includes
+  search, theme switching, and interactive overlay examples.
 - Verify the installed release with
   `python -c "from importlib.metadata import version; print(version('shadcn-qt'))"`.
 

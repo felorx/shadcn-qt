@@ -140,6 +140,16 @@ Run the smoke example:
 python examples/python_minimal/run_pyside6.py
 ```
 
+Browse all 65 Core components with search, interactive states, and light/dark
+theme switching:
+
+```bash
+python examples/python_gallery/run.py
+```
+
+See the [component gallery guide](examples/python_gallery/README.md) for direct
+component selection and screenshot options.
+
 ## Quick start (C++)
 
 ```bash

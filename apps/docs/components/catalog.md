@@ -15,4 +15,16 @@ index while translating browser-only primitives into native Qt behavior.
 
 These are Qt-native subclasses: existing signals, slots, models, accessibility metadata, layouts, and test tools continue to work.
 
+## Interactive gallery
+
+Preview and interact with the complete catalog from a source checkout:
+
+```bash
+python examples/python_gallery/run.py
+```
+
+The gallery includes category navigation, component search, light/dark theme
+switching, and interactive overlay, menu, tooltip, and notification examples.
+Use `--component DataTable --theme dark` to open a specific preview directly.
+
 `Chart` deliberately uses `QPainter` for a zero-dependency line/bar baseline. `Direction` applies Qt layout direction recursively through normal QWidget inheritance. Compound components expose Python composition methods such as `Accordion.addItem()`, `Dialog.addWidget()`, `Command.setItems()`, and `DataTable.setRows()`.

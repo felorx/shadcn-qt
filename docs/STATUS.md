@@ -18,6 +18,7 @@ Last verified: 2026-08-14.
 | Python automated tests | Passing | 18/18 under PySide6 6.11, PyQt6 6.11, and PyQt5 5.15: imports, themes, all 65 constructors, QtWidgets family coverage, composite behavior, Designer metadata, and real `.ui` reconstruction |
 | Designer host smoke test | Passing on macOS | `pyside6-designer` opened a custom-widget `.ui` offscreen with no registration/import errors |
 | Python package | Published | Core 0.1.0 is on PyPI; wheel and sdist passed metadata/content checks, hashes matched PyPI, and the public wheel was installed and exercised with PySide6 in an isolated environment |
+| Component gallery | Available | Searchable light/dark application provides interactive previews for all 65 public Core components; catalog parity and construction are covered by automated tests |
 | C++ foundation | Available | Button, Input, Card, CMake install package, generated QSS resources; compiled with Qt 6.9 |
 | Documentation | Passing | VitePress production build succeeds |
 

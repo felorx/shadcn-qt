@@ -79,6 +79,15 @@ Run a form created with Qt Designer:
 python ../../examples/python_designer/run.py
 ```
 
+Browse the complete 65-component interactive gallery from the repository root:
+
+```bash
+python examples/python_gallery/run.py
+```
+
+The gallery supports component search, category navigation, light/dark theme
+switching, and real interactions for overlays, menus, and notifications.
+
 ### Guidance for AI coding assistants
 
 Before installing, inspect the project imports and dependency files for
