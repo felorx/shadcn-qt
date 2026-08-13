@@ -19,6 +19,14 @@ The PyPI package is the same for GPL and commercial customers. There is no
 online activation. Commercial entitlement comes from an accepted Order Form or
 license certificate; installing from PyPI alone grants no commercial rights.
 
+## Core and Pro are separate products
+
+The public package is shadcn-qt Core. A Core commercial license permits
+proprietary use of that package. `shadcn-qt-pro` is a separately ordered private
+distribution and is not included automatically. Pro customers receive private
+package access and a signed certificate identifying their features, seats,
+covered versions, and update period. See [Core and Pro](/guide/pro).
+
 ## Qt and binding licenses are separate
 
 | Binding/framework | Upstream choices | Proprietary application note |

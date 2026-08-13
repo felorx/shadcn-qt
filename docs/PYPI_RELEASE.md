@@ -66,12 +66,17 @@ python tools/check_branding.py
 python tools/check_licenses.py
 python tools/check_versions.py
 python tools/check_release_readiness.py
+python tools/check_core_boundary.py
 python -m pytest packages/python/tests -q
 python -m pip install --upgrade build twine
 python -m build packages/python --outdir dist
 python -m twine check --strict dist/*
 python tools/check_python_dist.py dist
 ```
+
+The public wheel must contain only the `shadcn_qt.pro` compatibility bridge.
+The release fails if `shadcn_qt_pro`, a private signing key, or a customer
+license certificate appears in the Core repository or distribution.
 
 Inspect the diff, update the version in both `packages/python/pyproject.toml`
 and `packages/cpp/shadcn_qt/CMakeLists.txt`, then update release notes before

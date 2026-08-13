@@ -28,6 +28,20 @@ See [docs/STATUS.md](docs/STATUS.md) for the verified matrix and remaining parit
 | `apps/docs` | Documentation site |
 | `examples` | Minimal Python and C++ samples |
 
+## Core and Pro
+
+This public repository contains **shadcn-qt Core**. Core remains a complete,
+usable package under either GPL-3.0-only or a commercial Core Order Form.
+
+**shadcn-qt Pro** is a separately ordered, privately distributed add-on. Its
+distribution name is `shadcn-qt-pro` and its import name is `shadcn_qt_pro`.
+The public `shadcn_qt.pro` module is only a compatibility bridge and never
+contains Pro implementation code. A commercial license for Core does not grant
+Pro access; the customer's Order Form and signed license certificate identify
+the Pro features, seats, covered versions, and update period.
+
+See [Core and Pro architecture](docs/PRO.md) and [license tiers](docs/TIERS.md).
+
 ## Quick start (Python)
 
 Use a virtual environment (recommended on macOS/Homebrew Python):
@@ -121,7 +135,8 @@ Installed packages expose version `0.1.0`, so downstream projects can require
 
 See `apps/docs` (VitePress), the [migration guide](apps/docs/guide/migration.md),
 [licensing guide](docs/COMMERCIAL.md), [PyPI release runbook](docs/PYPI_RELEASE.md),
-[docs/STATUS.md](docs/STATUS.md), and [docs/TIERS.md](docs/TIERS.md).
+[Core and Pro architecture](docs/PRO.md), [docs/STATUS.md](docs/STATUS.md), and
+[docs/TIERS.md](docs/TIERS.md).
 
 ## License
 

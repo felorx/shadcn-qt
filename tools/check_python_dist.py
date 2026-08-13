@@ -23,6 +23,8 @@ REQUIRED_LICENSE_BASENAMES = {
     "GPL-3.0-only.txt",
     "LicenseRef-Shadcn-Qt-Commercial.txt",
 }
+PUBLIC_PRO_BRIDGE = "shadcn_qt/pro/__init__.py"
+PRIVATE_PACKAGE_PREFIX = "shadcn_qt_pro/"
 
 
 def project_version(project_file: Path) -> str:
@@ -76,6 +78,16 @@ def validate_wheel(path: Path, version: str) -> list[str]:
             failures.append(f"wheel is missing license files: {sorted(missing)}")
         if not any(name == "shadcn_qt/__init__.py" for name in names):
             failures.append("wheel does not contain the shadcn_qt import package")
+        if PUBLIC_PRO_BRIDGE not in names:
+            failures.append("wheel does not contain the public Pro compatibility bridge")
+        leaked_private_files = [
+            name for name in names if name.startswith(PRIVATE_PACKAGE_PREFIX)
+        ]
+        if leaked_private_files:
+            failures.append(
+                "public wheel contains private Pro implementation files: "
+                f"{leaked_private_files}"
+            )
         entry_point_names = [
             name for name in names if name.endswith(".dist-info/entry_points.txt")
         ]

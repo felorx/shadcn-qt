@@ -17,5 +17,8 @@ Downloading from PyPI does not itself grant commercial rights. A shadcn-qt
 license also does not include Qt, PySide, or PyQt rights. See
 [Licensing and dependencies](/guide/licensing) for the complete decision guide.
 
-Future `shadcn_qt.pro` add-ons, if released, are separately ordered and are not
-implied by a commercial license for the public package.
+`shadcn-qt-pro` is a separately ordered private distribution using the
+`shadcn_qt_pro` import name. The public `shadcn_qt.pro` namespace only forwards
+to it when installed. A Core commercial license does not include Pro access;
+the Order Form and signed certificate define Pro features, seats, versions, and
+the update period.

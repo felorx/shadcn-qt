@@ -34,6 +34,23 @@ Downloading or installing `shadcn-qt` from PyPI does not by itself create a
 commercial license. Without a valid Order Form, the current package is offered
 under GPL-3.0-only.
 
+## Core commercial rights and Pro access
+
+The public `shadcn-qt` package is Core. Buying commercial rights for Core
+changes the legal terms for proprietary applications; it does not unlock or
+include `shadcn-qt-pro`.
+
+Pro is a separately ordered private distribution. A Pro Order Form and signed
+license certificate identify the customer, licensed seats, enabled features,
+covered release range, update period, and any evaluation or subscription end
+date. The certificate is entitlement evidence and supports offline validation;
+it is not a substitute for the accepted Order Form and payment record.
+
+For perpetual covered versions, enforcement belongs at the download and update
+boundary: ending maintenance must not disable a version the customer already
+has a continuing right to use. Evaluation or explicitly expiring subscriptions
+may stop at the date stated in their Order Form.
+
 ## Suggested offer structure
 
 | Offer | Scope | Typical sales motion |
@@ -61,6 +78,8 @@ the Python package, where they would be difficult to change correctly.
 5. Give each customer a durable invoice/order ID and retain the exact agreement
    version that applied to the sale.
 6. Never claim that a shadcn-qt purchase includes Qt or PyQt commercial rights.
+7. Keep Pro signing private keys outside source control and retain immutable
+   license-certificate issuance and revocation records.
 
 The standard terms are in
 [`LICENSES/LicenseRef-Shadcn-Qt-Commercial.txt`](../LICENSES/LicenseRef-Shadcn-Qt-Commercial.txt).

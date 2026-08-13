@@ -64,6 +64,14 @@ Use `from shadcn_qt.designer import load_ui` to load the saved form under PySide
 
 The public package exports 65 Qt-native classes covering the current named shadcn/ui catalog. Compound widgets retain normal Qt signals, models, layouts, and Designer-editable properties.
 
+## Core and Pro
+
+This distribution is shadcn-qt Core. The separately ordered private
+`shadcn-qt-pro` distribution uses the `shadcn_qt_pro` import name. The
+`shadcn_qt.pro` namespace in Core only forwards to that package when it is
+installed; no Pro implementation or customer entitlement is included in this
+wheel. Core commercial rights and Pro access are separate Order Form items.
+
 ## License
 
 Current releases use `GPL-3.0-only OR LicenseRef-Shadcn-Qt-Commercial`.
