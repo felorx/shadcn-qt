@@ -3,6 +3,8 @@
 This interactive application covers every public shadcn-qt Core component. It
 provides category navigation, component search, light/dark theme switching, and
 real interactions for dialogs, menus, popovers, tooltips, and notifications.
+Every preview uses the classic `new-york` component profile with the Zinc
+light/dark palette.
 
 From the repository root:
 

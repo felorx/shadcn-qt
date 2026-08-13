@@ -16,6 +16,15 @@ def _orientation(name: str) -> Any:
     return legacy if legacy is not None else getattr(QtCore.Qt.Orientation, name)
 
 
+def _horizontal_expanding(widget: Any) -> None:
+    expanding = getattr(QtWidgets.QSizePolicy, "Expanding", None)
+    if expanding is None:
+        expanding = QtWidgets.QSizePolicy.Policy.Expanding
+    policy = widget.sizePolicy()
+    policy.setHorizontalPolicy(expanding)
+    widget.setSizePolicy(policy)
+
+
 class AspectRatio(QtWidgets.QFrame):
     """A container that reports a height derived from its width."""
 
@@ -115,10 +124,12 @@ class Collapsible(QtWidgets.QFrame):
         super().__init__(parent)
         initialize_component(self, "collapsible")
         self._expanded = True
+        self._title = title
         self._layout = QtWidgets.QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
-        self.trigger = Button(title, self, variant="ghost", size="sm")
+        self.trigger = Button("", self, variant="ghost", size="sm")
+        _horizontal_expanding(self.trigger)
         self.trigger.setCheckable(True)
         self.trigger.clicked.connect(self.set_expanded)
         self.content = QtWidgets.QWidget(self)
@@ -130,13 +141,20 @@ class Collapsible(QtWidgets.QFrame):
         self.set_expanded(expanded)
 
     def addWidget(self, widget: Any) -> None:
+        if isinstance(widget, Button):
+            _horizontal_expanding(widget)
         self.content_layout.addWidget(widget)
 
     def get_title(self) -> str:
-        return self.trigger.text()
+        return self._title
 
     def set_title(self, title: str) -> None:
-        self.trigger.setText(title)
+        self._title = title
+        self._sync_trigger()
+
+    def _sync_trigger(self) -> None:
+        indicator = "▴" if self._expanded else "▾"
+        self.trigger.setText(f"{self._title}  {indicator}")
 
     def is_expanded(self) -> bool:
         return self._expanded
@@ -146,6 +164,7 @@ class Collapsible(QtWidgets.QFrame):
         changed = expanded != self._expanded
         self._expanded = expanded
         self.trigger.setChecked(expanded)
+        self._sync_trigger()
         self.content.setVisible(expanded)
         refresh_style(self)
         if changed:
@@ -302,6 +321,8 @@ class Sidebar(QtWidgets.QFrame):
         self.set_collapsed(collapsed)
 
     def addWidget(self, widget: Any) -> None:
+        if isinstance(widget, Button):
+            _horizontal_expanding(widget)
         self.content_layout.addWidget(widget)
 
     def get_side(self) -> str:

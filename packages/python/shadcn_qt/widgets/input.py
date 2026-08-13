@@ -6,6 +6,7 @@ from typing import Any, Optional
 
 from shadcn_qt import _qt
 from shadcn_qt.widgets._helpers import initialize_component, refresh_style
+from shadcn_qt.widgets._style import install_shadow
 
 _, _, QtWidgets = _qt.qt_modules()
 
@@ -15,6 +16,8 @@ class Input(QtWidgets.QLineEdit):
         super().__init__(parent)
         initialize_component(self, "input")
         self._invalid = False
+        self.setFixedHeight(36)
+        install_shadow(self, "xs")
 
     def is_invalid(self) -> bool:
         return self._invalid

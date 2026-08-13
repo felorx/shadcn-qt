@@ -15,6 +15,12 @@ index while translating browser-only primitives into native Qt behavior.
 
 These are Qt-native subclasses: existing signals, slots, models, accessibility metadata, layouts, and test tools continue to work.
 
+All components inherit the classic `new-york` geometry and state contract with
+the Zinc light/dark palette. Checkbox, radio, switch, avatar, spinner, and
+other glyph-sensitive controls use Qt painting where QSS cannot express the
+official shape. Dialogs, sheets, popovers, and toasts use Qt-native shadows and
+property animations. See the [visual baseline](../guide/visual-baseline.md).
+
 ## Interactive gallery
 
 Preview and interact with the complete catalog from a source checkout:

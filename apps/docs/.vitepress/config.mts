@@ -16,6 +16,7 @@ export default defineConfig({
           { text: "Install", link: "/guide/install" },
           { text: "Existing Projects", link: "/guide/migration" },
           { text: "Theming", link: "/guide/theming" },
+          { text: "Visual Baseline", link: "/guide/visual-baseline" },
           { text: "Qt Designer", link: "/guide/designer" },
           { text: "Core and Pro", link: "/guide/pro" },
           { text: "Licensing", link: "/guide/licensing" },

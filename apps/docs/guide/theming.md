@@ -2,6 +2,13 @@
 
 shadcn-qt uses the same semantic vocabulary as shadcn/ui: `background`, `foreground`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `border`, `input`, and `ring`. Widgets consume those roles instead of hard-coded brand colors.
 
+The built-in visual profile is **classic `new-york` + Zinc**. `new-york`
+defines component geometry, spacing, shadows, focus states, and interaction
+rhythm; Zinc defines the neutral light/dark palette. This is the classic
+registry profile, not one of the newer Vega/Nova/Maia presets. The repository's
+[visual baseline](./visual-baseline.md) records the audited metrics
+and official registry references.
+
 ## Apply a built-in theme
 
 ```python

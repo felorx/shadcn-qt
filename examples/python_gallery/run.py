@@ -7,7 +7,7 @@ import argparse
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from shadcn_qt import __version__, app_exec, apply_theme
+from shadcn_qt import BASE_COLOR, STYLE_PROFILE, __version__, app_exec, apply_theme
 from shadcn_qt import widgets as ui
 from shadcn_qt._qt import QtCore, QtWidgets
 
@@ -190,7 +190,7 @@ def _label(text: str, parent: Any, *, variant: str = "muted") -> Any:
 def _card_with_text(parent: Any, title: str, description: str) -> Any:
     card = ui.Card(parent)
     layout = QtWidgets.QVBoxLayout(card)
-    layout.setContentsMargins(18, 18, 18, 18)
+    layout.setContentsMargins(24, 24, 24, 24)
     layout.setSpacing(6)
     layout.addWidget(ui.Label(title, card, variant="large"))
     layout.addWidget(_label(description, card))
@@ -382,7 +382,7 @@ def build_component_preview(name: str, parent: Any = None) -> Any:
             _card_with_text(
                 host,
                 "Project activity",
-                "A composed QFrame surface with semantic border, background, and radius.",
+                "Classic new-york surface with rounded-xl geometry and shadow.",
             )
         )
 
@@ -493,7 +493,9 @@ def build_component_preview(name: str, parent: Any = None) -> Any:
         ):
             alert = ui.Alert(host, variant=variant)
             alert_layout = QtWidgets.QVBoxLayout(alert)
-            alert_layout.addWidget(ui.Label(title, alert, variant="large"))
+            alert_layout.setContentsMargins(16, 12, 16, 12)
+            alert_layout.setSpacing(4)
+            alert_layout.addWidget(ui.Label(title, alert, variant="small"))
             alert_layout.addWidget(_label(copy, alert))
             layout.addWidget(alert)
 
@@ -518,7 +520,7 @@ def build_component_preview(name: str, parent: Any = None) -> Any:
                 host,
                 side="right",
                 title="Project settings",
-                description="A non-modal side panel.",
+                description="A modal side panel with a dimmed overlay.",
             )
             overlay.addWidget(ui.Switch("Enable notifications", overlay))
         else:
@@ -756,7 +758,6 @@ def build_component_preview(name: str, parent: Any = None) -> Any:
 
     elif name == "Spinner":
         spinner = ui.Spinner(host)
-        spinner.setMaximumWidth(360)
         layout.addWidget(spinner)
         layout.addWidget(_label("Loading component metadata…", host))
 
@@ -877,7 +878,9 @@ class GalleryWindow(QtWidgets.QMainWindow):
         self._role = _user_role()
         self._current_component = ""
         self._navigation_items: Dict[str, Any] = {}
-        self.setWindowTitle(f"shadcn-qt {__version__} · Component Gallery")
+        self.setWindowTitle(
+            f"shadcn-qt {__version__} · {STYLE_PROFILE} + {BASE_COLOR.title()}"
+        )
         self.resize(1220, 820)
         self.setMinimumSize(940, 640)
 
@@ -908,7 +911,11 @@ class GalleryWindow(QtWidgets.QMainWindow):
         self.navigation.setIndentation(14)
         sidebar_layout.addWidget(self.navigation, 1)
         sidebar_layout.addWidget(
-            ui.Label(f"Core {__version__} · 65 components", sidebar, variant="muted")
+            ui.Label(
+                f"Core {__version__} · {STYLE_PROFILE} + {BASE_COLOR.title()}",
+                sidebar,
+                variant="muted",
+            )
         )
         root.addWidget(sidebar)
 

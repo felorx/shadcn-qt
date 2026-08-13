@@ -14,6 +14,7 @@
 | Installation and release | `packages/python/pyproject.toml` | `README.md`, `packages/python/README.md`, `apps/docs/guide/install.md`, `docs/PYPI_RELEASE.md` |
 | Component docs | `apps/docs/components/catalog.md` | `apps/docs/guide/designer.md`, `apps/docs/guide/migration.md` |
 | Component gallery | `examples/python_gallery/run.py` | `examples/python_gallery/README.md`, `packages/python/tests/test_gallery.py` |
+| Visual baseline | `docs/STYLE_BASELINE.md` | `packages/python/shadcn_qt/_stylesheet.py`, `packages/python/shadcn_qt/widgets/_style.py`, `packages/python/tests/test_new_york_style.py` |
 
 ## Installation Guidance
 
@@ -49,6 +50,7 @@ public PyPI project.
 - Retain the native Qt class's signals, slots, models, focus behavior, layouts, and accessibility behavior.
 - Use `set_choice_property` for restricted values. It validates, refreshes QSS, and avoids recursive declared-property setters.
 - Add a direct Designer `Spec` only when the automatic catalogue entry needs a custom tooltip, container flag, or initial XML.
+- Preserve the classic `new-york` geometry and interaction contract with the Zinc palette. QSS-only controls use `_stylesheet.py`; glyph-sensitive controls may use the shared painting and elevation helpers in `widgets/_style.py`. Verify fixed metrics and state rendering with `test_new_york_style.py` and the complete Gallery.
 
 ## Token, Theme, and Boundary Rules
 

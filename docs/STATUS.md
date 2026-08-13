@@ -21,19 +21,20 @@ Last verified: 2026-08-14.
 | Component gallery | Available | Searchable light/dark application provides interactive previews for all 65 public Core components; catalog parity and construction are covered by automated tests |
 | C++ foundation | Available | Button, Input, Card, CMake install package, generated QSS resources; compiled with Qt 6.9 |
 | Documentation | Passing | VitePress production build succeeds |
+| Visual profile | Verified | Classic `new-york` geometry and interaction states with the Zinc light/dark palette; all 65 Gallery previews render and the core metrics are covered by automated contract tests |
 
 ## shadcn/ui alignment
 
-The public Python catalog now provides a Qt-native class for every named component in the current shadcn/ui index. Web-only implementation details are intentionally translated instead of copied: Radix DOM primitives become QWidget composition, CSS direction providers become a `Direction` container, Recharts becomes a dependency-free Qt-painted `Chart`, and typography CSS becomes a `Typography.level` property.
+The public Python catalog now provides a Qt-native class for every named component in the current shadcn/ui index. Its visual baseline is the classic `new-york` registry with the Zinc palette. Web-only implementation details are intentionally translated instead of copied: Radix DOM primitives become QWidget composition, CSS direction providers become a `Direction` container, Recharts becomes a dependency-free Qt-painted `Chart`, and typography CSS becomes a `Typography.level` property. The audited geometry and translation rules are recorded in `docs/STYLE_BASELINE.md`.
 
-This is catalog and intent alignment, not a claim that Qt widgets have byte-for-byte React/Radix behavior. The Qt classes retain native signals, models, focus handling, accessibility hooks, layouts, and Designer serialization.
+This is visual-contract and intent alignment, not a claim that different platform font rasterizers produce byte-identical browser pixels. The Qt classes retain native signals, models, focus handling, accessibility hooks, layouts, and Designer serialization while matching the new-york dimensions, semantic states, elevation hierarchy, and selection glyphs.
 
 ## Remaining hardening work
 
 - Bring the C++ widget catalog to parity with the Python catalog.
 - Add native Designer plugins for C++ consumers; the current drag/drop integration is Python-hosted and the recommended host is `pyside6-designer`.
 - Run live Widget Box visibility checks on Windows and Linux and add PySide2 coverage under an older supported Python. PySide6/PyQt6/PyQt5 are covered in the current macOS verification environment.
-- Add visual regression snapshots, deeper keyboard/focus conformance tests, accessibility checks, icon packs, and broader right-to-left interaction coverage.
+- Add platform-specific pixel baselines, deeper keyboard/focus conformance tests, accessibility checks, a broader optional icon pack, and wider right-to-left interaction coverage.
 - Extend the basic `Chart` and `DataTable` mappings with optional high-volume/virtualized adapters without making the core package depend on QtCharts or third-party plotting libraries.
 - Configure PyPI Trusted Publishing for future releases and publish signed CMake release artifacts.
 

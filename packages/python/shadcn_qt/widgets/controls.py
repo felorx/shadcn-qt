@@ -10,8 +10,67 @@ from shadcn_qt.widgets._helpers import (
     refresh_style,
     set_choice_property,
 )
+from shadcn_qt.widgets._style import (
+    clear_graphics_effect,
+    enable_antialiasing,
+    install_shadow,
+    semantic_color,
+    text_width,
+    with_alpha,
+)
 
-QtCore, _, QtWidgets = _qt.qt_modules()
+QtCore, QtGui, QtWidgets = _qt.qt_modules()
+
+
+def _alignment_flag(name: str) -> Any:
+    value = getattr(QtCore.Qt, name, None)
+    if value is not None:
+        return value
+    return getattr(QtCore.Qt.AlignmentFlag, name)
+
+
+def _qt_enum(name: str, group: str) -> Any:
+    value = getattr(QtCore.Qt, name, None)
+    if value is not None:
+        return value
+    return getattr(getattr(QtCore.Qt, group), name)
+
+
+def _choice_size_hint(widget: Any, indicator_width: int) -> Any:
+    metrics = widget.fontMetrics()
+    label_width = text_width(metrics, widget.text())
+    gap = 8 if widget.text() else 0
+    return QtCore.QSize(indicator_width + gap + label_width, max(20, metrics.height()))
+
+
+def _choice_geometry(widget: Any, indicator_size: int) -> tuple[Any, Any]:
+    y = (widget.height() - indicator_size) / 2
+    rtl = widget.layoutDirection() == getattr(
+        QtCore.Qt,
+        "RightToLeft",
+        getattr(getattr(QtCore.Qt, "LayoutDirection", object), "RightToLeft", None),
+    )
+    x = widget.width() - indicator_size if rtl else 0
+    indicator = QtCore.QRectF(x, y, indicator_size, indicator_size)
+    if rtl:
+        text_rect = QtCore.QRectF(0, 0, max(0, x - 8), widget.height())
+    else:
+        text_rect = QtCore.QRectF(
+            indicator_size + 8,
+            0,
+            max(0, widget.width() - indicator_size - 8),
+            widget.height(),
+        )
+    return indicator, text_rect
+
+
+def _draw_choice_text(widget: Any, painter: Any, rect: Any) -> None:
+    foreground = semantic_color(widget, "foreground")
+    if not widget.isEnabled():
+        foreground = with_alpha(foreground, 128)
+    painter.setPen(foreground)
+    flags = _alignment_flag("AlignVCenter") | _alignment_flag("AlignLeft")
+    painter.drawText(rect, int(flags), widget.text())
 
 
 def _text_parent(text: Any, parent: Optional[Any]) -> tuple[str, Optional[Any]]:
@@ -52,6 +111,8 @@ class TextArea(QtWidgets.QPlainTextEdit):
         super().__init__(parent)
         initialize_component(self, "textarea")
         self._invalid = False
+        self.setMinimumHeight(60)
+        install_shadow(self, "xs")
 
     def is_invalid(self) -> bool:
         return self._invalid
@@ -72,6 +133,44 @@ class Checkbox(QtWidgets.QCheckBox):
         text, parent = _text_parent(text, parent)
         super().__init__(text, parent)
         initialize_component(self, "checkbox")
+        self.setMouseTracking(True)
+
+    def sizeHint(self) -> Any:
+        return _choice_size_hint(self, 16)
+
+    def paintEvent(self, event: Any) -> None:
+        del event
+        painter = QtGui.QPainter(self)
+        enable_antialiasing(painter)
+        indicator, text_rect = _choice_geometry(self, 16)
+        primary = semantic_color(self, "primary", fallback_role="Highlight")
+        background = semantic_color(self, "background", fallback_role="Window")
+        border = primary
+        if not self.isEnabled():
+            border = with_alpha(border, 128)
+        if self.hasFocus():
+            painter.setBrush(_qt_enum("NoBrush", "BrushStyle"))
+            painter.setPen(QtGui.QPen(semantic_color(self, "ring"), 1))
+            painter.drawRoundedRect(indicator.adjusted(-2, -2, 2, 2), 5, 5)
+        painter.setPen(QtGui.QPen(border, 1))
+        painter.setBrush(with_alpha(QtGui.QColor(0, 0, 0), 24))
+        painter.drawRoundedRect(indicator.translated(0, 1), 3, 3)
+        painter.setBrush(primary if self.isChecked() else background)
+        painter.drawRoundedRect(indicator, 3, 3)
+        if self.isChecked():
+            foreground = semantic_color(
+                self, "primaryForeground", fallback_role="HighlightedText"
+            )
+            pen = QtGui.QPen(foreground, 1.8)
+            pen.setCapStyle(_qt_enum("RoundCap", "PenCapStyle"))
+            pen.setJoinStyle(_qt_enum("RoundJoin", "PenJoinStyle"))
+            painter.setPen(pen)
+            path = QtGui.QPainterPath()
+            path.moveTo(indicator.left() + 3.5, indicator.center().y())
+            path.lineTo(indicator.left() + 6.8, indicator.bottom() - 3.8)
+            path.lineTo(indicator.right() - 3.2, indicator.top() + 3.8)
+            painter.drawPath(path)
+        _draw_choice_text(self, painter, text_rect)
 
 
 class RadioButton(QtWidgets.QRadioButton):
@@ -81,6 +180,33 @@ class RadioButton(QtWidgets.QRadioButton):
         text, parent = _text_parent(text, parent)
         super().__init__(text, parent)
         initialize_component(self, "radio")
+        self.setMouseTracking(True)
+
+    def sizeHint(self) -> Any:
+        return _choice_size_hint(self, 16)
+
+    def paintEvent(self, event: Any) -> None:
+        del event
+        painter = QtGui.QPainter(self)
+        enable_antialiasing(painter)
+        indicator, text_rect = _choice_geometry(self, 16)
+        primary = semantic_color(self, "primary", fallback_role="Highlight")
+        background = semantic_color(self, "background", fallback_role="Window")
+        border = primary if self.isEnabled() else with_alpha(primary, 128)
+        if self.hasFocus():
+            painter.setBrush(_qt_enum("NoBrush", "BrushStyle"))
+            painter.setPen(QtGui.QPen(semantic_color(self, "ring"), 1))
+            painter.drawEllipse(indicator.adjusted(-2, -2, 2, 2))
+        painter.setPen(QtGui.QPen(border, 1))
+        painter.setBrush(with_alpha(QtGui.QColor(0, 0, 0), 24))
+        painter.drawEllipse(indicator.translated(0, 1))
+        painter.setBrush(background)
+        painter.drawEllipse(indicator)
+        if self.isChecked():
+            painter.setPen(_qt_enum("NoPen", "PenStyle"))
+            painter.setBrush(primary)
+            painter.drawEllipse(indicator.adjusted(4.5, 4.5, -4.5, -4.5))
+        _draw_choice_text(self, painter, text_rect)
 
 
 class Switch(QtWidgets.QCheckBox):
@@ -90,12 +216,67 @@ class Switch(QtWidgets.QCheckBox):
         text, parent = _text_parent(text, parent)
         super().__init__(text, parent)
         initialize_component(self, "switch")
+        self._thumb_position = 1.0 if self.isChecked() else 0.0
+        self._animation = QtCore.QVariantAnimation(self)
+        self._animation.setDuration(150)
+        easing = getattr(QtCore.QEasingCurve, "OutCubic", None)
+        if easing is None:
+            easing = QtCore.QEasingCurve.Type.OutCubic
+        self._animation.setEasingCurve(easing)
+        self._animation.valueChanged.connect(self._set_thumb_position)
+        self.toggled.connect(self._animate_thumb)
+        self.setMouseTracking(True)
+
+    def sizeHint(self) -> Any:
+        return _choice_size_hint(self, 36)
+
+    def _set_thumb_position(self, value: Any) -> None:
+        self._thumb_position = float(value)
+        self.update()
+
+    def _animate_thumb(self, checked: bool) -> None:
+        self._animation.stop()
+        self._animation.setStartValue(self._thumb_position)
+        self._animation.setEndValue(1.0 if checked else 0.0)
+        self._animation.start()
+
+    def paintEvent(self, event: Any) -> None:
+        del event
+        painter = QtGui.QPainter(self)
+        enable_antialiasing(painter)
+        track, text_rect = _choice_geometry(self, 36)
+        track.setHeight(20)
+        track.moveTop((self.height() - 20) / 2)
+        primary = semantic_color(self, "primary", fallback_role="Highlight")
+        input_color = semantic_color(self, "input", fallback_role="Button")
+        background = semantic_color(self, "background", fallback_role="Window")
+        if not self.isEnabled():
+            primary = with_alpha(primary, 128)
+            input_color = with_alpha(input_color, 128)
+        if self.hasFocus():
+            painter.setBrush(_qt_enum("NoBrush", "BrushStyle"))
+            painter.setPen(QtGui.QPen(semantic_color(self, "ring"), 2))
+            painter.drawRoundedRect(track.adjusted(-2, -2, 2, 2), 12, 12)
+        painter.setPen(_qt_enum("NoPen", "PenStyle"))
+        painter.setBrush(with_alpha(QtGui.QColor(0, 0, 0), 30))
+        painter.drawRoundedRect(track.translated(0, 1), 10, 10)
+        painter.setBrush(primary if self.isChecked() else input_color)
+        painter.drawRoundedRect(track, 10, 10)
+        thumb_x = track.left() + 2 + (16 * self._thumb_position)
+        thumb = QtCore.QRectF(thumb_x, track.top() + 2, 16, 16)
+        painter.setBrush(with_alpha(QtGui.QColor(0, 0, 0), 42))
+        painter.drawEllipse(thumb.translated(0, 1))
+        painter.setBrush(background)
+        painter.drawEllipse(thumb)
+        _draw_choice_text(self, painter, text_rect)
 
 
 class Select(QtWidgets.QComboBox):
     def __init__(self, parent: Optional[Any] = None) -> None:
         super().__init__(parent)
         initialize_component(self, "select")
+        self.setFixedHeight(36)
+        install_shadow(self, "xs")
 
 
 class Slider(QtWidgets.QSlider):
@@ -106,6 +287,7 @@ class Slider(QtWidgets.QSlider):
         if horizontal is None:
             horizontal = QtCore.Qt.Orientation.Horizontal
         self.setOrientation(horizontal)
+        self.setMinimumHeight(20)
 
 
 class Progress(QtWidgets.QProgressBar):
@@ -113,6 +295,7 @@ class Progress(QtWidgets.QProgressBar):
         super().__init__(parent)
         initialize_component(self, "progress")
         self.setTextVisible(False)
+        self.setFixedHeight(8)
 
 
 class Tabs(QtWidgets.QTabWidget):
@@ -142,6 +325,10 @@ class Badge(QtWidgets.QLabel):
 
     def set_variant(self, value: str) -> None:
         set_choice_property(self, "_variant", "variant", value, self.VARIANTS)
+        if value in {"default", "destructive"}:
+            install_shadow(self, "xs")
+        else:
+            clear_graphics_effect(self)
 
     getVariant = get_variant
     setVariant = set_variant

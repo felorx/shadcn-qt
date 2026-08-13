@@ -12,10 +12,13 @@ The project is published by [Felorx](https://felorx.com).
 - **Widgets:** 65 public Python widgets covering the current shadcn/ui catalog with Qt-native mappings, including dialogs, menus, forms, navigation, data display, charts, notifications, and conversation components.
 - **Qt Designer:** the Python widgets can appear in a `shadcn-qt` Widget Box group, be dragged onto forms, laid out, and configured through native Qt properties.
 - **Themes:** built-in light/dark themes, process-wide configuration, per-application overrides, JSON themes, custom QSS, radius, and font overrides.
+- **Visual baseline:** classic shadcn/ui `new-york` geometry and states with the Zinc light/dark palette, including custom-painted selection controls and Qt-native overlay transitions.
 - **Legacy adoption:** the complete native QtWidgets family receives component-specific or neutral fallback styling without changing existing classes.
 - **C++:** Button, Input, Card, generated light/dark QSS, and CMake package support.
 
 See [docs/STATUS.md](docs/STATUS.md) for the verified matrix and remaining parity work.
+The exact geometry and translation rules are documented in the
+[classic new-york + Zinc visual baseline](docs/STYLE_BASELINE.md).
 
 ## Layout
 

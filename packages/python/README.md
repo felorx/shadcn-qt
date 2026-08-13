@@ -5,6 +5,10 @@ The free Core package is published at
 `shadcn-qt`; its normalized Python import name is `shadcn_qt`. Python 3.9 or
 newer is required.
 
+Core uses the classic shadcn/ui `new-york` visual profile with the Zinc
+light/dark palette. `STYLE_PROFILE` and `BASE_COLOR` expose that identity to
+applications and tooling.
+
 For a new environment, install with exactly **one** Qt binding extra:
 
 This is an independent Qt implementation and is not affiliated with or

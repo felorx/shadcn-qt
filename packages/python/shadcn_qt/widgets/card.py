@@ -6,6 +6,7 @@ from typing import Any, Optional
 
 from shadcn_qt import _qt
 from shadcn_qt.widgets._helpers import initialize_component, refresh_style
+from shadcn_qt.widgets._style import install_shadow
 
 _, _, QtWidgets = _qt.qt_modules()
 
@@ -24,12 +25,14 @@ class Card(QtWidgets.QFrame):
         self.setFrameShape(shape)
         self.setFrameShadow(shadow)
         self._elevated = False
+        install_shadow(self, "sm")
 
     def is_elevated(self) -> bool:
         return self._elevated
 
     def set_elevated(self, elevated: bool) -> None:
         self._elevated = bool(elevated)
+        install_shadow(self, "md" if self._elevated else "sm")
         refresh_style(self)
 
     isElevated = is_elevated
