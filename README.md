@@ -27,6 +27,7 @@ See [docs/STATUS.md](docs/STATUS.md) for the verified matrix and remaining parit
 | `tools/token-codegen` | Generates QSS, Python, and C++ theme artifacts |
 | `apps/docs` | Documentation site |
 | `examples` | Minimal Python and C++ samples |
+| `skills/developing-shadcn-qt` | Vendor-neutral AI skill for repository development |
 
 ## Core and Pro
 
@@ -136,7 +137,8 @@ Installed packages expose version `0.1.0`, so downstream projects can require
 See `apps/docs` (VitePress), the [migration guide](apps/docs/guide/migration.md),
 [licensing guide](docs/COMMERCIAL.md), [PyPI release runbook](docs/PYPI_RELEASE.md),
 [Core and Pro architecture](docs/PRO.md), [docs/STATUS.md](docs/STATUS.md), and
-[docs/TIERS.md](docs/TIERS.md).
+[docs/TIERS.md](docs/TIERS.md). AI agents can use the repository development
+skill by following the [AI skill installation guide](docs/AI_SKILL_INSTALL.md).
 
 ## License
 

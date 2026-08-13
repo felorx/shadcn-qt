@@ -10,6 +10,7 @@
 | Native Qt adoption | `packages/python/shadcn_qt/native.py` | `packages/python/tests/test_native_widgets.py`, `apps/docs/guide/migration.md` |
 | Qt Designer | `packages/python/shadcn_qt/designer/` | `packages/python/shadcn_qt/designer/registry.py`, `packages/python/tests/test_designer.py`, `examples/python_designer/` |
 | Widget checks | `packages/python/tests/test_widgets.py` | `packages/python/tests/test_composite_widgets.py`, `packages/python/tests/test_import_core.py` |
+| Core/Pro boundary | `docs/PRO.md` | `packages/python/shadcn_qt/pro.py`, `tools/check_core_boundary.py` |
 | Component docs | `apps/docs/components/catalog.md` | `apps/docs/guide/designer.md`, `apps/docs/guide/migration.md` |
 
 ## Widget Rules
@@ -20,10 +21,11 @@
 - Use `set_choice_property` for restricted values. It validates, refreshes QSS, and avoids recursive declared-property setters.
 - Add a direct Designer `Spec` only when the automatic catalogue entry needs a custom tooltip, container flag, or initial XML.
 
-## Token and Theme Rules
+## Token, Theme, and Boundary Rules
 
 ```bash
 python tools/token-codegen/generate.py
+python tools/check_core_boundary.py
 python tools/check_licenses.py
 python tools/check_versions.py
 ```
@@ -36,19 +38,22 @@ Use `configure` for process-wide defaults, `apply_theme` to set a theme on a
 existing native widgets. Native adoption is intentionally reversible with
 `disable_native_widget_styling`.
 
+Core is the public package in this repository. Pro is a separately licensed,
+privately distributed package. Never add Pro implementation, private package
+paths, signing keys, customer certificates, or entitlement data here.
+
 ## Bindings and Tests
 
 - Support PySide6, PyQt6, PySide2, and PyQt5 through one public API.
-- A process may load only one binding. Use `SHADCN_QT_BINDING` or
-  `detect_binding()` when binding selection matters.
+- A process may load only one binding. Use `SHADCN_QT_BINDING` or `detect_binding()` when binding selection matters.
 - Keep Qt tests headless:
 
 ```bash
 QT_QPA_PLATFORM=offscreen PYTHONPATH=packages/python python -m pytest packages/python/tests -q
 ```
 
-- CI regenerates artifacts, checks synchronized licenses and versions, then
-  runs the Python test suite. Documentation validation is:
+- CI regenerates artifacts, checks the Core/Pro boundary, synchronized licenses,
+  and versions, then runs the Python test suite. Documentation validation is:
 
 ```bash
 (cd apps/docs && npm ci && npm run build)
@@ -57,8 +62,7 @@ QT_QPA_PLATFORM=offscreen PYTHONPATH=packages/python python -m pytest packages/p
 ## Contribution Constraints
 
 - The project is GPL-3.0-only or commercially licensed.
-- Do not submit copied third-party source unless its provenance and license
-  have been reviewed and recorded.
+- Do not submit copied third-party source unless its provenance and license have been reviewed and recorded.
 - Non-trivial external pull requests require this exact statement:
 
 ```text

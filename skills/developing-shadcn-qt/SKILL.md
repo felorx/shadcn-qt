@@ -1,13 +1,16 @@
 ---
 name: developing-shadcn-qt
-description: Use when adding or changing shadcn-qt Python widgets, Qt Designer integration, semantic tokens, QSS themes, project tests, or component documentation in this repository.
+description: Use when adding or changing shadcn-qt Python widgets, Qt Designer integration, semantic tokens, QSS themes, Core/Pro boundaries, project tests, or component documentation in this repository.
 ---
 
 # Developing shadcn-qt
 
 ## Scope
 
-Use this skill for core Python widget, token, QSS, Designer, test, and component-documentation work. Python is the default implementation surface; change C++ only when the task explicitly requires C++ parity.
+Use this skill for core Python widget, token, QSS, Designer, test, Core/Pro
+boundary, and component-documentation work. Python is the default
+implementation surface; change C++ only when the task explicitly requires C++
+parity.
 
 ## Start with the Change Type
 
@@ -17,10 +20,11 @@ Inspect the closest existing implementation before editing.
 - **Public widget:** update `shadcn_qt.widgets` exports and the root lazy `_WIDGET_NAMES` set. Add QSS selectors in `_stylesheet.py` when the component needs distinct styling. Any `_stylesheet.py` change requires running `python tools/token-codegen/generate.py`; never hand-edit the generated outputs. The Designer registry derives ordinary entries from `widgets.__all__`; add a `Spec` only for custom tooltip, container, or default XML behavior.
 - **Token:** edit only `packages/design-tokens/tokens.json`, then run `python tools/token-codegen/generate.py`. Never hand-edit `_generated/`, generated QSS, or `ThemeTokens.h`.
 - **Theme or native compatibility:** preserve the boundaries between `configure`, `apply_theme`, and `enable_native_widget_styling`; retain opt-in and reversible native-widget adoption.
+- **Core/Pro boundary:** keep Pro implementation, private package paths, signing keys, and customer license material out of this public repository. The public `shadcn_qt.pro` module is a compatibility bridge only. Run `python tools/check_core_boundary.py` after boundary-related changes.
 
 ## Validate
 
-Run focused tests first, then the relevant commands in [reference.md](reference.md). Use one Qt binding per process and keep tests headless with `QT_QPA_PLATFORM=offscreen` when a binding is installed.
+Run focused tests first, then the relevant commands in the [repository reference](references/repository.md). Use one Qt binding per process and keep tests headless with `QT_QPA_PLATFORM=offscreen` when a binding is installed.
 
 ## Contribution Boundaries
 

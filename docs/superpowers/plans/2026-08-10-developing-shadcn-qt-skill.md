@@ -1,5 +1,11 @@
 # Developing shadcn-qt Skill Implementation Plan
 
+> Historical implementation plan: the completed skill was later moved from
+> `.cursor/skills/developing-shadcn-qt` to the vendor-neutral canonical path
+> `skills/developing-shadcn-qt`. See `docs/AI_SKILL_INSTALL.md` for current
+> host-specific installation instructions. Paths below describe the original
+> implementation.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add an automatically discoverable, project-scoped Cursor Agent Skill that guides correct core-development work in shadcn-qt.

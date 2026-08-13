@@ -24,5 +24,9 @@ apps/docs/.vitepress/cache/
 .vscode/
 *.swp
 
+# Local AI host adapters (canonical source lives under skills/)
+.agents/skills/developing-shadcn-qt
+.cursor/skills/developing-shadcn-qt
+
 # Generated (optional: keep committed for pip install without codegen)
 # packages/python/shadcn_qt/_generated/
