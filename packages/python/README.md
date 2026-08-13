@@ -1,19 +1,36 @@
 # shadcn-qt (Python)
 
-The PyPI distribution name is `shadcn-qt`; its normalized Python import name
-is `shadcn_qt`. Python 3.9 or newer is required. Install with exactly **one**
-Qt binding extra:
+The free Core package is published at
+[PyPI](https://pypi.org/project/shadcn-qt/). The distribution name is
+`shadcn-qt`; its normalized Python import name is `shadcn_qt`. Python 3.9 or
+newer is required.
+
+For a new environment, install with exactly **one** Qt binding extra:
 
 This is an independent Qt implementation and is not affiliated with or
 endorsed by the upstream shadcn project. It is published by
 [Felorx](https://felorx.com).
 
 ```bash
-pip install "shadcn-qt[pyside6]"
+python -m pip install "shadcn-qt[pyside6]"
 # or: pyqt6 | pyside2 | pyqt5
 ```
 
-For source development, use `pip install -e ".[pyside6]"` in this directory.
+If an existing project already has PySide or PyQt, preserve it and install Core
+without a binding extra:
+
+```bash
+python -m pip install shadcn-qt
+```
+
+Verify the installed version with:
+
+```bash
+python -c "from importlib.metadata import version; print(version('shadcn-qt'))"
+```
+
+For source development, use
+`python -m pip install -e ".[pyside6,dev]"` in this directory.
 
 Regenerate styles after editing `packages/design-tokens/tokens.json`:
 
@@ -74,8 +91,8 @@ wheel. Core commercial rights and Pro access are separate Order Form items.
 
 ## License
 
-Current releases use `GPL-3.0-only OR LicenseRef-Shadcn-Qt-Commercial`.
-GPL-compatible projects may use the GPL option. Proprietary projects need a
-valid shadcn-qt commercial Order Form. The commercial license does not include
+Core is publicly downloadable at no cost under GPL-3.0-only. Proprietary
+projects need a valid shadcn-qt commercial Order Form instead. Installing from
+PyPI does not grant commercial rights. The commercial license does not include
 the separate Qt, PySide, or PyQt licenses. See the `LICENSE`, `LICENSES`, and
 `NOTICE.md` files included in every wheel and source distribution.

@@ -43,7 +43,12 @@ the Pro features, seats, covered versions, and update period.
 
 See [Core and Pro architecture](docs/PRO.md) and [license tiers](docs/TIERS.md).
 
-## Quick start (Python)
+## Install the free Core package (Python)
+
+shadcn-qt Core 0.1.0 is available from
+[PyPI](https://pypi.org/project/shadcn-qt/). It is publicly downloadable at no
+cost for GPL-3.0-compatible use; proprietary applications require a commercial
+Core license. Pro is a separate private package.
 
 Use a virtual environment (recommended on macOS/Homebrew Python):
 
@@ -52,18 +57,32 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-Install the `shadcn-qt` distribution with one Qt binding extra. Python uses
-the normalized import identifier `shadcn_qt`. Python 3.9 or newer is required:
+For a new application, install the `shadcn-qt` distribution with exactly one
+Qt binding extra. Python uses the normalized import identifier `shadcn_qt`.
+Python 3.9 or newer is required:
 
 ```bash
-pip install "shadcn-qt[pyside6]"
+python -m pip install "shadcn-qt[pyside6]"
 # or: pyqt6 | pyside2 | pyqt5
+```
+
+If an existing project already uses PySide or PyQt, keep that binding and avoid
+changing it:
+
+```bash
+python -m pip install shadcn-qt
+```
+
+Confirm the installed release:
+
+```bash
+python -c "from importlib.metadata import version; print(version('shadcn-qt'))"
 ```
 
 For an editable source checkout:
 
 ```bash
-pip install -e "./packages/python[pyside6]"
+python -m pip install -e "./packages/python[pyside6,dev]"
 ```
 
 Create and theme widgets:

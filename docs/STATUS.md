@@ -1,6 +1,6 @@
 # Project status
 
-Last verified: 2026-08-08.
+Last verified: 2026-08-14.
 
 ## Implemented and tested
 
@@ -17,7 +17,7 @@ Last verified: 2026-08-08.
 | Token generation | Available | One renderer generates packaged Python and embedded C++ QSS |
 | Python automated tests | Passing | 18/18 under PySide6 6.11, PyQt6 6.11, and PyQt5 5.15: imports, themes, all 65 constructors, QtWidgets family coverage, composite behavior, Designer metadata, and real `.ui` reconstruction |
 | Designer host smoke test | Passing on macOS | `pyside6-designer` opened a custom-widget `.ui` offscreen with no registration/import errors |
-| Python wheel | Passing | Built wheel, inspected packaged plugin/QSS contents, and loaded a Designer form from a clean target install |
+| Python package | Published | Core 0.1.0 is on PyPI; wheel and sdist passed metadata/content checks, hashes matched PyPI, and the public wheel was installed and exercised with PySide6 in an isolated environment |
 | C++ foundation | Available | Button, Input, Card, CMake install package, generated QSS resources; compiled with Qt 6.9 |
 | Documentation | Passing | VitePress production build succeeds |
 
@@ -34,6 +34,6 @@ This is catalog and intent alignment, not a claim that Qt widgets have byte-for-
 - Run live Widget Box visibility checks on Windows and Linux and add PySide2 coverage under an older supported Python. PySide6/PyQt6/PyQt5 are covered in the current macOS verification environment.
 - Add visual regression snapshots, deeper keyboard/focus conformance tests, accessibility checks, icon packs, and broader right-to-left interaction coverage.
 - Extend the basic `Chart` and `DataTable` mappings with optional high-volume/virtualized adapters without making the core package depend on QtCharts or third-party plotting libraries.
-- Add CI matrices and publish signed PyPI/CMake release artifacts.
+- Configure PyPI Trusted Publishing for future releases and publish signed CMake release artifacts.
 
 These are tracked as further milestones rather than being hidden behind a claim of identical web and desktop behavior.

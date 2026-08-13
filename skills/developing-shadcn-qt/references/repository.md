@@ -11,7 +11,32 @@
 | Qt Designer | `packages/python/shadcn_qt/designer/` | `packages/python/shadcn_qt/designer/registry.py`, `packages/python/tests/test_designer.py`, `examples/python_designer/` |
 | Widget checks | `packages/python/tests/test_widgets.py` | `packages/python/tests/test_composite_widgets.py`, `packages/python/tests/test_import_core.py` |
 | Core/Pro boundary | `docs/PRO.md` | `packages/python/shadcn_qt/pro.py`, `tools/check_core_boundary.py` |
+| Installation and release | `packages/python/pyproject.toml` | `README.md`, `packages/python/README.md`, `apps/docs/guide/install.md`, `docs/PYPI_RELEASE.md` |
 | Component docs | `apps/docs/components/catalog.md` | `apps/docs/guide/designer.md`, `apps/docs/guide/migration.md` |
+
+## Installation Guidance
+
+`shadcn-qt` 0.1.0 is published on
+[PyPI](https://pypi.org/project/shadcn-qt/). The distribution name is
+`shadcn-qt`; the import name is `shadcn_qt`.
+
+- New environment: create a virtual environment and install exactly one extra,
+  such as `python -m pip install "shadcn-qt[pyside6]"`. Valid binding extras
+  are `pyside6`, `pyqt6`, `pyside2`, and `pyqt5`.
+- Existing PySide or PyQt project: preserve the installed binding and use
+  `python -m pip install shadcn-qt` without a binding extra.
+- Repository development: use
+  `python -m pip install -e "./packages/python[pyside6,dev]"` from the
+  repository root.
+- Qt Designer: use `python -m pip install "shadcn-qt[designer]"`, which selects
+  the supported PySide6 Designer host.
+- Verify the installed release with
+  `python -c "from importlib.metadata import version; print(version('shadcn-qt'))"`.
+
+Core is publicly downloadable at no cost under GPL-3.0-only. Proprietary use
+requires a commercial Core Order Form. PyPI installation does not grant
+commercial rights, and the separately licensed Pro distribution is not on the
+public PyPI project.
 
 ## Widget Rules
 

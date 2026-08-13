@@ -12,6 +12,8 @@ hero:
       text: Migrate a project
       link: /guide/migration
 features:
+  - title: Free Core on PyPI
+    details: Install the complete public Core catalog with one PySide or PyQt extra; GPL-compatible use is available at no cost.
   - title: Token-driven QSS
     details: Edit packages/design-tokens/tokens.json and regenerate QSS for Python and C++.
   - title: Variants

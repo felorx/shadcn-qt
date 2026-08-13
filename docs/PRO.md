@@ -6,6 +6,12 @@ This public repository and the `shadcn-qt` distribution contain Core. Core is a
 usable product under GPL-3.0-only or a commercial Core Order Form. It must not
 depend on Pro at import time or degrade when Pro is absent.
 
+Install public Core from PyPI with exactly one Qt binding extra, for example:
+
+```bash
+python -m pip install "shadcn-qt[pyside6]"
+```
+
 Pro is maintained in a private repository and distributed as `shadcn-qt-pro`
 with the import name `shadcn_qt_pro`. The public `shadcn_qt.pro` package is a
 small compatibility bridge that imports and forwards the private package only

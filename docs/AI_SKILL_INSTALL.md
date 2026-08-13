@@ -1,5 +1,10 @@
 # Install the shadcn-qt AI Skill
 
+This guide installs the repository-development skill for an AI host. It does
+not install the shadcn-qt Python runtime. For the public Core package, use
+`python -m pip install "shadcn-qt[pyside6]"` or follow the
+[developer installation guide](../apps/docs/guide/install.md).
+
 The canonical, vendor-neutral skill source is:
 
 ```text
