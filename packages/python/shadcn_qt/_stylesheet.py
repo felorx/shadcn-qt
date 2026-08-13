@@ -444,6 +444,141 @@ QMdiArea[shadcn_qt_component="mdi-area"] {{ background: {c["muted"]}; border: 1p
 QMdiSubWindow[shadcn_qt_component="mdi-subwindow"] {{ background: {c["card"]}; border: 1px solid {c["border"]}; }}
 QDialog[shadcn_qt_component="native-dialog"], QMainWindow[shadcn_qt_component="main-window"],
 QWizardPage[shadcn_qt_component="wizard-page"], QWidget[shadcn_qt_component="widget"] {{ background: {c["background"]}; color: {c["foreground"]}; }}
+
+/* Opt-in native QtWidgets compatibility layer. These selectors are more
+   specific than the component defaults without changing custom subclasses. */
+QWidget[shadcn_qt_native_adopted="true"] {{ color: {c["foreground"]}; }}
+QWidget[shadcn_qt_native_adopted="true"]:disabled {{ color: {disabled_foreground}; }}
+QLabel[shadcn_qt_native_adopted="true"] {{ background: transparent; font-weight: 400; }}
+
+QPushButton[shadcn_qt_native_adopted="true"] {{ min-height: 20px; }}
+QPushButton[shadcn_qt_native_adopted="true"][nativeKind="command-link"] {{
+  background: {c["background"]}; color: {c["foreground"]}; border: 1px solid {c["border"]};
+  border-radius: {r_lg}; padding: 12px 16px; text-align: left; min-height: 42px;
+}}
+QPushButton[shadcn_qt_native_adopted="true"][nativeKind="command-link"]:hover {{
+  background: {c["accent"]}; border-color: {c["ring"]};
+}}
+QDialogButtonBox[shadcn_qt_component="dialog-button-box"] {{
+  background: transparent; border: none; spacing: 8px;
+}}
+
+QCheckBox[shadcn_qt_native_adopted="true"],
+QRadioButton[shadcn_qt_native_adopted="true"] {{
+  background: transparent; spacing: 8px; min-height: 20px;
+}}
+QCheckBox[shadcn_qt_native_adopted="true"]::indicator,
+QRadioButton[shadcn_qt_native_adopted="true"]::indicator {{ width: 16px; height: 16px; }}
+
+QComboBox[shadcn_qt_native_adopted="true"]::drop-down,
+QAbstractSpinBox[shadcn_qt_native_adopted="true"]::up-button,
+QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-button {{
+  subcontrol-origin: border; width: 28px; border: none; background: transparent;
+}}
+QComboBox[shadcn_qt_native_adopted="true"]::down-arrow,
+QAbstractSpinBox[shadcn_qt_native_adopted="true"]::up-arrow,
+QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-arrow {{ image: none; width: 0; height: 0; }}
+QLabel[nativeGlyph="true"] {{
+  background: transparent; color: {c["mutedForeground"]}; border: none;
+  font-size: 13px; font-weight: 500; padding: 0;
+}}
+QComboBox[shadcn_qt_native_adopted="true"]::drop-down:hover,
+QAbstractSpinBox[shadcn_qt_native_adopted="true"]::up-button:hover,
+QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-button:hover {{ background: {c["accent"]}; }}
+QAbstractSpinBox[shadcn_qt_native_adopted="true"]::up-button {{
+  subcontrol-position: top right; border-top-right-radius: {r_md};
+}}
+QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-button {{
+  subcontrol-position: bottom right; border-bottom-right-radius: {r_md};
+}}
+
+QProgressBar[shadcn_qt_native_adopted="true"] {{
+  min-height: 8px; max-height: 18px; color: {c["primaryForeground"]}; font-size: 11px;
+}}
+QSlider[shadcn_qt_native_adopted="true"] {{ min-height: 20px; min-width: 20px; }}
+QDial[shadcn_qt_native_adopted="true"] {{ min-width: 64px; min-height: 64px; }}
+
+QTabWidget[shadcn_qt_native_adopted="true"]::pane {{
+  background: {c["card"]}; border: 1px solid {c["border"]}; border-radius: {r_lg}; top: 6px;
+}}
+QToolBox[shadcn_qt_component="toolbox"] {{
+  background: {c["background"]}; border: 1px solid {c["border"]}; border-radius: {r_lg};
+}}
+QToolBox[shadcn_qt_component="toolbox"]::tab {{
+  background: transparent; color: {c["mutedForeground"]}; border: none;
+  border-bottom: 1px solid {c["border"]}; padding: 8px 12px; font-weight: 500;
+}}
+QToolBox[shadcn_qt_component="toolbox"]::tab:hover {{ background: {c["accent"]}; color: {c["accentForeground"]}; }}
+QToolBox[shadcn_qt_component="toolbox"]::tab:selected {{ color: {c["foreground"]}; }}
+QStackedWidget[shadcn_qt_component="stacked-widget"] {{
+  background: {c["card"]}; border: 1px solid {c["border"]}; border-radius: {r_lg};
+}}
+
+QFrame[shadcn_qt_component="frame"][nativeKind="plain"] {{ background: transparent; border: none; }}
+QFrame[shadcn_qt_component="frame"][nativeKind="panel"] {{
+  background: {c["card"]}; border: 1px solid {c["border"]}; border-radius: {r_lg};
+}}
+QFrame[shadcn_qt_component="native-separator"] {{ background: {c["border"]}; border: none; }}
+QFrame[shadcn_qt_component="native-separator"][nativeKind="hline"] {{ min-height: 1px; max-height: 1px; }}
+QFrame[shadcn_qt_component="native-separator"][nativeKind="vline"] {{ min-width: 1px; max-width: 1px; }}
+QGroupBox[shadcn_qt_component="group-box"] {{
+  background: {c["card"]}; color: {c["foreground"]}; border: 1px solid {c["border"]};
+  border-radius: {r_lg}; margin-top: 10px; padding: 14px 12px 12px 12px; font-weight: 500;
+}}
+QGroupBox[shadcn_qt_component="group-box"]::title {{
+  subcontrol-origin: margin; subcontrol-position: top left; left: 10px; padding: 0 4px;
+  background: {c["card"]}; color: {c["foreground"]};
+}}
+QSplitter[shadcn_qt_native_adopted="true"]::handle:hover {{ background: {c["ring"]}; }}
+
+QAbstractScrollArea[shadcn_qt_native_adopted="true"] {{
+  background: {c["background"]}; color: {c["foreground"]}; border: 1px solid {c["border"]};
+  border-radius: {r_md}; outline: 0;
+}}
+QAbstractScrollArea[shadcn_qt_native_adopted="true"] QWidget#qt_scrollarea_viewport {{ background: {c["background"]}; }}
+QAbstractItemView[shadcn_qt_component="item-view"] {{
+  background: {c["background"]}; alternate-background-color: {c["muted"]};
+  selection-background-color: {c["accent"]}; selection-color: {c["accentForeground"]};
+}}
+QTableView[shadcn_qt_native_adopted="true"], QTableWidget[shadcn_qt_native_adopted="true"] {{
+  border: 1px solid {c["border"]}; border-radius: {r_md};
+}}
+QTableCornerButton::section {{ background: {c["muted"]}; border: none; border-bottom: 1px solid {c["border"]}; }}
+QHeaderView[shadcn_qt_component="header-view"] {{ background: {c["background"]}; border: none; }}
+QHeaderView::section:hover {{ background: {c["accent"]}; color: {c["accentForeground"]}; }}
+QGraphicsView[shadcn_qt_component="graphics-view"] {{
+  background: {c["muted"]}; border: 1px solid {c["border"]}; border-radius: {r_md};
+}}
+
+QMenu[shadcn_qt_native_adopted="true"]::indicator {{ width: 14px; height: 14px; }}
+QMenu[shadcn_qt_native_adopted="true"]::right-arrow {{ width: 8px; height: 8px; }}
+QToolBar[shadcn_qt_component="toolbar"]::handle {{ background: {c["border"]}; width: 2px; margin: 5px; }}
+QToolBar[shadcn_qt_component="toolbar"]::separator {{ background: {c["border"]}; width: 1px; height: 1px; margin: 6px; }}
+QDockWidget[shadcn_qt_component="dock-widget"]::close-button,
+QDockWidget[shadcn_qt_component="dock-widget"]::float-button {{
+  background: transparent; border: none; border-radius: {r_sm}; padding: 2px;
+}}
+QDockWidget[shadcn_qt_component="dock-widget"]::close-button:hover,
+QDockWidget[shadcn_qt_component="dock-widget"]::float-button:hover {{ background: {c["accent"]}; }}
+
+QDialog[shadcn_qt_component="native-dialog"] {{
+  background: {c["background"]}; color: {c["foreground"]};
+}}
+QDialog[shadcn_qt_component="native-dialog"] QLabel {{ background: transparent; }}
+QDialog[shadcn_qt_component="native-dialog"] QFrame {{ border-color: {c["border"]}; }}
+QDialog[shadcn_qt_component="native-dialog"][nativeKind="message-box"] QLabel {{ font-weight: 400; }}
+QDialog[shadcn_qt_component="native-dialog"][nativeKind="progress-dialog"] QProgressBar {{ min-height: 8px; }}
+QDialog[shadcn_qt_component="native-dialog"][nativeKind="file-dialog"] QTreeView,
+QDialog[shadcn_qt_component="native-dialog"][nativeKind="file-dialog"] QListView {{
+  background: {c["background"]}; border: 1px solid {c["border"]}; border-radius: {r_md};
+}}
+QWizard[shadcn_qt_component="native-dialog"] {{ background: {c["background"]}; }}
+QWizardPage[shadcn_qt_component="wizard-page"] {{ background: {c["background"]}; color: {c["foreground"]}; }}
+QMainWindow[shadcn_qt_component="main-window"] {{ background: {c["background"]}; color: {c["foreground"]}; }}
+QMdiArea[shadcn_qt_component="mdi-area"] {{ background: {c["muted"]}; border: 1px solid {c["border"]}; border-radius: {r_md}; }}
+QMdiSubWindow[shadcn_qt_component="mdi-subwindow"] {{ background: {c["card"]}; border: 1px solid {c["border"]}; border-radius: {r_md}; }}
+QSizeGrip[shadcn_qt_component="size-grip"] {{ background: transparent; width: 14px; height: 14px; }}
+QRubberBand[shadcn_qt_component="rubber-band"] {{ background: {_rgba(c["ring"], 40)}; border: 1px solid {c["ring"]}; }}
 """
 
 

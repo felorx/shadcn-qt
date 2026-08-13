@@ -15,6 +15,7 @@ export default defineConfig({
         items: [
           { text: "Install", link: "/guide/install" },
           { text: "Existing Projects", link: "/guide/migration" },
+          { text: "Native QtWidgets", link: "/guide/native-widgets" },
           { text: "Theming", link: "/guide/theming" },
           { text: "Visual Baseline", link: "/guide/visual-baseline" },
           { text: "Qt Designer", link: "/guide/designer" },

@@ -44,8 +44,26 @@ new-york geometry.
   animations.
 - Lucide/Radix state glyphs that Qt cannot express in QSS are painted by the
   component itself.
+- Opted-in stock QtWidgets receive the same tokens through component and
+  `nativeKind` properties. Checkbox/radio glyphs, editor arrows, elevation,
+  and calendar cells use reversible adapter enhancements when QSS alone is
+  insufficient.
 - Rendering can vary slightly with platform font rasterization and display
   scaling, but control geometry, semantic states, and visual hierarchy are
   tested as library contracts.
+
+## Native QtWidgets regression contract
+
+The Gallery contains four pages composed exclusively from stock QtWidgets:
+forms, data views, containers, and window chrome. Each page has committed light
+and dark screenshot baselines. The regression suite downsamples the images and
+checks both mean color delta and the proportion of materially changed pixels,
+which catches palette/layout regressions while tolerating small font-rendering
+differences.
+
+System-native dialogs and platform window decorations remain operating-system
+surfaces unless the application requests Qt's non-native implementation. MDI
+title chrome can therefore vary while its content and surrounding tokens stay
+themed.
 
 shadcn-qt is independent and is not affiliated with shadcn or Vercel.

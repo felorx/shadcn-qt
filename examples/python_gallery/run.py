@@ -7,10 +7,16 @@ import argparse
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from shadcn_qt import BASE_COLOR, STYLE_PROFILE, __version__, app_exec, apply_theme
+from shadcn_qt import (
+    BASE_COLOR,
+    STYLE_PROFILE,
+    __version__,
+    app_exec,
+    apply_theme,
+    enable_native_widget_styling,
+)
 from shadcn_qt import widgets as ui
-from shadcn_qt._qt import QtCore, QtWidgets
-
+from shadcn_qt._qt import QtCore, QtGui, QtWidgets
 
 COMPONENT_CATEGORIES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     (
@@ -104,6 +110,18 @@ COMPONENT_CATEGORIES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     ),
 )
 
+NATIVE_WIDGET_CATEGORIES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
+    (
+        "Native QtWidgets",
+        (
+            "Native Forms",
+            "Native Data Views",
+            "Native Containers",
+            "Native Window Chrome",
+        ),
+    ),
+)
+
 CATEGORY_DESCRIPTIONS: Dict[str, str] = {
     "Actions and forms": "Inputs, selections, validation states, and actions.",
     "Layout and disclosure": "Qt-native containers and progressive disclosure.",
@@ -111,6 +129,9 @@ CATEGORY_DESCRIPTIONS: Dict[str, str] = {
     "Navigation and menus": "Navigation structures, commands, menus, and paging.",
     "Data and content": "Structured data, status, visualization, and typography.",
     "Conversation": "Attachments, message bubbles, markers, and chat scrolling.",
+    "Native QtWidgets": (
+        "Unmodified QtWidgets adopted by the reversible new-york + Zinc adapter."
+    ),
 }
 
 GALLERY_QSS = """
@@ -118,6 +139,7 @@ QTreeWidget#galleryNavigation { outline: none; }
 QTreeWidget#galleryNavigation::item { min-height: 26px; padding: 3px 6px; }
 QWidget#galleryPreviewHost { min-height: 420px; }
 QFrame#galleryPreviewCard { min-width: 560px; }
+QLabel[nativePreviewHeading="true"] { font-size: 14px; font-weight: 600; }
 """
 
 
@@ -133,6 +155,28 @@ def component_category(name: str) -> str:
     for category, components in COMPONENT_CATEGORIES:
         if name in components:
             return category
+    raise KeyError(name)
+
+
+def native_preview_names() -> Tuple[str, ...]:
+    return tuple(
+        name
+        for _category, previews in NATIVE_WIDGET_CATEGORIES
+        for name in previews
+    )
+
+
+def gallery_names() -> Tuple[str, ...]:
+    return component_names() + native_preview_names()
+
+
+def gallery_category(name: str) -> str:
+    try:
+        return component_category(name)
+    except KeyError:
+        for category, previews in NATIVE_WIDGET_CATEGORIES:
+            if name in previews:
+                return category
     raise KeyError(name)
 
 
@@ -870,11 +914,373 @@ def build_component_preview(name: str, parent: Any = None) -> Any:
     return host
 
 
+def _native_group(title: str, parent: Any) -> Tuple[Any, Any]:
+    group = QtWidgets.QGroupBox(title, parent)
+    layout = QtWidgets.QVBoxLayout(group)
+    layout.setContentsMargins(14, 18, 14, 14)
+    layout.setSpacing(10)
+    return group, layout
+
+
+def _native_heading(text: str, parent: Any) -> Any:
+    label = QtWidgets.QLabel(text, parent)
+    label.setProperty("nativePreviewHeading", True)
+    return label
+
+
+def _native_horizontal() -> Any:
+    value = getattr(QtCore.Qt, "Horizontal", None)
+    return value if value is not None else QtCore.Qt.Orientation.Horizontal
+
+
+def _native_widget_flag() -> Any:
+    value = getattr(QtCore.Qt, "Widget", None)
+    return value if value is not None else QtCore.Qt.WindowType.Widget
+
+
+def _native_standard_buttons(*names: str) -> Any:
+    scope = getattr(QtWidgets.QDialogButtonBox, "StandardButton", None)
+    result = None
+    for name in names:
+        value = getattr(QtWidgets.QDialogButtonBox, name, None)
+        if value is None:
+            value = getattr(scope, name)
+        result = value if result is None else result | value
+    return result
+
+
+def build_native_preview(name: str, parent: Any = None) -> Any:
+    """Build a preview composed exclusively from stock QtWidgets classes."""
+
+    if name not in native_preview_names():
+        raise KeyError(f"Unknown native gallery preview: {name}")
+    host, layout = _preview_host(parent)
+
+    if name == "Native Forms":
+        columns = QtWidgets.QWidget(host)
+        columns_layout = QtWidgets.QHBoxLayout(columns)
+        columns_layout.setContentsMargins(0, 0, 0, 0)
+        columns_layout.setSpacing(14)
+
+        editors, editors_layout = _native_group("Editors and selectors", columns)
+        line_edit = QtWidgets.QLineEdit(editors)
+        line_edit.setPlaceholderText("name@example.com")
+        invalid = QtWidgets.QLineEdit("Invalid value", editors)
+        invalid.setProperty("invalid", True)
+        combo = QtWidgets.QComboBox(editors)
+        combo.addItems(["PySide6", "PyQt6", "PySide2", "PyQt5"])
+        editable_combo = QtWidgets.QComboBox(editors)
+        editable_combo.setEditable(True)
+        editable_combo.addItems(["New York", "Shanghai", "London"])
+        spin_row = QtWidgets.QWidget(editors)
+        spin_layout = QtWidgets.QHBoxLayout(spin_row)
+        spin_layout.setContentsMargins(0, 0, 0, 0)
+        spin = QtWidgets.QSpinBox(spin_row)
+        spin.setRange(0, 100)
+        spin.setValue(24)
+        double_spin = QtWidgets.QDoubleSpinBox(spin_row)
+        double_spin.setValue(12.5)
+        spin_layout.addWidget(spin)
+        spin_layout.addWidget(double_spin)
+        date_row = QtWidgets.QWidget(editors)
+        date_layout = QtWidgets.QHBoxLayout(date_row)
+        date_layout.setContentsMargins(0, 0, 0, 0)
+        date_layout.addWidget(QtWidgets.QDateEdit(QtCore.QDate(2026, 8, 14), date_row))
+        date_layout.addWidget(QtWidgets.QTimeEdit(QtCore.QTime(9, 30), date_row))
+        shortcut = QtWidgets.QKeySequenceEdit(editors)
+        shortcut.setKeySequence(QtGui.QKeySequence("Ctrl+K"))
+        for label, widget in (
+            ("QLineEdit", line_edit),
+            ("Invalid state", invalid),
+            ("QComboBox", combo),
+            ("Editable combo", editable_combo),
+            ("Spin boxes", spin_row),
+            ("Date and time", date_row),
+            ("Shortcut", shortcut),
+        ):
+            editors_layout.addWidget(_native_heading(label, editors))
+            editors_layout.addWidget(widget)
+        columns_layout.addWidget(editors, 1)
+
+        actions, actions_layout = _native_group("Actions and choices", columns)
+        button_row = QtWidgets.QWidget(actions)
+        button_layout = QtWidgets.QHBoxLayout(button_row)
+        button_layout.setContentsMargins(0, 0, 0, 0)
+        for text, variant in (
+            ("Primary", "default"),
+            ("Secondary", "secondary"),
+            ("Outline", "outline"),
+        ):
+            button = QtWidgets.QPushButton(text, button_row)
+            button.setProperty("variant", variant)
+            button_layout.addWidget(button)
+        button_layout.addStretch(1)
+        command = QtWidgets.QCommandLinkButton(
+            "Open workspace", "Continue with an existing project", actions
+        )
+        choices = QtWidgets.QWidget(actions)
+        choices_layout = QtWidgets.QHBoxLayout(choices)
+        choices_layout.setContentsMargins(0, 0, 0, 0)
+        check = QtWidgets.QCheckBox("Notifications", choices)
+        check.setChecked(True)
+        partial = QtWidgets.QCheckBox("Inherited", choices)
+        partial.setTristate(True)
+        partial_state = getattr(QtCore.Qt, "PartiallyChecked", None)
+        if partial_state is None:
+            partial_state = QtCore.Qt.CheckState.PartiallyChecked
+        partial.setCheckState(partial_state)
+        radio = QtWidgets.QRadioButton("Team plan", choices)
+        radio.setChecked(True)
+        for control in (check, partial, radio):
+            choices_layout.addWidget(control)
+        choices_layout.addStretch(1)
+        slider = QtWidgets.QSlider(_native_horizontal(), actions)
+        slider.setValue(64)
+        progress = QtWidgets.QProgressBar(actions)
+        progress.setValue(64)
+        dialog_buttons = QtWidgets.QDialogButtonBox(
+            _native_standard_buttons("Cancel", "Save"), actions
+        )
+        actions_layout.addWidget(button_row)
+        actions_layout.addWidget(command)
+        actions_layout.addWidget(choices)
+        actions_layout.addWidget(_native_heading("Slider and progress", actions))
+        actions_layout.addWidget(slider)
+        actions_layout.addWidget(progress)
+        actions_layout.addStretch(1)
+        actions_layout.addWidget(dialog_buttons)
+        columns_layout.addWidget(actions, 1)
+        layout.addWidget(columns)
+
+        text_group, text_layout = _native_group("Text editors", host)
+        text_row = QtWidgets.QWidget(text_group)
+        text_row_layout = QtWidgets.QHBoxLayout(text_row)
+        text_row_layout.setContentsMargins(0, 0, 0, 0)
+        plain = QtWidgets.QPlainTextEdit(text_group)
+        plain.setPlainText("QPlainTextEdit keeps its native document API.")
+        rich = QtWidgets.QTextEdit(text_group)
+        rich.setHtml("<b>QTextEdit</b><br>Rich text remains available.")
+        for editor in (plain, rich):
+            editor.setMaximumHeight(84)
+            text_row_layout.addWidget(editor)
+        text_layout.addWidget(text_row)
+        layout.addWidget(text_group)
+
+    elif name == "Native Data Views":
+        top = QtWidgets.QWidget(host)
+        top_layout = QtWidgets.QHBoxLayout(top)
+        top_layout.setContentsMargins(0, 0, 0, 0)
+        top_layout.setSpacing(14)
+
+        list_group, list_layout = _native_group("Lists and trees", top)
+        list_widget = QtWidgets.QListWidget(list_group)
+        list_widget.addItems(["Overview", "Activity", "Settings", "Billing"])
+        list_widget.setCurrentRow(1)
+        tree = QtWidgets.QTreeWidget(list_group)
+        tree.setHeaderLabels(["Workspace", "Status"])
+        project = QtWidgets.QTreeWidgetItem(["shadcn-qt", "Active"])
+        project.addChild(QtWidgets.QTreeWidgetItem(["Python", "Ready"]))
+        project.addChild(QtWidgets.QTreeWidgetItem(["C++", "Planned"]))
+        tree.addTopLevelItem(project)
+        project.setExpanded(True)
+        list_layout.addWidget(list_widget)
+        list_layout.addWidget(tree)
+        top_layout.addWidget(list_group, 1)
+
+        table_group, table_layout = _native_group("Tables and columns", top)
+        table = QtWidgets.QTableWidget(3, 3, table_group)
+        table.setHorizontalHeaderLabels(["Component", "Binding", "State"])
+        for row, values in enumerate(
+            (
+                ("Button", "PySide6", "Ready"),
+                ("Calendar", "PyQt6", "Ready"),
+                ("Dialog", "Qt 5/6", "Ready"),
+            )
+        ):
+            for column, value in enumerate(values):
+                table.setItem(row, column, QtWidgets.QTableWidgetItem(value))
+        table.horizontalHeader().setStretchLastSection(True)
+        model = QtGui.QStandardItemModel(table_group)
+        root = QtGui.QStandardItem("Workspace")
+        source = QtGui.QStandardItem("packages")
+        source.appendRow(QtGui.QStandardItem("python"))
+        source.appendRow(QtGui.QStandardItem("cpp"))
+        root.appendRow(source)
+        model.appendRow(root)
+        columns = QtWidgets.QColumnView(table_group)
+        columns.setModel(model)
+        columns.setCurrentIndex(root.index())
+        columns.setMaximumHeight(120)
+        table_layout.addWidget(table)
+        table_layout.addWidget(columns)
+        top_layout.addWidget(table_group, 1)
+        layout.addWidget(top)
+
+        bottom = QtWidgets.QWidget(host)
+        bottom_layout = QtWidgets.QHBoxLayout(bottom)
+        bottom_layout.setContentsMargins(0, 0, 0, 0)
+        bottom_layout.setSpacing(14)
+        calendar_group, calendar_layout = _native_group("Calendar", bottom)
+        calendar = QtWidgets.QCalendarWidget(calendar_group)
+        calendar.setSelectedDate(QtCore.QDate(2026, 8, 14))
+        calendar.setMaximumHeight(260)
+        calendar_layout.addWidget(calendar)
+        bottom_layout.addWidget(calendar_group, 1)
+        browser_group, browser_layout = _native_group("Document and scrolling", bottom)
+        browser = QtWidgets.QTextBrowser(browser_group)
+        browser.setHtml(
+            "<h3>Native document</h3><p>Links, selection, scrolling, and the "
+            "QTextDocument model remain unchanged.</p><ul><li>new-york geometry</li>"
+            "<li>Zinc semantic colors</li><li>reversible adoption</li></ul>"
+        )
+        browser_layout.addWidget(browser)
+        bottom_layout.addWidget(browser_group, 1)
+        layout.addWidget(bottom)
+
+    elif name == "Native Containers":
+        top = QtWidgets.QWidget(host)
+        top_layout = QtWidgets.QHBoxLayout(top)
+        top_layout.setContentsMargins(0, 0, 0, 0)
+        top_layout.setSpacing(14)
+        tabs = QtWidgets.QTabWidget(top)
+        for title in ("Account", "Security", "Billing"):
+            page = QtWidgets.QWidget(tabs)
+            page_layout = QtWidgets.QVBoxLayout(page)
+            page_layout.addWidget(QtWidgets.QLabel(f"{title} settings", page))
+            page_layout.addWidget(QtWidgets.QLineEdit(page))
+            page_layout.addStretch(1)
+            tabs.addTab(page, title)
+        top_layout.addWidget(tabs, 1)
+        toolbox = QtWidgets.QToolBox(top)
+        for title, body in (
+            ("Profile", "Public account details"),
+            ("Notifications", "Email and push settings"),
+            ("Advanced", "Developer options"),
+        ):
+            page = QtWidgets.QWidget(toolbox)
+            page_layout = QtWidgets.QVBoxLayout(page)
+            page_layout.addWidget(QtWidgets.QLabel(body, page))
+            page_layout.addStretch(1)
+            toolbox.addItem(page, title)
+        top_layout.addWidget(toolbox, 1)
+        layout.addWidget(top)
+
+        splitter = QtWidgets.QSplitter(_native_horizontal(), host)
+        group = QtWidgets.QGroupBox("Native group box", splitter)
+        group_layout = QtWidgets.QVBoxLayout(group)
+        group_layout.addWidget(QtWidgets.QCheckBox("Preserve signals", group))
+        group_layout.addWidget(QtWidgets.QRadioButton("Use Qt models", group))
+        scroll = QtWidgets.QScrollArea(splitter)
+        scroll.setWidgetResizable(True)
+        scroll_content = QtWidgets.QWidget(scroll)
+        scroll_layout = QtWidgets.QVBoxLayout(scroll_content)
+        for index in range(1, 8):
+            scroll_layout.addWidget(
+                QtWidgets.QLabel(f"Scrollable native row {index}", scroll_content)
+            )
+        scroll_layout.addStretch(1)
+        scroll.setWidget(scroll_content)
+        splitter.addWidget(group)
+        splitter.addWidget(scroll)
+        splitter.setSizes([300, 420])
+        splitter.setMinimumHeight(190)
+        layout.addWidget(splitter)
+
+        advanced = QtWidgets.QWidget(host)
+        advanced_layout = QtWidgets.QHBoxLayout(advanced)
+        advanced_layout.setContentsMargins(0, 0, 0, 0)
+        advanced_layout.setSpacing(14)
+        mdi = QtWidgets.QMdiArea(advanced)
+        mdi.setMinimumHeight(150)
+        first = QtWidgets.QMdiSubWindow(mdi)
+        first.setWindowTitle("Native MDI")
+        first.setWidget(QtWidgets.QLabel("Subwindow content", first))
+        mdi.addSubWindow(first)
+        first.show()
+        graphics = QtWidgets.QGraphicsView(advanced)
+        scene = QtWidgets.QGraphicsScene(graphics)
+        path = QtGui.QPainterPath()
+        path.addRoundedRect(20, 20, 160, 72, 6, 6)
+        scene.addPath(path)
+        scene.addText("QGraphicsView")
+        graphics.setScene(scene)
+        advanced_layout.addWidget(mdi, 1)
+        advanced_layout.addWidget(graphics, 1)
+        layout.addWidget(advanced)
+
+    elif name == "Native Window Chrome":
+        shell = QtWidgets.QMainWindow(host)
+        shell.setWindowFlags(_native_widget_flag())
+        shell.setMinimumHeight(290)
+        shell.menuBar().addMenu("File").addAction("New project")
+        shell.menuBar().addMenu("Edit").addAction("Preferences")
+        toolbar = QtWidgets.QToolBar("Workspace", shell)
+        toolbar.addAction("New")
+        toolbar.addAction("Open")
+        toolbar.addSeparator()
+        toolbar.addAction("Save")
+        shell.addToolBar(toolbar)
+        center = QtWidgets.QWidget(shell)
+        center_layout = QtWidgets.QVBoxLayout(center)
+        center_layout.addWidget(QtWidgets.QLabel("QMainWindow central content", center))
+        center_layout.addWidget(QtWidgets.QLineEdit("Native window surface", center))
+        center_layout.addStretch(1)
+        shell.setCentralWidget(center)
+        dock = QtWidgets.QDockWidget("Inspector", shell)
+        dock.setWidget(QtWidgets.QListWidget(dock))
+        dock.widget().addItems(["Geometry", "Appearance", "Accessibility"])
+        right_area = getattr(QtCore.Qt, "RightDockWidgetArea", None)
+        if right_area is None:
+            right_area = QtCore.Qt.DockWidgetArea.RightDockWidgetArea
+        shell.addDockWidget(right_area, dock)
+        shell.statusBar().showMessage("Ready · native signals and window chrome")
+        layout.addWidget(shell)
+
+        specimens = QtWidgets.QWidget(host)
+        specimens_layout = QtWidgets.QHBoxLayout(specimens)
+        specimens_layout.setContentsMargins(0, 0, 0, 0)
+        specimens_layout.setSpacing(14)
+        dialog = QtWidgets.QDialog(specimens)
+        dialog.setWindowFlags(_native_widget_flag())
+        dialog_layout = QtWidgets.QVBoxLayout(dialog)
+        dialog_layout.addWidget(_native_heading("Embedded QDialog", dialog))
+        dialog_layout.addWidget(
+            QtWidgets.QLabel("The same adapter styles real top-level dialogs.", dialog)
+        )
+        dialog_layout.addStretch(1)
+        dialog_layout.addWidget(
+            QtWidgets.QDialogButtonBox(
+                _native_standard_buttons("Cancel", "Ok"), dialog
+            )
+        )
+        specimens_layout.addWidget(dialog, 1)
+        wizard = QtWidgets.QWizard(specimens)
+        wizard.setWindowFlags(_native_widget_flag())
+        wizard.setWindowTitle("QWizard")
+        page = QtWidgets.QWizardPage(wizard)
+        page.setTitle("Create a workspace")
+        page.setSubTitle("Wizard pages retain their standard navigation API.")
+        page_layout = QtWidgets.QVBoxLayout(page)
+        page_layout.addWidget(QtWidgets.QLineEdit(page))
+        wizard.addPage(page)
+        specimens_layout.addWidget(wizard, 1)
+        layout.addWidget(specimens)
+
+    layout.addStretch(1)
+    host.setProperty("gallery_component", name)
+    host.setProperty("gallery_native_preview", True)
+    return host
+
+
 class GalleryWindow(QtWidgets.QMainWindow):
     """Searchable interactive window for the complete public component catalog."""
 
     def __init__(self, *, theme: str = "light", component: str = "Button") -> None:
         super().__init__()
+        app = QtWidgets.QApplication.instance()
+        if app is None:
+            raise RuntimeError("Create QApplication before GalleryWindow")
+        enable_native_widget_styling(app)
         self._role = _user_role()
         self._current_component = ""
         self._navigation_items: Dict[str, Any] = {}
@@ -903,7 +1309,7 @@ class GalleryWindow(QtWidgets.QMainWindow):
             ui.Label("Component Gallery", sidebar, variant="muted")
         )
         self.search = ui.Input(sidebar)
-        self.search.setPlaceholderText("Search 65 components…")
+        self.search.setPlaceholderText("Search 65 components + native previews…")
         sidebar_layout.addWidget(self.search)
         self.navigation = QtWidgets.QTreeWidget(sidebar)
         self.navigation.setObjectName("galleryNavigation")
@@ -963,14 +1369,14 @@ class GalleryWindow(QtWidgets.QMainWindow):
             lambda selected: self.set_theme(selected.lower())
         )
         self.set_theme(theme)
-        self.select_component(component if component in component_names() else "Button")
+        self.select_component(component if component in gallery_names() else "Button")
 
     @property
     def current_component(self) -> str:
         return self._current_component
 
     def _populate_navigation(self) -> None:
-        for category, components in COMPONENT_CATEGORIES:
+        for category, components in COMPONENT_CATEGORIES + NATIVE_WIDGET_CATEGORIES:
             category_item = QtWidgets.QTreeWidgetItem([category])
             self.navigation.addTopLevelItem(category_item)
             for name in components:
@@ -996,21 +1402,30 @@ class GalleryWindow(QtWidgets.QMainWindow):
             self.show_component(name)
 
     def show_component(self, name: str) -> Any:
-        category = component_category(name)
+        category = gallery_category(name)
         _clear_layout(self.preview_layout)
         card = ui.Card(self.preview_canvas)
         card.setObjectName("galleryPreviewCard")
         card_layout = QtWidgets.QVBoxLayout(card)
         card_layout.setContentsMargins(24, 24, 24, 24)
         card_layout.setSpacing(12)
-        preview = build_component_preview(name, card)
+        preview = (
+            build_native_preview(name, card)
+            if name in native_preview_names()
+            else build_component_preview(name, card)
+        )
         card_layout.addWidget(preview)
         self.preview_layout.addWidget(card)
         self.preview_layout.addStretch(1)
         self.component_title.setText(name)
         self.component_summary.setText(CATEGORY_DESCRIPTIONS[category])
         self.category_badge.setText(category)
-        self.status.setText(f"Showing {name} · interactive Qt-native preview")
+        suffix = (
+            "stock QtWidgets · automatic reversible styling"
+            if name in native_preview_names()
+            else "interactive Qt-native preview"
+        )
+        self.status.setText(f"Showing {name} · {suffix}")
         self._current_component = name
         return preview
 
@@ -1067,7 +1482,7 @@ class GalleryWindow(QtWidgets.QMainWindow):
 def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--theme", choices=("light", "dark"), default="light")
-    parser.add_argument("--component", choices=component_names(), default="Button")
+    parser.add_argument("--component", choices=gallery_names(), default="Button")
     parser.add_argument(
         "--screenshot", type=Path, help="Save the shown gallery window and exit"
     )

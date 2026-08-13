@@ -102,6 +102,13 @@ apply_theme(app, "light")
 
 The adapter covers the complete `QtWidgets` QWidget family. Known controls receive component-specific styling; containers and uncommon/third-party QWidget subclasses receive a neutral themed fallback so they do not retain an unrelated platform appearance.
 
+The adapter also supplies reversible behavior for details QSS cannot render
+faithfully: checkbox/radio glyphs use antialiased Qt painting, calendar day
+cells use a compact delegate, ComboBox and SpinBox arrows use theme-aware
+overlay glyphs, and common input/action surfaces receive subtle new-york
+elevation. Disabling compatibility mode removes these enhancements together
+with unchanged adapter properties.
+
 | Native family | Automatic styling |
 |---|---|
 | Buttons | `QPushButton`, `QCommandLinkButton`, `QToolButton`, `QCheckBox`, `QRadioButton`, dialog buttons |
@@ -117,6 +124,12 @@ The adapter covers the complete `QtWidgets` QWidget family. Known controls recei
 Embedded `QLineEdit` instances owned by ComboBox and SpinBox controls are styled through their parent to avoid double borders. Existing explicit `shadcn_qt_component` values and shadcn-qt subclasses are preserved. Calling the enable function more than once returns the already installed adapter.
 
 Compatibility mode covers Qt Widgets. Qt Quick/QML scenes, web-page content, video frames, OpenGL/RHI drawing surfaces, and third-party controls that completely replace `paintEvent()` cannot be restyled internally by QSS; their surrounding QWidget chrome still receives the neutral fallback. Theme those rendering systems through their own APIs, or opt custom-painted widgets out when appropriate.
+
+Operating-system-native file, color, and font dialogs may intentionally ignore
+Qt widget styling. Request Qt's non-native dialog implementation when a fully
+themed dialog surface is required. MDI title bars and other platform-owned
+window decorations may also vary by platform while their content and frame
+tokens remain themed.
 
 ### Override semantics without changing classes
 

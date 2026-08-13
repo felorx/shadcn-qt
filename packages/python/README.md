@@ -72,6 +72,12 @@ apply_theme(app, "light")
 
 Use `adopt_native_widgets(page)` for one subtree, and `disable_native_widget_styling(app)` to remove unchanged adapter defaults. Set `shadcn_qt_native_styling=False` on custom-painted or third-party widgets that should be left alone.
 
+Known QtWidgets receive dedicated `new-york` + Zinc rules. QSS-inexpressible
+checkbox/radio glyphs, editor arrows, calendar cells, and elevation use
+reversible adapter enhancements. The repository Gallery includes four pages
+built exclusively from stock QtWidgets plus eight light/dark screenshot
+baselines.
+
 ## Qt Designer
 
 Install the recommended plugin host, then launch Designer with the registration path already configured:

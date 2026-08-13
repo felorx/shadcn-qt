@@ -111,6 +111,12 @@ enable_native_widget_styling(app)
 apply_theme(app, "dark")
 ```
 
+The opt-in adapter covers the standard QtWidgets families, including forms,
+item views, containers, dialogs, menus, toolbars, docks, and widgets created
+later. QSS-inexpressible checkbox/radio glyphs and calendar cells receive
+reversible Qt painting enhancements. Open the Gallery's **Native QtWidgets**
+section to inspect four pages built only from stock Qt classes.
+
 ## Qt Designer
 
 For the most predictable Designer plugin host, install the Designer extra and launch Designer through the shadcn-qt launcher:

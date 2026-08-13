@@ -52,3 +52,24 @@ def test_gallery_search_and_theme_controls(gallery_runtime):
     assert app.property("shadcn_qt_gallery_theme") == "dark"
     assert window.theme_select.currentText() == "Dark"
     window.close()
+
+
+def test_gallery_exposes_stock_qtwidgets_previews(gallery_runtime):
+    app, gallery = gallery_runtime
+    window = gallery.GalleryWindow(component="Native Forms")
+
+    assert gallery.native_preview_names() == (
+        "Native Forms",
+        "Native Data Views",
+        "Native Containers",
+        "Native Window Chrome",
+    )
+    for name in gallery.native_preview_names():
+        preview = window.show_component(name)
+        app.processEvents()
+        assert preview.property("gallery_native_preview") is True
+        assert preview.property("gallery_component") == name
+
+    window.filter_components("Native QtWidgets")
+    assert window.visible_component_names() == list(gallery.native_preview_names())
+    window.close()
