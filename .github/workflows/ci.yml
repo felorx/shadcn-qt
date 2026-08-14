@@ -27,6 +27,8 @@ jobs:
         run: python tools/check_versions.py
       - name: Check project naming
         run: python tools/check_branding.py
+      - name: Check Core and Pro repository boundary
+        run: python tools/check_core_boundary.py
       - name: Install package and test tools (no Qt binding)
         run: pip install -e "./packages/python[dev]"
       - name: Unit tests

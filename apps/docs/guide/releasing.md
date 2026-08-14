@@ -5,7 +5,12 @@ This repository publishes as `shadcn-qt`, while Python uses
 public names. The runtime requires Python 3.9 or newer; the CI matrix covers
 Python 3.9, 3.11, and 3.13.
 
-Releases use PyPI Trusted Publishing rather than a stored API token:
+Version 0.2.0 is published at
+[PyPI](https://pypi.org/project/shadcn-qt/). Its initial project registration
+for version 0.1.0 used an authorized local API token after the complete release
+checks and an isolated installation test.
+
+Future releases use PyPI Trusted Publishing rather than a stored API token:
 
 1. configure protected GitHub environments `testpypi` and `pypi`;
 2. register the exact repository/workflow/environment as Trusted Publishers;
@@ -18,7 +23,8 @@ The workflow validates GPL/commercial metadata and confirms that all license
 files are inside both the wheel and sdist. See the repository's
 `docs/PYPI_RELEASE.md` for one-time setup, commands, verification, and recovery.
 
-Publisher metadata is configured for Felorx. Before the first upload, ensure
-`https://github.com/felorx/shadcn-qt` exists publicly, configure its protected
-environments and Trusted Publishers, and replace the temporary Felorx homepage
-commercial link when a dedicated sales page is available.
+Publisher metadata is configured for Felorx. Keep
+`https://github.com/felorx/shadcn-qt` public, configure its protected
+environments and Trusted Publishers before the next release, and replace the
+temporary Felorx homepage commercial link when a dedicated sales page is
+available.

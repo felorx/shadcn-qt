@@ -6,6 +6,12 @@ from typing import Any, Iterable, Optional, Sequence, Union
 
 from shadcn_qt import _qt
 from shadcn_qt.widgets._helpers import initialize_component, refresh_style
+from shadcn_qt.widgets._icons import _VectorIconButton, _VectorIconGlyph
+from shadcn_qt.widgets._style import (
+    enable_antialiasing,
+    semantic_color,
+    with_alpha,
+)
 from shadcn_qt.widgets.button import Button
 from shadcn_qt.widgets.controls import Label
 
@@ -15,6 +21,11 @@ QtCore, QtGui, QtWidgets = _qt.qt_modules()
 def _align_center() -> Any:
     value = getattr(QtCore.Qt, "AlignCenter", None)
     return value if value is not None else QtCore.Qt.AlignmentFlag.AlignCenter
+
+
+def _align_vcenter() -> Any:
+    value = getattr(QtCore.Qt, "AlignVCenter", None)
+    return value if value is not None else QtCore.Qt.AlignmentFlag.AlignVCenter
 
 
 class Avatar(QtWidgets.QLabel):
@@ -32,7 +43,7 @@ class Avatar(QtWidgets.QLabel):
         self._fallback = str(fallback)
         self._avatar_size = 40
         self.setAlignment(_align_center())
-        self.setScaledContents(True)
+        self.setScaledContents(False)
         self.set_avatar_size(size)
 
     def get_fallback(self) -> str:
@@ -60,7 +71,38 @@ class Avatar(QtWidgets.QLabel):
             self.setText(self._fallback)
             return False
         self.setPixmap(pixmap)
+        self.update()
         return True
+
+    def paintEvent(self, event: Any) -> None:
+        del event
+        painter = QtGui.QPainter(self)
+        enable_antialiasing(painter)
+        bounds = QtCore.QRectF(self.rect()).adjusted(0.5, 0.5, -0.5, -0.5)
+        muted = semantic_color(self, "muted", fallback_role="Button")
+        border = semantic_color(self, "border", fallback_role="Mid")
+        painter.setPen(QtGui.QPen(border, 1))
+        painter.setBrush(muted)
+        painter.drawEllipse(bounds)
+        pixmap = self.pixmap()
+        if pixmap is not None and not pixmap.isNull():
+            painter.save()
+            path = QtGui.QPainterPath()
+            path.addEllipse(bounds.adjusted(1, 1, -1, -1))
+            painter.setClipPath(path)
+            aspect = getattr(QtCore.Qt, "KeepAspectRatioByExpanding", None)
+            smooth = getattr(QtCore.Qt, "SmoothTransformation", None)
+            if aspect is None:
+                aspect = QtCore.Qt.AspectRatioMode.KeepAspectRatioByExpanding
+                smooth = QtCore.Qt.TransformationMode.SmoothTransformation
+            scaled = pixmap.scaled(self.size(), aspect, smooth)
+            x = (self.width() - scaled.width()) // 2
+            y = (self.height() - scaled.height()) // 2
+            painter.drawPixmap(x, y, scaled)
+            painter.restore()
+        else:
+            painter.setPen(semantic_color(self, "mutedForeground"))
+            painter.drawText(self.rect(), int(_align_center()), self._fallback)
 
     getFallback = get_fallback
     setFallback = set_fallback
@@ -75,6 +117,16 @@ class Skeleton(QtWidgets.QFrame):
         super().__init__(parent)
         initialize_component(self, "skeleton")
         self.setMinimumHeight(16)
+        effect = QtWidgets.QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(effect)
+        self._pulse = QtCore.QVariantAnimation(self)
+        self._pulse.setDuration(1400)
+        self._pulse.setLoopCount(-1)
+        self._pulse.setKeyValueAt(0.0, 0.55)
+        self._pulse.setKeyValueAt(0.5, 1.0)
+        self._pulse.setKeyValueAt(1.0, 0.55)
+        self._pulse.valueChanged.connect(lambda value: effect.setOpacity(float(value)))
+        self._pulse.start()
 
 
 class Spinner(QtWidgets.QProgressBar):
@@ -83,7 +135,32 @@ class Spinner(QtWidgets.QProgressBar):
         initialize_component(self, "spinner")
         self.setRange(0, 0)
         self.setTextVisible(False)
-        self.setFixedHeight(8)
+        self.setFixedSize(16, 16)
+        self._angle = 0
+        self._timer = QtCore.QTimer(self)
+        self._timer.setInterval(40)
+        self._timer.timeout.connect(self._advance)
+        self._timer.start()
+
+    def _advance(self) -> None:
+        self._angle = (self._angle - 18) % 360
+        self.update()
+
+    def paintEvent(self, event: Any) -> None:
+        del event
+        painter = QtGui.QPainter(self)
+        enable_antialiasing(painter)
+        color = semantic_color(self, "primary", fallback_role="Highlight")
+        painter.setPen(QtGui.QPen(with_alpha(color, 56), 2))
+        bounds = QtCore.QRectF(self.rect()).adjusted(2, 2, -2, -2)
+        painter.drawEllipse(bounds)
+        pen = QtGui.QPen(color, 2)
+        cap = getattr(QtCore.Qt, "RoundCap", None)
+        if cap is None:
+            cap = QtCore.Qt.PenCapStyle.RoundCap
+        pen.setCapStyle(cap)
+        painter.setPen(pen)
+        painter.drawArc(bounds, self._angle * 16, 100 * 16)
 
 
 class Kbd(QtWidgets.QLabel):
@@ -145,6 +222,44 @@ class Empty(QtWidgets.QFrame):
     description = _qt.qt_property(str, fget=get_description, fset=set_description)
 
 
+class _ItemActionButton(Button):
+    def __init__(self, parent: Any) -> None:
+        super().__init__("", parent, variant="ghost", size="icon")
+        self.setAccessibleName("Open item")
+
+    def sizeHint(self) -> Any:
+        return QtCore.QSize(36, 36)
+
+    def minimumSizeHint(self) -> Any:
+        return QtCore.QSize(36, 36)
+
+    def _icon_path(self) -> Any:
+        center = QtCore.QRectF(self.rect()).center()
+        path = QtGui.QPainterPath()
+        path.moveTo(center.x() - 2.0, center.y() - 4.0)
+        path.lineTo(center.x() + 2.0, center.y())
+        path.lineTo(center.x() - 2.0, center.y() + 4.0)
+        return path
+
+    def paintEvent(self, event: Any) -> None:
+        super().paintEvent(event)
+        painter = QtGui.QPainter(self)
+        enable_antialiasing(painter)
+        color = semantic_color(self, "foreground")
+        if not self.isEnabled():
+            color = with_alpha(color, 128)
+        pen = QtGui.QPen(color, 1.5)
+        cap = getattr(QtCore.Qt, "RoundCap", None)
+        join = getattr(QtCore.Qt, "RoundJoin", None)
+        if cap is None:
+            cap = QtCore.Qt.PenCapStyle.RoundCap
+            join = QtCore.Qt.PenJoinStyle.RoundJoin
+        pen.setCapStyle(cap)
+        pen.setJoinStyle(join)
+        painter.setPen(pen)
+        painter.drawPath(self._icon_path())
+
+
 class Item(QtWidgets.QFrame):
     triggered = _qt.qt_signal()
 
@@ -162,6 +277,8 @@ class Item(QtWidgets.QFrame):
         layout.setSpacing(12)
         self.media = Label("", self)
         self.content = QtWidgets.QWidget(self)
+        self.content.setObjectName("shadcnQtItemContent")
+        self.content.setAutoFillBackground(False)
         content_layout = QtWidgets.QVBoxLayout(self.content)
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(2)
@@ -169,11 +286,18 @@ class Item(QtWidgets.QFrame):
         self.descriptionLabel = Label(description, self, variant="muted")
         content_layout.addWidget(self.titleLabel)
         content_layout.addWidget(self.descriptionLabel)
-        self.action = Button("›", self, variant="ghost", size="icon")
+        self.actionContainer = QtWidgets.QWidget(self)
+        self.actionContainer.setObjectName("shadcnQtItemAction")
+        self.actionContainer.setFixedSize(36, 36)
+        self.actionContainer.setAutoFillBackground(False)
+        action_layout = QtWidgets.QHBoxLayout(self.actionContainer)
+        action_layout.setContentsMargins(0, 0, 0, 0)
+        self.action = _ItemActionButton(self.actionContainer)
+        action_layout.addWidget(self.action)
         self.action.clicked.connect(self.triggered)
         layout.addWidget(self.media)
         layout.addWidget(self.content, 1)
-        layout.addWidget(self.action)
+        layout.addWidget(self.actionContainer, 0, _align_vcenter())
 
     def get_title(self) -> str:
         return self.titleLabel.text()
@@ -202,6 +326,9 @@ class Table(QtWidgets.QTableWidget):
         initialize_component(self, "table")
         self.setAlternatingRowColors(False)
         self.setShowGrid(False)
+        self.verticalHeader().setVisible(False)
+        self.verticalHeader().setDefaultSectionSize(40)
+        self.horizontalHeader().setFixedHeight(40)
 
 
 class DataTable(QtWidgets.QTableView):
@@ -214,6 +341,9 @@ class DataTable(QtWidgets.QTableView):
         self.setModel(self._proxy_model)
         self.setSortingEnabled(True)
         self.setShowGrid(False)
+        self.verticalHeader().setVisible(False)
+        self.verticalHeader().setDefaultSectionSize(40)
+        self.horizontalHeader().setFixedHeight(40)
 
     def setRows(self, headers: Sequence[str], rows: Iterable[Sequence[Any]]) -> None:
         self._source_model.clear()
@@ -228,11 +358,205 @@ class DataTable(QtWidgets.QTableView):
         self._proxy_model.setFilterFixedString(text)
 
 
+def _style_state(name: str) -> Any:
+    value = getattr(QtWidgets.QStyle, name, None)
+    if value is not None:
+        return value
+    return getattr(QtWidgets.QStyle.StateFlag, name)
+
+
+class _CalendarDelegate(QtWidgets.QStyledItemDelegate):
+    """Paint QCalendarWidget cells with new-york day-button geometry."""
+
+    def paint(self, painter: Any, option: Any, index: Any) -> None:
+        painter.save()
+        enable_antialiasing(painter)
+        view = self.parent()
+        foreground = semantic_color(view, "foreground", fallback_role="WindowText")
+        muted = semantic_color(view, "muted", fallback_role="AlternateBase")
+        muted_foreground = semantic_color(view, "mutedForeground")
+        primary = semantic_color(view, "primary", fallback_role="Highlight")
+        primary_foreground = semantic_color(
+            view, "primaryForeground", fallback_role="HighlightedText"
+        )
+        accent = semantic_color(view, "accent", fallback_role="AlternateBase")
+        text = str(index.data() or "")
+        rect = QtCore.QRectF(option.rect)
+        if index.row() == 0:
+            painter.setPen(_qt_pen_none())
+            painter.setBrush(muted)
+            painter.drawRect(rect)
+            painter.setPen(muted_foreground)
+            painter.drawText(rect, int(_align_center()), text)
+            painter.restore()
+            return
+
+        side = min(32.0, rect.height() - 4.0)
+        day_rect = QtCore.QRectF(
+            rect.center().x() - side / 2,
+            rect.center().y() - side / 2,
+            side,
+            side,
+        )
+        selected = bool(option.state & _style_state("State_Selected")) or (
+            view.currentIndex() == index
+        )
+        hovered = bool(option.state & _style_state("State_MouseOver"))
+        enabled = bool(option.state & _style_state("State_Enabled"))
+        if selected:
+            painter.setPen(_qt_pen_none())
+            painter.setBrush(primary)
+            painter.drawRoundedRect(day_rect, 6, 6)
+            painter.setPen(primary_foreground)
+        elif hovered:
+            painter.setPen(_qt_pen_none())
+            painter.setBrush(accent)
+            painter.drawRoundedRect(day_rect, 6, 6)
+            painter.setPen(foreground)
+        else:
+            painter.setPen(foreground if enabled else muted_foreground)
+        painter.drawText(day_rect, int(_align_center()), text)
+        painter.restore()
+
+
+def _qt_pen_none() -> Any:
+    value = getattr(QtCore.Qt, "NoPen", None)
+    if value is not None:
+        return value
+    return QtCore.Qt.PenStyle.NoPen
+
+
+class _CalendarMonthIndicator(_VectorIconGlyph):
+    def __init__(self, parent: Any) -> None:
+        super().__init__("chevron-down", parent)
+
+
 class Calendar(QtWidgets.QCalendarWidget):
     def __init__(self, parent: Optional[Any] = None) -> None:
         super().__init__(parent)
         initialize_component(self, "calendar")
         self.setGridVisible(False)
+        no_vertical_header = getattr(
+            QtWidgets.QCalendarWidget, "NoVerticalHeader", None
+        )
+        if no_vertical_header is None:
+            no_vertical_header = (
+                QtWidgets.QCalendarWidget.VerticalHeaderFormat.NoVerticalHeader
+            )
+        self.setVerticalHeaderFormat(no_vertical_header)
+        self._navigation_indicators = []
+        for object_name, icon_name, accessible_name in (
+            ("qt_calendar_prevmonth", "chevron-left", "Previous month"),
+            ("qt_calendar_nextmonth", "chevron-right", "Next month"),
+        ):
+            button = self.findChild(QtWidgets.QToolButton, object_name)
+            if button is not None:
+                button.setIcon(QtGui.QIcon())
+                button.setText("")
+                button.setAccessibleName(accessible_name)
+                button.setFixedSize(32, 32)
+                indicator = _VectorIconGlyph(icon_name, button)
+                indicator.setGeometry(button.rect())
+                indicator.show()
+                self._navigation_indicators.append(indicator)
+        self._month_button = self.findChild(
+            QtWidgets.QToolButton, "qt_calendar_monthbutton"
+        )
+        self._month_indicator = None
+        if self._month_button is not None:
+            self._month_button.setIcon(QtGui.QIcon())
+            self._month_button.installEventFilter(self)
+            self._month_indicator = _CalendarMonthIndicator(self._month_button)
+            self._layout_month_indicator()
+        self._sync_text_formats()
+        self._install_delegate()
+        self.currentPageChanged.connect(
+            lambda *_: QtCore.QTimer.singleShot(0, self._install_delegate)
+        )
+
+    def _install_delegate(self) -> None:
+        calendar_view = self.findChild(
+            QtWidgets.QTableView, "qt_calendar_calendarview"
+        )
+        if calendar_view is not None:
+            if getattr(self, "_calendar_view", None) is not calendar_view:
+                calendar_view.installEventFilter(self)
+                self._calendar_view = calendar_view
+            calendar_view.setMouseTracking(True)
+            calendar_view.verticalHeader().setMinimumSectionSize(36)
+            calendar_view.verticalHeader().setDefaultSectionSize(36)
+            calendar_view.setItemDelegate(_CalendarDelegate(calendar_view))
+
+    def _layout_month_indicator(self) -> None:
+        if self._month_button is None or self._month_indicator is None:
+            return
+        self._month_indicator.setGeometry(
+            max(0, self._month_button.width() - 20),
+            0,
+            16,
+            self._month_button.height(),
+        )
+        self._month_indicator.show()
+        self._month_indicator.raise_()
+
+    def eventFilter(self, watched: Any, event: Any) -> bool:
+        if watched is getattr(self, "_month_button", None):
+            resize = getattr(QtCore.QEvent, "Resize", None)
+            show = getattr(QtCore.QEvent, "Show", None)
+            if resize is None:
+                resize = QtCore.QEvent.Type.Resize
+                show = QtCore.QEvent.Type.Show
+            if event.type() in (resize, show):
+                self._layout_month_indicator()
+        calendar_view = getattr(self, "_calendar_view", None)
+        if watched is calendar_view:
+            paint = getattr(QtCore.QEvent, "Paint", None)
+            if paint is None:
+                paint = QtCore.QEvent.Type.Paint
+            if event.type() == paint and not isinstance(
+                calendar_view.itemDelegate(), _CalendarDelegate
+            ):
+                calendar_view.setItemDelegate(_CalendarDelegate(calendar_view))
+        return super().eventFilter(watched, event)
+
+    def _sync_text_formats(self) -> None:
+        foreground = semantic_color(self, "foreground", fallback_role="WindowText")
+        text_format = QtGui.QTextCharFormat()
+        text_format.setForeground(foreground)
+        days = (
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+        )
+        day_scope = getattr(QtCore.Qt, "DayOfWeek", None)
+        for name in days:
+            day = getattr(QtCore.Qt, name, None)
+            if day is None:
+                day = getattr(day_scope, name)
+            self.setWeekdayTextFormat(day, text_format)
+        self.setHeaderTextFormat(text_format)
+
+    def changeEvent(self, event: Any) -> None:
+        palette_change = getattr(QtCore.QEvent, "PaletteChange", None)
+        if palette_change is None:
+            palette_change = QtCore.QEvent.Type.PaletteChange
+        if event.type() == palette_change:
+            self._sync_text_formats()
+            month_indicator = getattr(self, "_month_indicator", None)
+            if month_indicator is not None:
+                month_indicator.update()
+            for indicator in getattr(self, "_navigation_indicators", ()):
+                indicator.update()
+            self._install_delegate()
+        super().changeEvent(event)
+
+    def showEvent(self, event: Any) -> None:
+        super().showEvent(event)
+        QtCore.QTimer.singleShot(0, self._install_delegate)
 
 
 class Chart(QtWidgets.QFrame):
@@ -391,7 +715,9 @@ class Attachment(QtWidgets.QFrame):
         layout.setContentsMargins(10, 8, 10, 8)
         self.nameLabel = Label(name, self, variant="small")
         self.detailLabel = Label(detail, self, variant="muted")
-        self.removeButton = Button("×", self, variant="ghost", size="icon")
+        self.removeButton = _VectorIconButton(
+            "close", self, accessible_name="Remove attachment"
+        )
         self.removeButton.clicked.connect(self.removed)
         layout.addWidget(self.nameLabel)
         layout.addWidget(self.detailLabel, 1)

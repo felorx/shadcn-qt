@@ -1,5 +1,7 @@
-"""Smoke: core imports work without loading widget subclasses (no Qt binding required for theme-only)."""
+"""Smoke: Core imports without Qt or the separately distributed Pro package."""
 
+import importlib
+import importlib.util
 import unittest
 
 
@@ -18,6 +20,12 @@ class TestImportCore(unittest.TestCase):
 
         self.assertGreater(len(base_qss.LIGHT_QSS), 100)
         self.assertGreater(len(base_qss.DARK_QSS), 100)
+
+    def test_pro_bridge_explains_separate_distribution(self):
+        if importlib.util.find_spec("shadcn_qt_pro") is not None:
+            self.skipTest("private Pro distribution is installed")
+        with self.assertRaisesRegex(ImportError, "private shadcn-qt-pro"):
+            importlib.import_module("shadcn_qt.pro")
 
 
 if __name__ == "__main__":

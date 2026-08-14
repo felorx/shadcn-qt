@@ -9,13 +9,16 @@ The project is published by [Felorx](https://felorx.com).
 ## Current status
 
 - **Python:** PySide6, PyQt6, PySide2, and PyQt5 through one public API.
-- **Widgets:** 65 public Python widgets covering the current shadcn/ui catalog with Qt-native mappings, including dialogs, menus, forms, navigation, data display, charts, notifications, and conversation components.
+- **Widgets:** 66 public Python widgets covering the current shadcn/ui catalog and the Chrome-style `TabPane` Qt convenience, including dialogs, menus, forms, navigation, data display, charts, notifications, and conversation components.
 - **Qt Designer:** the Python widgets can appear in a `shadcn-qt` Widget Box group, be dragged onto forms, laid out, and configured through native Qt properties.
 - **Themes:** built-in light/dark themes, process-wide configuration, per-application overrides, JSON themes, custom QSS, radius, and font overrides.
+- **Visual baseline:** classic shadcn/ui `new-york` geometry and states with the Zinc light/dark palette, including custom-painted selection controls and Qt-native overlay transitions.
 - **Legacy adoption:** the complete native QtWidgets family receives component-specific or neutral fallback styling without changing existing classes.
 - **C++:** Button, Input, Card, generated light/dark QSS, and CMake package support.
 
 See [docs/STATUS.md](docs/STATUS.md) for the verified matrix and remaining parity work.
+The exact geometry and translation rules are documented in the
+[classic new-york + Zinc visual baseline](docs/STYLE_BASELINE.md).
 
 ## Layout
 
@@ -27,8 +30,28 @@ See [docs/STATUS.md](docs/STATUS.md) for the verified matrix and remaining parit
 | `tools/token-codegen` | Generates QSS, Python, and C++ theme artifacts |
 | `apps/docs` | Documentation site |
 | `examples` | Minimal Python and C++ samples |
+| `skills/developing-shadcn-qt` | Vendor-neutral AI skill for repository development |
 
-## Quick start (Python)
+## Core and Pro
+
+This public repository contains **shadcn-qt Core**. Core remains a complete,
+usable package under either GPL-3.0-only or a commercial Core Order Form.
+
+**shadcn-qt Pro** is a separately ordered, privately distributed add-on. Its
+distribution name is `shadcn-qt-pro` and its import name is `shadcn_qt_pro`.
+The public `shadcn_qt.pro` module is only a compatibility bridge and never
+contains Pro implementation code. A commercial license for Core does not grant
+Pro access; the customer's Order Form and signed license certificate identify
+the Pro features, seats, covered versions, and update period.
+
+See [Core and Pro architecture](docs/PRO.md) and [license tiers](docs/TIERS.md).
+
+## Install the free Core package (Python)
+
+shadcn-qt Core 0.2.0 is available from
+[PyPI](https://pypi.org/project/shadcn-qt/). It is publicly downloadable at no
+cost for GPL-3.0-compatible use; proprietary applications require a commercial
+Core license. Pro is a separate private package.
 
 Use a virtual environment (recommended on macOS/Homebrew Python):
 
@@ -37,18 +60,32 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-Install the `shadcn-qt` distribution with one Qt binding extra. Python uses
-the normalized import identifier `shadcn_qt`. Python 3.9 or newer is required:
+For a new application, install the `shadcn-qt` distribution with exactly one
+Qt binding extra. Python uses the normalized import identifier `shadcn_qt`.
+Python 3.9 or newer is required:
 
 ```bash
-pip install "shadcn-qt[pyside6]"
+python -m pip install "shadcn-qt[pyside6]"
 # or: pyqt6 | pyside2 | pyqt5
+```
+
+If an existing project already uses PySide or PyQt, keep that binding and avoid
+changing it:
+
+```bash
+python -m pip install shadcn-qt
+```
+
+Confirm the installed release:
+
+```bash
+python -c "from importlib.metadata import version; print(version('shadcn-qt'))"
 ```
 
 For an editable source checkout:
 
 ```bash
-pip install -e "./packages/python[pyside6]"
+python -m pip install -e "./packages/python[pyside6,dev]"
 ```
 
 Create and theme widgets:
@@ -74,6 +111,12 @@ enable_native_widget_styling(app)
 apply_theme(app, "dark")
 ```
 
+The opt-in adapter covers the standard QtWidgets families, including forms,
+item views, containers, dialogs, menus, toolbars, docks, and widgets created
+later. QSS-inexpressible checkbox/radio glyphs and calendar cells receive
+reversible Qt painting enhancements. Open the Gallery's **Native QtWidgets**
+section to inspect four pages built only from stock Qt classes.
+
 ## Qt Designer
 
 For the most predictable Designer plugin host, install the Designer extra and launch Designer through the shadcn-qt launcher:
@@ -83,7 +126,7 @@ pip install "shadcn-qt[designer]"
 shadcn-qt-designer
 ```
 
-The `shadcn-qt` group contains all 65 Python widgets. Properties such as `variant`, `shadcnSize`, `invalid`, `expanded`, `side`, `direction`, `chartType`, and `level` are editable in the Property Editor. Load the resulting form without a code-generation step:
+The `shadcn-qt` group contains all 66 Python widgets. Properties such as `variant`, `shadcnSize`, `invalid`, `expanded`, `side`, `direction`, `chartType`, and `level` are editable in the Property Editor. Load the resulting form without a code-generation step:
 
 ```python
 from shadcn_qt.designer import load_ui
@@ -97,14 +140,24 @@ Already have a PySide or PyQt application? Follow the [existing-project migratio
 Regenerate theme artifacts after editing tokens:
 
 ```bash
-python ../../tools/token-codegen/generate.py
+python tools/token-codegen/generate.py
 ```
 
 Run the smoke example:
 
 ```bash
-python ../../examples/python_minimal/run_pyside6.py
+python examples/python_minimal/run_pyside6.py
 ```
+
+Browse all 66 Core components with search, interactive states, and light/dark
+theme switching:
+
+```bash
+python examples/python_gallery/run.py
+```
+
+See the [component gallery guide](examples/python_gallery/README.md) for direct
+component selection and screenshot options.
 
 ## Quick start (C++)
 
@@ -114,14 +167,17 @@ cmake --build build
 ```
 
 Use Qt 5.15 by pointing `CMAKE_PREFIX_PATH` at a Qt5 kit; the same `CMakeLists.txt` selects Qt5 or Qt6 automatically.
-Installed packages expose version `0.1.0`, so downstream projects can require
-`find_package(ShadcnQt 0.1 CONFIG REQUIRED)`.
+Installed packages expose version `0.2.0`, so downstream projects can require
+`find_package(ShadcnQt 0.2 CONFIG REQUIRED)`.
 
 ## Docs
 
 See `apps/docs` (VitePress), the [migration guide](apps/docs/guide/migration.md),
 [licensing guide](docs/COMMERCIAL.md), [PyPI release runbook](docs/PYPI_RELEASE.md),
-[docs/STATUS.md](docs/STATUS.md), and [docs/TIERS.md](docs/TIERS.md).
+[Core and Pro architecture](docs/PRO.md), [docs/STATUS.md](docs/STATUS.md), and
+[docs/TIERS.md](docs/TIERS.md). Release changes are recorded in
+[CHANGELOG.md](CHANGELOG.md). AI agents can use the repository development
+skill by following the [AI skill installation guide](docs/AI_SKILL_INSTALL.md).
 
 ## License
 

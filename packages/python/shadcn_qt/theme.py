@@ -13,6 +13,8 @@ from shadcn_qt._stylesheet import render_stylesheet
 
 ThemeLike = Union[str, "Theme", Mapping[str, Any]]
 ThemeMode = Literal["light", "dark"]
+STYLE_PROFILE = "new-york"
+BASE_COLOR = "zinc"
 
 _REQUIRED_COLORS = frozenset(
     {
@@ -260,6 +262,11 @@ def apply_theme(
             "No QApplication instance; create QApplication before apply_theme()."
         )
 
+    app.setProperty("shadcn_qt_style", STYLE_PROFILE)
+    app.setProperty("shadcn_qt_base_color", BASE_COLOR)
+    for color_name, color_value in resolved.colors.items():
+        app.setProperty(f"shadcn_qt_color_{color_name}", color_value)
+
     app.setStyleSheet(
         render_stylesheet(resolved.colors, resolved.radius, resolved.font)
         + (
@@ -321,6 +328,8 @@ def apply_palette_from_tokens(
 
 
 __all__ = [
+    "BASE_COLOR",
+    "STYLE_PROFILE",
     "Theme",
     "ThemeConfig",
     "ThemeLike",

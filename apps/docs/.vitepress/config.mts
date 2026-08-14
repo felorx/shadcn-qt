@@ -15,8 +15,11 @@ export default defineConfig({
         items: [
           { text: "Install", link: "/guide/install" },
           { text: "Existing Projects", link: "/guide/migration" },
+          { text: "Native QtWidgets", link: "/guide/native-widgets" },
           { text: "Theming", link: "/guide/theming" },
+          { text: "Visual Baseline", link: "/guide/visual-baseline" },
           { text: "Qt Designer", link: "/guide/designer" },
+          { text: "Core and Pro", link: "/guide/pro" },
           { text: "Licensing", link: "/guide/licensing" },
           { text: "Publishing", link: "/guide/releasing" },
         ],
@@ -26,6 +29,7 @@ export default defineConfig({
         items: [
           { text: "Catalog", link: "/components/catalog" },
           { text: "Button", link: "/components/button" },
+          { text: "TabPane", link: "/components/tab-pane" },
         ],
       },
       { text: "License Tiers", link: "/tiers" },

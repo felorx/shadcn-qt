@@ -1,5 +1,11 @@
 # Developing shadcn-qt Skill Design
 
+> Historical design record: the implemented skill was moved from
+> `.cursor/skills/developing-shadcn-qt` to the vendor-neutral canonical path
+> `skills/developing-shadcn-qt`. See `docs/AI_SKILL_INSTALL.md` for current
+> host-specific installation instructions. Paths below describe the original
+> design.
+
 ## Purpose
 
 Create a project-scoped Cursor Agent Skill that helps AI agents make correct

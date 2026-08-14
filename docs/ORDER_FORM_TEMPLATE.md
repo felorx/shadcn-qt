@@ -9,7 +9,7 @@ and should be reviewed by counsel for the seller and target markets.
 | --- | --- |
 | Order ID | `[unique-id]` |
 | Effective date | `[YYYY-MM-DD]` |
-| Licensor legal name | `Felorx — replace with the full legal person/entity name if Felorx is a brand` |
+| Licensor legal name | `上海码上加码科技有限公司` |
 | Licensor address | `[registered or business address]` |
 | Licensor notice email | `[email]` |
 | Customer legal name | `[full legal entity name]` |
@@ -20,14 +20,17 @@ and should be reviewed by counsel for the seller and target markets.
 
 | Field | Value |
 | --- | --- |
-| Software | `shadcn-qt / [covered version or version range]` |
-| Edition/add-ons | `[public library and any separately named add-ons]` |
+| Software | `shadcn-qt Core / [covered version or version range]` |
+| Edition/add-ons | `[Core commercial rights / shadcn-qt Pro / named Pro features]` |
 | Commercial agreement | `shadcn-qt Commercial License Agreement v1.0 (2026-08-08)` |
 | Developer seats | `[number]` |
 | License term | `[perpetual for covered versions / expiring subscription]` |
 | Updates and maintenance | `[start date]` through `[end date]` |
 | Support/SLA | `[none / description and response targets]` |
 | Evaluation restriction | `[not applicable / internal non-production through date]` |
+| Pro license certificate ID | `[not applicable / immutable certificate ID]` |
+| Pro features | `[not applicable / exact feature identifiers]` |
+| Pro private package access | `[not applicable / account or organization]` |
 
 ## Commercial and legal terms
 

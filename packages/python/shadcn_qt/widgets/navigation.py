@@ -9,6 +9,7 @@ from shadcn_qt.widgets._helpers import initialize_component
 from shadcn_qt.widgets.button import Button
 from shadcn_qt.widgets.controls import Label
 from shadcn_qt.widgets.input import Input
+from shadcn_qt.widgets._style import install_shadow
 
 QtCore, _, QtWidgets = _qt.qt_modules()
 
@@ -88,9 +89,11 @@ class Pagination(QtWidgets.QFrame):
         self.previousButton = Button("Previous", self, variant="outline", size="sm")
         self.pageLabel = Label("1 / 1", self, variant="small")
         self.nextButton = Button("Next", self, variant="outline", size="sm")
+        self.layout_.addStretch(1)
         self.layout_.addWidget(self.previousButton)
         self.layout_.addWidget(self.pageLabel)
         self.layout_.addWidget(self.nextButton)
+        self.layout_.addStretch(1)
         self.previousButton.clicked.connect(self.previous)
         self.nextButton.clicked.connect(self.next)
         self.set_page_count(page_count)
@@ -158,6 +161,7 @@ class Command(QtWidgets.QFrame):
         self.list.itemActivated.connect(
             lambda item: self.selected.emit(item.data(32) or item.text())
         )
+        install_shadow(self, "md")
 
     def setItems(self, items: Iterable[Union[str, tuple]]) -> None:
         self.list.clear()
@@ -187,12 +191,19 @@ class DropdownMenu(QtWidgets.QMenu):
             parent, title = title, "Menu"
         super().__init__(str(title), parent)
         initialize_component(self, "dropdown-menu")
+        install_shadow(self, "md")
 
     def addItem(self, text: str, callback: Optional[Any] = None) -> Any:
         action = self.addAction(text)
         if callback is not None:
             action.triggered.connect(callback)
         return action
+
+    def showAt(self, anchor: Any) -> None:
+        """Open left-aligned directly below an anchor widget."""
+
+        point = anchor.mapToGlobal(QtCore.QPoint(0, anchor.height()))
+        self.popup(point)
 
 
 class ContextMenu(DropdownMenu):
@@ -220,6 +231,7 @@ class Menubar(QtWidgets.QMenuBar):
     def __init__(self, parent: Optional[Any] = None) -> None:
         super().__init__(parent)
         initialize_component(self, "menubar")
+        install_shadow(self, "xs")
 
 
 class NavigationMenu(QtWidgets.QFrame):

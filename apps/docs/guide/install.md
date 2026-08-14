@@ -2,24 +2,62 @@
 
 ## Python
 
-From PyPI (the distribution name is `shadcn-qt`; Python normalizes it to the
-import identifier `shadcn_qt`; Python 3.9 or newer is required):
+shadcn-qt Core 0.1.0 is published on
+[PyPI](https://pypi.org/project/shadcn-qt/). The distribution name is
+`shadcn-qt`; Python normalizes it to the import identifier `shadcn_qt`. Python
+3.9 or newer is required.
+
+### New environment
+
+Create a virtual environment and install exactly one Qt binding extra:
 
 ```bash
-pip install "shadcn-qt[pyside6]"
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install "shadcn-qt[pyside6]"
 # or: pyqt6 | pyside2 | pyqt5
 ```
+
+Choose the extra that matches the application: `pyside6`, `pyqt6`, `pyside2`,
+or `pyqt5`. Do not install several binding extras in one environment.
+
+### Existing PySide or PyQt project
+
+Keep the project's current binding and install the base package without an
+extra. This avoids upgrading or replacing Qt dependencies:
+
+```bash
+python -m pip install shadcn-qt
+```
+
+See the [existing-project migration guide](./migration.md) for explicit binding
+selection and incremental adoption.
+
+### Verify the installation
+
+```bash
+python -c "from importlib.metadata import version; print(version('shadcn-qt'))"
+```
+
+The command should print `0.1.0` for the initial release. Then verify that the
+selected binding and package import together:
+
+```bash
+python -c "import shadcn_qt; print(shadcn_qt.__version__)"
+```
+
+### Source development
 
 From a source checkout:
 
 ```bash
-pip install -e "./packages/python[pyside6]"
+python -m pip install -e "./packages/python[pyside6,dev]"
 ```
 
 Install the recommended Qt Designer integration (includes PySide6):
 
 ```bash
-pip install "shadcn-qt[designer]"
+python -m pip install "shadcn-qt[designer]"
 shadcn-qt-designer
 ```
 
@@ -41,9 +79,28 @@ Run a form created with Qt Designer:
 python ../../examples/python_designer/run.py
 ```
 
-**License note:** current shadcn-qt releases are GPL-3.0-only or commercial.
-PyQt5 and PyQt6 are separately GPLv3 or commercially licensed by Riverbank and
-are not LGPL. PySide6 and Qt also retain their own terms. Read the
+Browse the complete 66-component interactive gallery from the repository root:
+
+```bash
+python examples/python_gallery/run.py
+```
+
+The gallery supports component search, category navigation, light/dark theme
+switching, and real interactions for overlays, menus, and notifications.
+
+### Guidance for AI coding assistants
+
+Before installing, inspect the project imports and dependency files for
+`PySide6`, `PyQt6`, `PySide2`, or `PyQt5`. If one binding is already selected,
+install `shadcn-qt` without an extra. If none is selected, ask which binding the
+developer wants; use `pyside6` only when the project has no binding constraint.
+Never install multiple binding extras or claim that public Core installation
+also installs Pro.
+
+**License note:** Core is publicly downloadable at no cost under GPL-3.0-only.
+A proprietary application requires a commercial Core Order Form. PyQt5 and
+PyQt6 are separately GPLv3 or commercially licensed by Riverbank and are not
+LGPL. PySide6 and Qt retain their own terms. Read the
 [licensing guide](./licensing.md) before shipping a proprietary application.
 
 ## C++

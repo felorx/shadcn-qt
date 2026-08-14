@@ -6,9 +6,14 @@ from typing import Any, Optional
 
 from shadcn_qt import _qt
 from shadcn_qt.widgets._helpers import initialize_component, refresh_style
+from shadcn_qt.widgets._icons import (
+    _paint_vector_icon,
+    _vector_icon_path,
+    _VectorIconButton,
+)
 from shadcn_qt.widgets.button import Button
 
-QtCore, _, QtWidgets = _qt.qt_modules()
+QtCore, QtGui, QtWidgets = _qt.qt_modules()
 
 
 def _orientation(name: str) -> Any:
@@ -16,8 +21,17 @@ def _orientation(name: str) -> Any:
     return legacy if legacy is not None else getattr(QtCore.Qt.Orientation, name)
 
 
+def _horizontal_expanding(widget: Any) -> None:
+    expanding = getattr(QtWidgets.QSizePolicy, "Expanding", None)
+    if expanding is None:
+        expanding = QtWidgets.QSizePolicy.Policy.Expanding
+    policy = widget.sizePolicy()
+    policy.setHorizontalPolicy(expanding)
+    widget.setSizePolicy(policy)
+
+
 class AspectRatio(QtWidgets.QFrame):
-    """A container that reports a height derived from its width."""
+    """A container that keeps its height derived from its current width."""
 
     def __init__(self, parent: Optional[Any] = None, *, ratio: float = 16 / 9) -> None:
         super().__init__(parent)
@@ -36,6 +50,7 @@ class AspectRatio(QtWidgets.QFrame):
         if ratio <= 0:
             raise ValueError("ratio must be greater than zero")
         self._ratio = ratio
+        self._sync_height()
         self.updateGeometry()
 
     def hasHeightForWidth(self) -> bool:
@@ -43,6 +58,18 @@ class AspectRatio(QtWidgets.QFrame):
 
     def heightForWidth(self, width: int) -> int:
         return max(1, round(width / self._ratio))
+
+    def _sync_height(self, width: Optional[int] = None) -> None:
+        current_width = self.width() if width is None else width
+        if current_width <= 0:
+            return
+        target = self.heightForWidth(current_width)
+        if self.minimumHeight() != target or self.maximumHeight() != target:
+            self.setFixedHeight(target)
+
+    def resizeEvent(self, event: Any) -> None:
+        super().resizeEvent(event)
+        self._sync_height(event.size().width())
 
     getRatio = get_ratio
     setRatio = set_ratio
@@ -102,6 +129,29 @@ class Direction(QtWidgets.QFrame):
     direction = _qt.qt_property(str, fget=get_direction, fset=set_direction)
 
 
+class _CollapsibleTrigger(Button):
+    def __init__(self, parent: Any) -> None:
+        super().__init__("", parent, variant="ghost", size="sm")
+        self._icon_name = "chevron-up"
+
+    def sync(self, title: str, expanded: bool) -> None:
+        self.setText(title)
+        self._icon_name = "chevron-up" if expanded else "chevron-down"
+        self.setAccessibleName(f"{title}: {'expanded' if expanded else 'collapsed'}")
+        self.update()
+
+    def _icon_rect(self) -> Any:
+        return QtCore.QRectF(max(0, self.width() - 28), 0, 20, self.height())
+
+    def _icon_path(self) -> Any:
+        return _vector_icon_path(self._icon_rect(), self._icon_name)
+
+    def paintEvent(self, event: Any) -> None:
+        super().paintEvent(event)
+        painter = QtGui.QPainter(self)
+        _paint_vector_icon(self, painter, self._icon_name, rect=self._icon_rect())
+
+
 class Collapsible(QtWidgets.QFrame):
     expandedChanged = _qt.qt_signal(bool)
 
@@ -115,10 +165,12 @@ class Collapsible(QtWidgets.QFrame):
         super().__init__(parent)
         initialize_component(self, "collapsible")
         self._expanded = True
+        self._title = title
         self._layout = QtWidgets.QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
-        self.trigger = Button(title, self, variant="ghost", size="sm")
+        self.trigger = _CollapsibleTrigger(self)
+        _horizontal_expanding(self.trigger)
         self.trigger.setCheckable(True)
         self.trigger.clicked.connect(self.set_expanded)
         self.content = QtWidgets.QWidget(self)
@@ -130,13 +182,19 @@ class Collapsible(QtWidgets.QFrame):
         self.set_expanded(expanded)
 
     def addWidget(self, widget: Any) -> None:
+        if isinstance(widget, Button):
+            _horizontal_expanding(widget)
         self.content_layout.addWidget(widget)
 
     def get_title(self) -> str:
-        return self.trigger.text()
+        return self._title
 
     def set_title(self, title: str) -> None:
-        self.trigger.setText(title)
+        self._title = title
+        self._sync_trigger()
+
+    def _sync_trigger(self) -> None:
+        self.trigger.sync(self._title, self._expanded)
 
     def is_expanded(self) -> bool:
         return self._expanded
@@ -146,6 +204,7 @@ class Collapsible(QtWidgets.QFrame):
         changed = expanded != self._expanded
         self._expanded = expanded
         self.trigger.setChecked(expanded)
+        self._sync_trigger()
         self.content.setVisible(expanded)
         refresh_style(self)
         if changed:
@@ -233,9 +292,19 @@ class Carousel(QtWidgets.QFrame):
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
-        self.previousButton = Button("‹", self, variant="outline", size="icon")
+        self.previousButton = _VectorIconButton(
+            "chevron-left",
+            self,
+            accessible_name="Previous slide",
+            variant="outline",
+        )
         self.stack = QtWidgets.QStackedWidget(self)
-        self.nextButton = Button("›", self, variant="outline", size="icon")
+        self.nextButton = _VectorIconButton(
+            "chevron-right",
+            self,
+            accessible_name="Next slide",
+            variant="outline",
+        )
         layout.addWidget(self.previousButton)
         layout.addWidget(self.stack, 1)
         layout.addWidget(self.nextButton)
@@ -302,6 +371,8 @@ class Sidebar(QtWidgets.QFrame):
         self.set_collapsed(collapsed)
 
     def addWidget(self, widget: Any) -> None:
+        if isinstance(widget, Button):
+            _horizontal_expanding(widget)
         self.content_layout.addWidget(widget)
 
     def get_side(self) -> str:

@@ -87,6 +87,7 @@ _CONTAINERS = {
     "Resizable",
     "ScrollArea",
     "Sidebar",
+    "TabPane",
     "Tabs",
 }
 _registered = {spec.widget.__name__ for spec in SPECS}
@@ -119,7 +120,7 @@ def apply_designer_preview() -> None:
 
 
 def dom_xml(spec: Spec) -> str:
-    if spec.widget.__name__ == "Tabs":
+    if spec.widget.__name__ in {"TabPane", "Tabs"}:
         children = """
         <widget class="QWidget" name="tab">
           <attribute name="title"><string>Tab 1</string></attribute>

@@ -5,12 +5,52 @@ from __future__ import annotations
 from typing import Any, Iterable, Optional, Union
 
 from shadcn_qt import _qt
-from shadcn_qt.widgets._helpers import initialize_component, refresh_style
+from shadcn_qt.widgets._helpers import (
+    initialize_component,
+    refresh_style,
+    set_choice_property,
+)
+from shadcn_qt.widgets._icons import _install_combo_box_chevron
+from shadcn_qt.widgets._style import (
+    clear_graphics_effect,
+    enable_antialiasing,
+    handle_combo_mouse_press,
+    handle_combo_mouse_release,
+    install_shadow,
+    position_combo_popup,
+    position_popup_below,
+    semantic_color,
+    style_combo_popup,
+    with_alpha,
+)
 from shadcn_qt.widgets.button import Button
 from shadcn_qt.widgets.controls import Label, RadioButton
 from shadcn_qt.widgets.input import Input
 
-QtCore, _, QtWidgets = _qt.qt_modules()
+QtCore, QtGui, QtWidgets = _qt.qt_modules()
+
+_DATE_PICKER_POPUP_FILTER_TYPE = None
+
+
+def _date_picker_popup_filter_type() -> Any:
+    global _DATE_PICKER_POPUP_FILTER_TYPE
+    if _DATE_PICKER_POPUP_FILTER_TYPE is not None:
+        return _DATE_PICKER_POPUP_FILTER_TYPE
+
+    show = getattr(QtCore.QEvent, "Show", None)
+    if show is None:
+        show = QtCore.QEvent.Type.Show
+
+    class DatePickerPopupFilter(QtCore.QObject):
+        def eventFilter(self, watched: Any, event: Any) -> bool:
+            if event.type() == show:
+                picker = watched.parentWidget()
+                if picker is not None:
+                    position_popup_below(picker, watched)
+            return False
+
+    _DATE_PICKER_POPUP_FILTER_TYPE = DatePickerPopupFilter
+    return _DATE_PICKER_POPUP_FILTER_TYPE
 
 
 def _align_center() -> Any:
@@ -20,6 +60,7 @@ def _align_center() -> Any:
 
 class Toggle(QtWidgets.QToolButton):
     VARIANTS = ("default", "outline")
+    SIZES = ("default", "sm", "lg")
 
     def __init__(
         self,
@@ -27,6 +68,7 @@ class Toggle(QtWidgets.QToolButton):
         parent: Optional[Any] = None,
         *,
         variant: str = "default",
+        size: str = "default",
     ) -> None:
         if isinstance(text, QtWidgets.QWidget) and parent is None:
             parent, text = text, ""
@@ -35,20 +77,35 @@ class Toggle(QtWidgets.QToolButton):
         self.setText(str(text))
         self.setCheckable(True)
         self._variant = "default"
+        self._shadcn_size = "default"
         self.set_variant(variant)
+        self.set_shadcn_size(size)
 
     def get_variant(self) -> str:
         return self._variant
 
     def set_variant(self, variant: str) -> None:
-        if variant not in self.VARIANTS:
-            raise ValueError(f"variant must be one of {self.VARIANTS}")
-        self._variant = variant
-        refresh_style(self)
+        set_choice_property(self, "_variant", "variant", variant, self.VARIANTS)
+        if variant == "outline":
+            install_shadow(self, "xs")
+        else:
+            clear_graphics_effect(self)
+
+    def get_shadcn_size(self) -> str:
+        return self._shadcn_size
+
+    def set_shadcn_size(self, size: str) -> None:
+        set_choice_property(self, "_shadcn_size", "shadcnSize", size, self.SIZES)
+        self.setFixedHeight({"default": 36, "sm": 32, "lg": 40}[size])
 
     getVariant = get_variant
     setVariant = set_variant
     variant = _qt.qt_property(str, fget=get_variant, fset=set_variant)
+    getShadcnSize = get_shadcn_size
+    setShadcnSize = set_shadcn_size
+    shadcnSize = _qt.qt_property(
+        str, fget=get_shadcn_size, fset=set_shadcn_size
+    )
 
 
 class ToggleGroup(QtWidgets.QFrame):
@@ -63,16 +120,34 @@ class ToggleGroup(QtWidgets.QFrame):
         self._layout.setSpacing(0)
         self.group = QtWidgets.QButtonGroup(self)
         self.group.setExclusive(exclusive)
+        self._layout.addStretch(1)
 
     def addItem(self, value: str, text: Optional[str] = None) -> Toggle:
         button = Toggle(text or value, self, variant="outline")
+        clear_graphics_effect(button)
         button.toggled.connect(
             lambda checked, item=value: checked and self.valueChanged.emit(item)
         )
         self._buttons[value] = button
         self.group.addButton(button)
-        self._layout.addWidget(button)
+        self._layout.insertWidget(self._layout.count() - 1, button)
+        self._sync_segments()
         return button
+
+    def _sync_segments(self) -> None:
+        buttons = tuple(self._buttons.values())
+        for index, button in enumerate(buttons):
+            position = (
+                "only"
+                if len(buttons) == 1
+                else "first"
+                if index == 0
+                else "last"
+                if index == len(buttons) - 1
+                else "middle"
+            )
+            button.setProperty("groupPosition", position)
+            refresh_style(button)
 
     def value(self) -> str:
         for value, button in self._buttons.items():
@@ -97,12 +172,28 @@ class ButtonGroup(QtWidgets.QFrame):
     def __init__(self, parent: Optional[Any] = None) -> None:
         super().__init__(parent)
         initialize_component(self, "button-group")
+        self._buttons = []
         self.layout_ = QtWidgets.QHBoxLayout(self)
         self.layout_.setContentsMargins(0, 0, 0, 0)
         self.layout_.setSpacing(0)
+        self.layout_.addStretch(1)
 
     def addButton(self, button: Button) -> None:
-        self.layout_.addWidget(button)
+        clear_graphics_effect(button)
+        self._buttons.append(button)
+        self.layout_.insertWidget(self.layout_.count() - 1, button)
+        for index, current in enumerate(self._buttons):
+            position = (
+                "only"
+                if len(self._buttons) == 1
+                else "first"
+                if index == 0
+                else "last"
+                if index == len(self._buttons) - 1
+                else "middle"
+            )
+            current.setProperty("groupPosition", position)
+            refresh_style(current)
 
 
 class InputGroup(QtWidgets.QFrame):
@@ -114,10 +205,29 @@ class InputGroup(QtWidgets.QFrame):
         self.layout_.setSpacing(6)
         self.prefixLabel = Label("", self, variant="muted")
         self.input = Input(self)
+        clear_graphics_effect(self.input)
+        self.input.installEventFilter(self)
         self.suffixLabel = Label("", self, variant="muted")
         self.layout_.addWidget(self.prefixLabel)
         self.layout_.addWidget(self.input, 1)
         self.layout_.addWidget(self.suffixLabel)
+        self.setFixedHeight(36)
+        install_shadow(self, "xs")
+
+    def eventFilter(self, watched: Any, event: Any) -> bool:
+        if watched is self.input:
+            focus_in = getattr(QtCore.QEvent, "FocusIn", None)
+            focus_out = getattr(QtCore.QEvent, "FocusOut", None)
+            if focus_in is None:
+                focus_in = QtCore.QEvent.Type.FocusIn
+                focus_out = QtCore.QEvent.Type.FocusOut
+            if event.type() == focus_in:
+                self.setProperty("focused", True)
+                refresh_style(self)
+            elif event.type() == focus_out:
+                self.setProperty("focused", False)
+                refresh_style(self)
+        return super().eventFilter(watched, event)
 
     def get_prefix(self) -> str:
         return self.prefixLabel.text()
@@ -153,7 +263,8 @@ class InputOTP(QtWidgets.QFrame):
         self._updating = False
         self.layout_ = QtWidgets.QHBoxLayout(self)
         self.layout_.setContentsMargins(0, 0, 0, 0)
-        self.layout_.setSpacing(6)
+        self.layout_.setSpacing(0)
+        self.layout_.addStretch(1)
         self.set_code_length(length)
 
     def code_length(self) -> int:
@@ -171,13 +282,25 @@ class InputOTP(QtWidgets.QFrame):
         for index in range(length):
             edit = Input(self)
             edit.setMaxLength(1)
+            clear_graphics_effect(edit)
             edit.setAlignment(_align_center())
-            edit.setFixedWidth(38)
+            edit.setFixedSize(36, 36)
+            edit.setProperty(
+                "otpPosition",
+                "only"
+                if length == 1
+                else "first"
+                if index == 0
+                else "last"
+                if index == length - 1
+                else "middle",
+            )
+            refresh_style(edit)
             edit.textChanged.connect(
                 lambda text, position=index: self._slot_changed(position, text)
             )
             self._edits.append(edit)
-            self.layout_.addWidget(edit)
+            self.layout_.insertWidget(self.layout_.count() - 1, edit)
 
     def text(self) -> str:
         return "".join(edit.text() for edit in self._edits)
@@ -341,6 +464,22 @@ class Combobox(QtWidgets.QComboBox):
         if no_insert is None:
             no_insert = QtWidgets.QComboBox.InsertPolicy.NoInsert
         self.setInsertPolicy(no_insert)
+        self.setFixedHeight(36)
+        install_shadow(self, "xs")
+        _install_combo_box_chevron(self, "chevrons-up-down")
+
+    def showPopup(self) -> None:
+        popup = style_combo_popup(self)
+        super().showPopup()
+        position_combo_popup(self, popup)
+
+    def mousePressEvent(self, event: Any) -> None:
+        if not handle_combo_mouse_press(self, event, trigger_only=True):
+            super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event: Any) -> None:
+        if not handle_combo_mouse_release(self, event):
+            super().mouseReleaseEvent(event)
 
     def setOptions(self, options: Iterable[str]) -> None:
         self.clear()
@@ -351,14 +490,91 @@ class NativeSelect(QtWidgets.QComboBox):
     def __init__(self, parent: Optional[Any] = None) -> None:
         super().__init__(parent)
         initialize_component(self, "native-select")
+        self.setFixedHeight(36)
+        install_shadow(self, "xs")
+        _install_combo_box_chevron(self, "chevron-down")
+
+    def showPopup(self) -> None:
+        popup = style_combo_popup(self)
+        super().showPopup()
+        position_combo_popup(self, popup)
+
+    def mousePressEvent(self, event: Any) -> None:
+        if not handle_combo_mouse_press(self, event, trigger_only=False):
+            super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event: Any) -> None:
+        if not handle_combo_mouse_release(self, event):
+            super().mouseReleaseEvent(event)
 
 
 class DatePicker(QtWidgets.QDateEdit):
     def __init__(self, parent: Optional[Any] = None) -> None:
         super().__init__(parent)
         initialize_component(self, "date-picker")
+        self._drop_down_hovered = False
         self.setCalendarPopup(True)
+        calendar_popup = self.calendarWidget().window()
+        popup_filter = _date_picker_popup_filter_type()(calendar_popup)
+        calendar_popup.installEventFilter(popup_filter)
+        self._calendar_popup_position_filter = popup_filter
         self.setDate(QtCore.QDate.currentDate())
+        self.setFixedHeight(36)
+        self.setMouseTracking(True)
+        install_shadow(self, "xs")
+
+    def _set_drop_down_hovered(self, hovered: bool) -> None:
+        hovered = bool(hovered)
+        if hovered != self._drop_down_hovered:
+            self._drop_down_hovered = hovered
+            self.update()
+
+    def mouseMoveEvent(self, event: Any) -> None:
+        position = getattr(event, "position", None)
+        point = position() if callable(position) else event.pos()
+        self._set_drop_down_hovered(point.x() >= self.width() - 32)
+        super().mouseMoveEvent(event)
+
+    def leaveEvent(self, event: Any) -> None:
+        self._set_drop_down_hovered(False)
+        super().leaveEvent(event)
+
+    def paintEvent(self, event: Any) -> None:
+        super().paintEvent(event)
+        painter = QtGui.QPainter(self)
+        enable_antialiasing(painter)
+        hover_active = self._drop_down_hovered and self.isEnabled()
+        if hover_active:
+            no_pen = getattr(QtCore.Qt, "NoPen", None)
+            if no_pen is None:
+                no_pen = QtCore.Qt.PenStyle.NoPen
+            painter.setPen(no_pen)
+            painter.setBrush(semantic_color(self, "accent"))
+            painter.drawRoundedRect(
+                QtCore.QRectF(self.width() - 30.0, 4.0, 26.0, self.height() - 8.0),
+                4.0,
+                4.0,
+            )
+        color_name = "accentForeground" if hover_active else "mutedForeground"
+        color = semantic_color(self, color_name)
+        if not self.isEnabled():
+            color = with_alpha(color, 128)
+        pen = QtGui.QPen(color, 1.5)
+        cap = getattr(QtCore.Qt, "RoundCap", None)
+        join = getattr(QtCore.Qt, "RoundJoin", None)
+        if cap is None:
+            cap = QtCore.Qt.PenCapStyle.RoundCap
+            join = QtCore.Qt.PenJoinStyle.RoundJoin
+        pen.setCapStyle(cap)
+        pen.setJoinStyle(join)
+        painter.setPen(pen)
+        center_x = self.width() - 16.0
+        center_y = self.height() / 2.0
+        path = QtGui.QPainterPath()
+        path.moveTo(center_x - 4.0, center_y - 2.0)
+        path.lineTo(center_x, center_y + 2.0)
+        path.lineTo(center_x + 4.0, center_y - 2.0)
+        painter.drawPath(path)
 
 
 __all__ = [

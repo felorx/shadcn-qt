@@ -1,19 +1,40 @@
 # shadcn-qt (Python)
 
-The PyPI distribution name is `shadcn-qt`; its normalized Python import name
-is `shadcn_qt`. Python 3.9 or newer is required. Install with exactly **one**
-Qt binding extra:
+The free Core package is published at
+[PyPI](https://pypi.org/project/shadcn-qt/). The distribution name is
+`shadcn-qt`; its normalized Python import name is `shadcn_qt`. Python 3.9 or
+newer is required.
+
+Core uses the classic shadcn/ui `new-york` visual profile with the Zinc
+light/dark palette. `STYLE_PROFILE` and `BASE_COLOR` expose that identity to
+applications and tooling.
+
+For a new environment, install with exactly **one** Qt binding extra:
 
 This is an independent Qt implementation and is not affiliated with or
 endorsed by the upstream shadcn project. It is published by
 [Felorx](https://felorx.com).
 
 ```bash
-pip install "shadcn-qt[pyside6]"
+python -m pip install "shadcn-qt[pyside6]"
 # or: pyqt6 | pyside2 | pyqt5
 ```
 
-For source development, use `pip install -e ".[pyside6]"` in this directory.
+If an existing project already has PySide or PyQt, preserve it and install Core
+without a binding extra:
+
+```bash
+python -m pip install shadcn-qt
+```
+
+Verify the installed version with:
+
+```bash
+python -c "from importlib.metadata import version; print(version('shadcn-qt'))"
+```
+
+For source development, use
+`python -m pip install -e ".[pyside6,dev]"` in this directory.
 
 Regenerate styles after editing `packages/design-tokens/tokens.json`:
 
@@ -51,6 +72,12 @@ apply_theme(app, "light")
 
 Use `adopt_native_widgets(page)` for one subtree, and `disable_native_widget_styling(app)` to remove unchanged adapter defaults. Set `shadcn_qt_native_styling=False` on custom-painted or third-party widgets that should be left alone.
 
+Known QtWidgets receive dedicated `new-york` + Zinc rules. QSS-inexpressible
+checkbox/radio glyphs, editor arrows, calendar cells, and elevation use
+reversible adapter enhancements. The repository Gallery includes four pages
+built exclusively from stock QtWidgets plus eight light/dark screenshot
+baselines.
+
 ## Qt Designer
 
 Install the recommended plugin host, then launch Designer with the registration path already configured:
@@ -62,12 +89,20 @@ shadcn-qt-designer
 
 Use `from shadcn_qt.designer import load_ui` to load the saved form under PySide or PyQt.
 
-The public package exports 65 Qt-native classes covering the current named shadcn/ui catalog. Compound widgets retain normal Qt signals, models, layouts, and Designer-editable properties.
+The public package exports 66 Qt-native classes covering the current named shadcn/ui catalog plus the Chrome-style `TabPane` convenience. Compound widgets retain normal Qt signals, models, layouts, and Designer-editable properties.
+
+## Core and Pro
+
+This distribution is shadcn-qt Core. The separately ordered private
+`shadcn-qt-pro` distribution uses the `shadcn_qt_pro` import name. The
+`shadcn_qt.pro` namespace in Core only forwards to that package when it is
+installed; no Pro implementation or customer entitlement is included in this
+wheel. Core commercial rights and Pro access are separate Order Form items.
 
 ## License
 
-Current releases use `GPL-3.0-only OR LicenseRef-Shadcn-Qt-Commercial`.
-GPL-compatible projects may use the GPL option. Proprietary projects need a
-valid shadcn-qt commercial Order Form. The commercial license does not include
+Core is publicly downloadable at no cost under GPL-3.0-only. Proprietary
+projects need a valid shadcn-qt commercial Order Form instead. Installing from
+PyPI does not grant commercial rights. The commercial license does not include
 the separate Qt, PySide, or PyQt licenses. See the `LICENSE`, `LICENSES`, and
 `NOTICE.md` files included in every wheel and source distribution.

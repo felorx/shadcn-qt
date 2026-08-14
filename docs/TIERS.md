@@ -25,16 +25,30 @@ paid update period; renewal is needed for later versions and continued support.
 Prices, currency, tax, support, governing law, and the legal licensor identity
 belong in the Order Form rather than source code.
 
-## Public package and future add-ons
+## Public Core and private Pro
 
-The public `shadcn-qt` distribution contains the complete current 65-class
+The public `shadcn-qt` distribution contains the complete current 66-class
 catalog, native-widget compatibility, themes, and Qt Designer integration. The
 same artifact can be used under GPL or a commercial Order Form.
 
-`shadcn_qt.pro` remains reserved for possible separately ordered enterprise
-extensions such as specialized remote-data adapters, advanced Designer
-tooling, private theme registries, or SLA integrations. A commercial license
-for the public package does not automatically include a future Pro artifact.
+`shadcn-qt-pro` is a separately ordered and privately distributed product. It
+uses the import package `shadcn_qt_pro`; the public `shadcn_qt.pro` namespace is
+only a compatibility bridge. Pro implementation, signing keys, customer
+certificates, and entitlement records must never enter the public Core
+repository or Core wheel.
+
+Core commercial rights and Pro access are distinct line items:
+
+- a **Core commercial license** permits proprietary use of the public package;
+- a **Pro entitlement** grants access to the private package and only the
+  features, seats, versions, update period, and support listed on the Order
+  Form;
+- expiration of an update period blocks later Pro releases and support, not
+  continued use of a perpetual covered version;
+- evaluation and expiring subscription certificates may have a runtime expiry
+  when the Order Form explicitly says so.
+
+See [PRO.md](PRO.md) for the repository boundary and delivery design.
 
 See [COMMERCIAL.md](COMMERCIAL.md), [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md),
 and the repository [LICENSE](../LICENSE).

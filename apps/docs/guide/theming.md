@@ -2,6 +2,13 @@
 
 shadcn-qt uses the same semantic vocabulary as shadcn/ui: `background`, `foreground`, `primary`, `secondary`, `muted`, `accent`, `destructive`, `border`, `input`, and `ring`. Widgets consume those roles instead of hard-coded brand colors.
 
+The built-in visual profile is **classic `new-york` + Zinc**. `new-york`
+defines component geometry, spacing, shadows, focus states, and interaction
+rhythm; Zinc defines the neutral light/dark palette. This is the classic
+registry profile, not one of the newer Vega/Nova/Maia presets. The repository's
+[visual baseline](./visual-baseline.md) records the audited metrics
+and official registry references.
+
 ## Apply a built-in theme
 
 ```python
@@ -28,9 +35,18 @@ window = MainWindow()
 apply_theme(app, "dark")
 ```
 
-The adapter covers the complete QtWidgets QWidget family, including editors, item views, scrollbars, toolbars, docks, dialogs, containers, and dynamically created widgets. Known controls receive component-specific QSS; unknown QWidget subclasses receive a neutral theme fallback. Explicit component properties are preserved. Use `shadcn_qt_native_styling=False` to exclude an individual widget, or `adopt_native_widgets(page)` for a one-time scoped migration.
+The adapter covers the complete QtWidgets QWidget family, including editors,
+item views, scrollbars, toolbars, docks, dialogs, containers, and dynamically
+created widgets. Known controls receive component-specific QSS and reversible
+runtime enhancements where QSS is insufficient; unknown QWidget subclasses
+receive a neutral theme fallback. Explicit component properties are preserved.
+Use `shadcn_qt_native_styling=False` to exclude an individual widget, or
+`adopt_native_widgets(page)` for a one-time scoped migration.
 
-See the [existing-project migration guide](./migration.md) for mappings, semantic overrides, cleanup, and legacy QSS integration.
+See [Native QtWidgets](./native-widgets.md) for the coverage matrix, Gallery
+previews, screenshot regression workflow, and platform-native dialog limits.
+The [existing-project migration guide](./migration.md) covers semantic
+overrides, cleanup, and legacy QSS integration.
 
 ## Global configuration
 

@@ -72,3 +72,11 @@ def test_plugin_catalog_and_environment(designer_runtime):
     preview = app.styleSheet().split("/* shadcn-qt Designer preview */")[-1]
     assert "QWidget[shadcn_qt_component]" in preview
     assert "QMainWindow, QDialog" not in preview
+
+    tab_pane_spec = next(
+        spec for spec in register_shadcn_qt.SPECS if spec.widget.__name__ == "TabPane"
+    )
+    assert tab_pane_spec.container is True
+    tab_pane_xml = register_shadcn_qt.dom_xml(tab_pane_spec)
+    assert '<widget class="TabPane"' in tab_pane_xml
+    assert '<attribute name="title"><string>Tab 1</string></attribute>' in tab_pane_xml

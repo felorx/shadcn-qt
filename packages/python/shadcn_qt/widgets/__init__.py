@@ -23,6 +23,7 @@ from shadcn_qt.widgets.controls import (
     Separator,
     Slider,
     Switch,
+    TabPane,
     Tabs,
     TextArea,
 )
@@ -137,6 +138,7 @@ __all__ = [
     "Spinner",
     "Switch",
     "Table",
+    "TabPane",
     "Tabs",
     "TextArea",
     "Toast",

@@ -13,6 +13,8 @@ from shadcn_qt.native import (
     enable_native_widget_styling,
 )
 from shadcn_qt.theme import (
+    BASE_COLOR,
+    STYLE_PROFILE,
     Theme,
     ThemeConfig,
     ThemeMode,
@@ -92,6 +94,7 @@ _WIDGET_NAMES = frozenset(
         "Spinner",
         "Switch",
         "Table",
+        "TabPane",
         "Tabs",
         "TextArea",
         "Toast",
@@ -103,6 +106,8 @@ _WIDGET_NAMES = frozenset(
 )
 
 __all__ = sorted(_WIDGET_NAMES) + [
+    "BASE_COLOR",
+    "STYLE_PROFILE",
     "__version__",
     "Theme",
     "ThemeConfig",

@@ -2,8 +2,18 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "shadcn-qt design tokens",
   "type": "object",
-  "required": ["themes", "radius"],
+  "required": ["meta", "themes", "radius"],
   "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["style", "baseColor", "upstream"],
+      "properties": {
+        "style": { "const": "new-york" },
+        "baseColor": { "const": "zinc" },
+        "upstream": { "type": "string", "format": "uri" }
+      },
+      "additionalProperties": false
+    },
     "themes": {
       "type": "object",
       "additionalProperties": {
