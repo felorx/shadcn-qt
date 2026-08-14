@@ -90,26 +90,65 @@ def test_date_picker_uses_one_outer_border_and_custom_chevron(runtime):
 
 def test_combo_family_popups_use_one_outer_border(runtime):
     from shadcn_qt import Combobox, NativeSelect, Select, apply_theme, theme_stylesheet
+    from shadcn_qt._qt import import_qt_module
 
-    app, _, _ = runtime
+    app, QtCore, _ = runtime
+    QtTest = import_qt_module("QtTest")
+    left_button = getattr(QtCore.Qt, "LeftButton", None)
+    if left_button is None:
+        left_button = QtCore.Qt.MouseButton.LeftButton
     apply_theme(app, "light")
     for control_type in (Select, Combobox, NativeSelect):
         control = control_type()
         control.addItems(["Apple", "Banana", "Cherry"])
         control.resize(260, 36)
         control.show()
-        control.showPopup()
         app.processEvents()
+        controller = control._shadcn_qt_combo_chevron
+        glyph = controller.glyph
+        icon_bounds = glyph._icon_path().boundingRect()
+        expected_size = (6.0, 10.0) if control.isEditable() else (8.0, 4.0)
+        assert (icon_bounds.width(), icon_bounds.height()) == expected_size
+        assert icon_bounds.center() == QtCore.QRectF(glyph.rect()).center()
+        if control.isEditable():
+            QtTest.QTest.mouseClick(
+                control.lineEdit(),
+                left_button,
+                pos=control.lineEdit().rect().center(),
+            )
+            app.processEvents()
+            assert not control.view().isVisible()
+            trigger_point = glyph.geometry().center()
+        else:
+            trigger_point = control.rect().center()
+        QtTest.QTest.mouseClick(
+            control,
+            left_button,
+            pos=trigger_point,
+        )
+        app.processEvents()
+        assert control.view().isVisible()
         popup = control.view().window()
         assert popup.objectName() == "shadcnQtComboPopup"
         assert "border: 1px solid #e4e4e7" in popup.styleSheet()
+        assert popup.width() == control.width()
+        second_row = control.view().visualRect(control.model().index(1, 0))
+        assert second_row.height() == 32
+        assert second_row.width() <= control.view().viewport().width()
         image = popup.grab().toImage()
         center_x = image.width() // 2
         assert image.pixelColor(center_x, 0) != image.pixelColor(center_x, 2)
         assert image.pixelColor(center_x, image.height() - 1) != image.pixelColor(
             center_x, image.height() - 3
         )
-        control.hidePopup()
+        QtTest.QTest.mouseClick(
+            control.view().viewport(),
+            left_button,
+            pos=second_row.center(),
+        )
+        app.processEvents()
+        assert control.currentText() == "Banana"
+        assert not control.view().isVisible()
         control.close()
 
     qss = theme_stylesheet("light")
@@ -117,6 +156,14 @@ def test_combo_family_popups_use_one_outer_border(runtime):
     rule = qss.split(selector, 1)[1].split("}", 1)[0]
     assert "background: transparent" in rule
     assert "border: none" in rule
+    assert "QComboBox[shadcn_qt_component]::down-arrow" in qss
+    assert "QComboBox[shadcn_qt_component] QAbstractItemView::item" in qss
+    drop_down_rule = qss.split(
+        "QComboBox[shadcn_qt_component]::drop-down", 1
+    )[1].split("}", 1)[0]
+    assert "margin: 2px" in drop_down_rule
+    assert "border-radius: 4px" in drop_down_rule
+    assert "QComboBox[shadcn_qt_component]::drop-down:hover" in qss
 
 
 def test_new_york_elevation_and_variant_contract(runtime):

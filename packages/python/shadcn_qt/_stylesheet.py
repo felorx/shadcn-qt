@@ -263,7 +263,13 @@ QAbstractSpinBox[shadcn_qt_component="spin-box"] {{
 QComboBox[shadcn_qt_component]:focus,
 QDateTimeEdit[shadcn_qt_component="date-picker"]:focus,
 QAbstractSpinBox[shadcn_qt_component="spin-box"]:focus {{ border-color: {c["ring"]}; }}
-QComboBox[shadcn_qt_component]::drop-down {{ subcontrol-origin: padding; subcontrol-position: top right; width: 28px; border: none; }}
+QComboBox[shadcn_qt_component]::drop-down {{
+  subcontrol-origin: border; subcontrol-position: top right; width: 32px;
+  margin: 2px; border: none; border-radius: {r_sm}; background: transparent;
+}}
+QComboBox[shadcn_qt_component]::drop-down:hover,
+QComboBox[shadcn_qt_component]::drop-down:on {{ background: {c["accent"]}; }}
+QComboBox[shadcn_qt_component]::down-arrow {{ image: none; width: 0; height: 0; }}
 QDateTimeEdit[shadcn_qt_component="date-picker"]::drop-down {{
   subcontrol-origin: border; subcontrol-position: top right; width: 32px;
   border: none; background: transparent;
@@ -274,6 +280,12 @@ QComboBox[shadcn_qt_component] QAbstractItemView {{
   background: transparent; color: {c["popoverForeground"]}; border: none;
   border-radius: 0; padding: 4px; outline: 0;
   selection-background-color: {c["accent"]}; selection-color: {c["accentForeground"]};
+}}
+QComboBox[shadcn_qt_component] QAbstractItemView::item {{
+  min-height: 28px; padding: 2px 8px; border: none; border-radius: {r_sm};
+}}
+QComboBox[shadcn_qt_component] QAbstractItemView::item:selected {{
+  background: {c["accent"]}; color: {c["accentForeground"]};
 }}
 
 QProgressBar[shadcn_qt_component="progress"] {{

@@ -79,6 +79,61 @@ def test_adopt_native_widgets_preserves_explicit_choices(runtime):
     assert disable_native_widget_styling(app, clear=True) >= adopted
 
 
+def test_native_combo_popup_has_one_outer_border(runtime):
+    app, QtWidgets = runtime
+    from shadcn_qt import (
+        adopt_native_widgets,
+        apply_theme,
+        disable_native_widget_styling,
+    )
+
+    disable_native_widget_styling(app, clear=True)
+    apply_theme(app, "light")
+    combo = QtWidgets.QComboBox()
+    combo.addItems(["PySide6", "PyQt6", "PySide2", "PyQt5"])
+    combo.resize(300, 36)
+    view = combo.view()
+    popup = view.window()
+    original_popup_name = popup.objectName()
+    original_popup_stylesheet = popup.styleSheet()
+    original_view_name = view.objectName()
+
+    assert adopt_native_widgets(combo) >= 1
+    assert popup.objectName() == "shadcnQtNativeComboPopup"
+    assert view.objectName() == "shadcnQtNativeComboPopupView"
+    assert view.property("shadcn_qt_native_adopted") is None
+    assert popup.styleSheet().count("border: 1px solid") == 1
+    assert "QListView { background: transparent" in popup.styleSheet()
+    assert "border: none" in popup.styleSheet()
+
+    combo.show()
+    combo.showPopup()
+    app.processEvents()
+    assert view.frameWidth() == 4
+    image = popup.grab().toImage()
+    center_x = image.width() // 2
+    assert image.pixelColor(center_x, 0) != image.pixelColor(center_x, 1)
+    assert image.pixelColor(center_x, 1) == image.pixelColor(center_x, 2)
+    assert image.pixelColor(center_x, image.height() - 1) != image.pixelColor(
+        center_x, image.height() - 2
+    )
+    assert image.pixelColor(
+        center_x, image.height() - 2
+    ) == image.pixelColor(center_x, image.height() - 3)
+
+    apply_theme(app, "dark")
+    app.processEvents()
+    assert "background: #09090b" in popup.styleSheet()
+    assert "border: 1px solid #27272a" in popup.styleSheet()
+
+    combo.hidePopup()
+    assert disable_native_widget_styling(app, clear=True) >= 1
+    assert popup.objectName() == original_popup_name
+    assert popup.styleSheet() == original_popup_stylesheet
+    assert view.objectName() == original_view_name
+    combo.close()
+
+
 def test_global_adapter_handles_future_widgets_and_opt_out(runtime):
     app, QtWidgets = runtime
     from shadcn_qt import (

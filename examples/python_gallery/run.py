@@ -17,6 +17,7 @@ from shadcn_qt import (
 )
 from shadcn_qt import widgets as ui
 from shadcn_qt._qt import QtCore, QtGui, QtWidgets
+from shadcn_qt.widgets._icons import _paint_vector_icon
 
 COMPONENT_CATEGORIES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     (
@@ -141,6 +142,33 @@ QWidget#galleryPreviewHost { min-height: 420px; }
 QFrame#galleryPreviewCard { min-width: 560px; }
 QLabel[nativePreviewHeading="true"] { font-size: 14px; font-weight: 600; }
 """
+
+
+class _GalleryNavigationTree(QtWidgets.QTreeWidget):
+    """Tree with theme-aware vector disclosure indicators for category rows."""
+
+    def branch_icon_name(self, index: Any) -> str:
+        return "chevron-down" if self.isExpanded(index) else "chevron-right"
+
+    def drawBranches(self, painter: Any, rect: Any, index: Any) -> None:
+        if index.parent().isValid() or not self.model().hasChildren(index):
+            return
+        indicator_size = min(self.indentation(), rect.height())
+        indicator_rect = QtCore.QRectF(
+            rect.right() - indicator_size + 1,
+            rect.top(),
+            indicator_size,
+            rect.height(),
+        )
+        painter.save()
+        _paint_vector_icon(
+            self,
+            painter,
+            self.branch_icon_name(index),
+            rect=indicator_rect,
+            color_name="mutedForeground",
+        )
+        painter.restore()
 
 
 def component_names() -> Tuple[str, ...]:
@@ -412,13 +440,31 @@ def build_component_preview(name: str, parent: Any = None) -> Any:
 
     elif name == "AspectRatio":
         ratio = ui.AspectRatio(host, ratio=16 / 9)
+        ratio.setObjectName("galleryAspectRatioDemo")
         ratio.setMaximumWidth(520)
         ratio.setMinimumWidth(360)
         ratio_layout = QtWidgets.QVBoxLayout(ratio)
+        ratio_layout.setContentsMargins(0, 0, 0, 0)
         ratio_layout.setAlignment(_align_center())
-        ratio_layout.addWidget(
-            ui.Label("16:9 preview surface", ratio, variant="large"), 0, _align_center()
+        surface = ui.Card(ratio)
+        surface_layout = QtWidgets.QVBoxLayout(surface)
+        surface_layout.setContentsMargins(24, 24, 24, 24)
+        surface_layout.setSpacing(6)
+        surface_layout.addStretch(1)
+        surface_layout.addWidget(
+            ui.Label("16:9", surface, variant="large"), 0, _align_center()
         )
+        surface_layout.addWidget(
+            ui.Label(
+                "Responsive preview surface · 520 × 293",
+                surface,
+                variant="muted",
+            ),
+            0,
+            _align_center(),
+        )
+        surface_layout.addStretch(1)
+        ratio_layout.addWidget(surface)
         layout.addWidget(ratio)
 
     elif name == "Card":
@@ -1297,21 +1343,23 @@ class GalleryWindow(QtWidgets.QMainWindow):
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(0)
 
-        sidebar = ui.Card(central)
-        sidebar.setObjectName("gallerySidebar")
-        sidebar.setMinimumWidth(270)
-        sidebar.setMaximumWidth(320)
-        sidebar_layout = QtWidgets.QVBoxLayout(sidebar)
+        self.sidebar = QtWidgets.QWidget(central)
+        self.sidebar.setObjectName("gallerySidebar")
+        self.sidebar.setMinimumWidth(270)
+        self.sidebar.setMaximumWidth(320)
+        sidebar_layout = QtWidgets.QVBoxLayout(self.sidebar)
         sidebar_layout.setContentsMargins(18, 20, 18, 18)
         sidebar_layout.setSpacing(12)
-        sidebar_layout.addWidget(ui.Typography("shadcn-qt", sidebar, level="h3"))
         sidebar_layout.addWidget(
-            ui.Label("Component Gallery", sidebar, variant="muted")
+            ui.Typography("shadcn-qt", self.sidebar, level="h3")
         )
-        self.search = ui.Input(sidebar)
+        sidebar_layout.addWidget(
+            ui.Label("Component Gallery", self.sidebar, variant="muted")
+        )
+        self.search = ui.Input(self.sidebar)
         self.search.setPlaceholderText("Search 65 components + native previews…")
         sidebar_layout.addWidget(self.search)
-        self.navigation = QtWidgets.QTreeWidget(sidebar)
+        self.navigation = _GalleryNavigationTree(self.sidebar)
         self.navigation.setObjectName("galleryNavigation")
         self.navigation.setHeaderHidden(True)
         self.navigation.setIndentation(14)
@@ -1319,11 +1367,14 @@ class GalleryWindow(QtWidgets.QMainWindow):
         sidebar_layout.addWidget(
             ui.Label(
                 f"Core {__version__} · {STYLE_PROFILE} + {BASE_COLOR.title()}",
-                sidebar,
+                self.sidebar,
                 variant="muted",
             )
         )
-        root.addWidget(sidebar)
+        root.addWidget(self.sidebar)
+        self.sidebar_separator = ui.Separator(central, orientation="vertical")
+        self.sidebar_separator.setObjectName("gallerySidebarSeparator")
+        root.addWidget(self.sidebar_separator)
 
         content = QtWidgets.QWidget(central)
         content_layout = QtWidgets.QVBoxLayout(content)

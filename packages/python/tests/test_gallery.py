@@ -54,6 +54,62 @@ def test_gallery_search_and_theme_controls(gallery_runtime):
     window.close()
 
 
+def test_gallery_sidebar_uses_a_single_flat_separator(gallery_runtime):
+    app, gallery = gallery_runtime
+    window = gallery.GalleryWindow()
+    window.show()
+    app.processEvents()
+
+    assert type(window.sidebar).__name__ == "QWidget"
+    assert window.sidebar.property("shadcn_qt_component") != "card"
+    assert window.sidebar_separator.get_orientation() == "vertical"
+    assert window.sidebar_separator.width() == 1
+    assert window.sidebar_separator.height() == window.centralWidget().height()
+
+    window.close()
+
+
+def test_gallery_navigation_shows_expansion_state(gallery_runtime):
+    app, gallery = gallery_runtime
+    window = gallery.GalleryWindow()
+    window.show()
+    app.processEvents()
+
+    category = window.navigation.topLevelItem(0)
+    index = window.navigation.indexFromItem(category)
+    assert category.isExpanded()
+    assert window.navigation.branch_icon_name(index) == "chevron-down"
+
+    category.setExpanded(False)
+    app.processEvents()
+    assert not category.isExpanded()
+    assert window.navigation.branch_icon_name(index) == "chevron-right"
+
+    category.setExpanded(True)
+    app.processEvents()
+    assert window.navigation.branch_icon_name(index) == "chevron-down"
+    window.close()
+
+
+def test_gallery_aspect_ratio_preview_is_visible(gallery_runtime):
+    app, gallery = gallery_runtime
+    QtWidgets = gallery.QtWidgets
+    window = gallery.GalleryWindow(component="AspectRatio")
+    window.show()
+    app.processEvents()
+
+    preview = window.show_component("AspectRatio")
+    app.processEvents()
+    ratio = preview.findChild(QtWidgets.QFrame, "galleryAspectRatioDemo")
+    assert ratio is not None
+    assert ratio.width() >= 360
+    assert ratio.height() == round(ratio.width() / (16 / 9))
+    assert ratio.height() > 0
+    assert ratio.layout().count() == 1
+    assert ratio.layout().itemAt(0).widget().isVisible()
+    window.close()
+
+
 def test_gallery_exposes_stock_qtwidgets_previews(gallery_runtime):
     app, gallery = gallery_runtime
     window = gallery.GalleryWindow(component="Native Forms")

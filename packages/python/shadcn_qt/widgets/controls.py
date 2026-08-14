@@ -10,9 +10,11 @@ from shadcn_qt.widgets._helpers import (
     refresh_style,
     set_choice_property,
 )
+from shadcn_qt.widgets._icons import _install_combo_box_chevron
 from shadcn_qt.widgets._style import (
     clear_graphics_effect,
     enable_antialiasing,
+    handle_combo_mouse_press,
     install_shadow,
     semantic_color,
     style_combo_popup,
@@ -291,10 +293,15 @@ class Select(QtWidgets.QComboBox):
         initialize_component(self, "select")
         self.setFixedHeight(36)
         install_shadow(self, "xs")
+        _install_combo_box_chevron(self, "chevron-down")
 
     def showPopup(self) -> None:
         style_combo_popup(self)
         super().showPopup()
+
+    def mousePressEvent(self, event: Any) -> None:
+        if not handle_combo_mouse_press(self, event, trigger_only=False):
+            super().mousePressEvent(event)
 
 
 class Slider(QtWidgets.QSlider):

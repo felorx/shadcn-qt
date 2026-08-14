@@ -15,6 +15,11 @@ from shadcn_qt.widgets.button import Button
 QtCore, QtGui, QtWidgets = _qt.qt_modules()
 
 
+def _event_type(name: str) -> Any:
+    value = getattr(QtCore.QEvent, name, None)
+    return value if value is not None else getattr(QtCore.QEvent.Type, name)
+
+
 def _vector_icon_path(rect: Any, icon_name: str) -> Any:
     """Return a small Lucide-style path centered exactly within ``rect``."""
 
@@ -36,6 +41,13 @@ def _vector_icon_path(rect: Any, icon_name: str) -> Any:
         path.moveTo(center.x() - 4.0, center.y() - 2.0)
         path.lineTo(center.x(), center.y() + 2.0)
         path.lineTo(center.x() + 4.0, center.y() - 2.0)
+    elif icon_name == "chevrons-up-down":
+        path.moveTo(center.x() - 3.0, center.y() - 2.0)
+        path.lineTo(center.x(), center.y() - 5.0)
+        path.lineTo(center.x() + 3.0, center.y() - 2.0)
+        path.moveTo(center.x() - 3.0, center.y() + 2.0)
+        path.lineTo(center.x(), center.y() + 5.0)
+        path.lineTo(center.x() + 3.0, center.y() + 2.0)
     elif icon_name == "close":
         path.moveTo(center.x() - 3.5, center.y() - 3.5)
         path.lineTo(center.x() + 3.5, center.y() + 3.5)
@@ -125,9 +137,65 @@ class _VectorIconGlyph(QtWidgets.QWidget):
         )
 
 
+class _ComboBoxChevronController(QtCore.QObject):
+    def __init__(self, widget: Any, icon_name: str) -> None:
+        super().__init__(widget)
+        self.glyph = _VectorIconGlyph(icon_name, widget)
+        widget.installEventFilter(self)
+        self._layout_glyph(widget)
+
+    def _arrow_rect(self, widget: Any) -> Any:
+        option = QtWidgets.QStyleOptionComboBox()
+        widget.initStyleOption(option)
+        control = getattr(QtWidgets.QStyle, "CC_ComboBox", None)
+        arrow = getattr(QtWidgets.QStyle, "SC_ComboBoxArrow", None)
+        if control is None:
+            control = QtWidgets.QStyle.ComplexControl.CC_ComboBox
+            arrow = QtWidgets.QStyle.SubControl.SC_ComboBoxArrow
+        return widget.style().subControlRect(
+            control,
+            option,
+            arrow,
+            widget,
+        )
+
+    def _layout_glyph(self, widget: Any) -> None:
+        rect = self._arrow_rect(widget)
+        if rect.isValid():
+            self.glyph.setGeometry(rect)
+            self.glyph.show()
+            self.glyph.raise_()
+
+    def eventFilter(self, watched: Any, event: Any) -> bool:
+        glyph = getattr(self, "glyph", None)
+        if glyph is not None:
+            event_type = event.type()
+            layout_events = tuple(
+                _event_type(name)
+                for name in ("Resize", "Show")
+            )
+            update_events = tuple(
+                _event_type(name)
+                for name in ("EnabledChange", "PaletteChange")
+            )
+            if event_type in layout_events:
+                self._layout_glyph(watched)
+            elif event_type in update_events:
+                glyph.update()
+        return super().eventFilter(watched, event)
+
+
+def _install_combo_box_chevron(widget: Any, icon_name: str) -> Any:
+    controller = _ComboBoxChevronController(widget, icon_name)
+    widget._shadcn_qt_combo_chevron = controller
+    return controller
+
+
 __all__ = [
+    "_install_combo_box_chevron",
     "_paint_vector_icon",
     "_vector_icon_path",
+    "_ComboBoxChevronController",
     "_VectorIconButton",
     "_VectorIconGlyph",
 ]

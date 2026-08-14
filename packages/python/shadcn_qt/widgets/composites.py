@@ -31,7 +31,7 @@ def _horizontal_expanding(widget: Any) -> None:
 
 
 class AspectRatio(QtWidgets.QFrame):
-    """A container that reports a height derived from its width."""
+    """A container that keeps its height derived from its current width."""
 
     def __init__(self, parent: Optional[Any] = None, *, ratio: float = 16 / 9) -> None:
         super().__init__(parent)
@@ -50,6 +50,7 @@ class AspectRatio(QtWidgets.QFrame):
         if ratio <= 0:
             raise ValueError("ratio must be greater than zero")
         self._ratio = ratio
+        self._sync_height()
         self.updateGeometry()
 
     def hasHeightForWidth(self) -> bool:
@@ -57,6 +58,18 @@ class AspectRatio(QtWidgets.QFrame):
 
     def heightForWidth(self, width: int) -> int:
         return max(1, round(width / self._ratio))
+
+    def _sync_height(self, width: Optional[int] = None) -> None:
+        current_width = self.width() if width is None else width
+        if current_width <= 0:
+            return
+        target = self.heightForWidth(current_width)
+        if self.minimumHeight() != target or self.maximumHeight() != target:
+            self.setFixedHeight(target)
+
+    def resizeEvent(self, event: Any) -> None:
+        super().resizeEvent(event)
+        self._sync_height(event.size().width())
 
     getRatio = get_ratio
     setRatio = set_ratio

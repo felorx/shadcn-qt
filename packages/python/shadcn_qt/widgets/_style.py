@@ -77,7 +77,8 @@ def clear_graphics_effect(widget: Any) -> None:
 def style_combo_popup(widget: Any) -> Any:
     """Give Qt's private combo popup one themed outer border."""
 
-    popup = widget.view().window()
+    view = widget.view()
+    popup = view.window()
     popup.setObjectName("shadcnQtComboPopup")
     background = semantic_color(widget, "popover").name()
     border = semantic_color(widget, "border").name()
@@ -86,7 +87,45 @@ def style_combo_popup(widget: Any) -> Any:
         f"background: {background}; border: 1px solid {border}; "
         "border-radius: 6px; }"
     )
+    popup.setFixedWidth(max(1, widget.width()))
+    scroll_off = getattr(QtCore.Qt, "ScrollBarAlwaysOff", None)
+    elide_right = getattr(QtCore.Qt, "ElideRight", None)
+    if scroll_off is None:
+        scroll_off = QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+    if elide_right is None:
+        elide_right = QtCore.Qt.TextElideMode.ElideRight
+    view.setHorizontalScrollBarPolicy(scroll_off)
+    view.setTextElideMode(elide_right)
+    view.setMouseTracking(True)
+    delegate = view.itemDelegate()
+    if type(delegate) is QtWidgets.QAbstractItemDelegate:
+        view.setItemDelegate(QtWidgets.QStyledItemDelegate(view))
     return popup
+
+
+def handle_combo_mouse_press(
+    widget: Any,
+    event: Any,
+    *,
+    trigger_only: bool,
+) -> bool:
+    """Open a combo popup without Qt's delayed mouse-release suppression."""
+
+    left_button = getattr(QtCore.Qt, "LeftButton", None)
+    if left_button is None:
+        left_button = QtCore.Qt.MouseButton.LeftButton
+    if event.button() != left_button:
+        return False
+    if trigger_only:
+        position = getattr(event, "position", None)
+        point = position().toPoint() if callable(position) else event.pos()
+        controller = getattr(widget, "_shadcn_qt_combo_chevron", None)
+        if controller is None or not controller.glyph.geometry().contains(point):
+            return False
+    widget.setFocus()
+    widget.showPopup()
+    event.accept()
+    return True
 
 
 def animate_window_opacity(
@@ -123,6 +162,7 @@ __all__ = [
     "animate_window_opacity",
     "clear_graphics_effect",
     "enable_antialiasing",
+    "handle_combo_mouse_press",
     "install_shadow",
     "semantic_color",
     "style_combo_popup",

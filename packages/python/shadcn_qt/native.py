@@ -15,6 +15,8 @@ _ADAPTER_ATTRIBUTE = "_shadcn_qt_native_widget_styling_adapter"
 _ADOPTED_PROPERTY = "shadcn_qt_native_adopted"
 _ADDED_PROPERTIES = "shadcn_qt_native_properties"
 _PREFERENCE_PROPERTY = "shadcn_qt_native_styling"
+_COMBO_POPUP_NAME = "shadcnQtNativeComboPopup"
+_COMBO_POPUP_VIEW_NAME = "shadcnQtNativeComboPopupView"
 _STYLE_PROPERTIES = frozenset(
     {
         "shadcn_qt_component",
@@ -47,6 +49,12 @@ def _is_internal_widget(widget: Any, widgets: Any) -> bool:
         parent = widget.parentWidget()
         if isinstance(parent, (widgets.QComboBox, widgets.QAbstractSpinBox)):
             return True
+    if isinstance(widget, widgets.QAbstractItemView):
+        parent = widget.parentWidget()
+        while parent is not None:
+            if isinstance(parent, widgets.QComboBox):
+                return True
+            parent = parent.parentWidget()
     return False
 
 
@@ -472,6 +480,52 @@ def _add_native_glyphs(widget: Any, widgets: Any, state: Dict[str, Any]) -> None
     _layout_native_glyphs(widget)
 
 
+def _style_native_combo_popup(widget: Any) -> None:
+    view = widget.view()
+    popup = view.window()
+    _, gui, _ = _qt.qt_modules()
+    background = _semantic_color(widget, gui, "popover", "Base").name()
+    foreground = _semantic_color(widget, gui, "popoverForeground", "Text").name()
+    border = _semantic_color(widget, gui, "border", "Mid").name()
+    accent = _semantic_color(widget, gui, "accent", "AlternateBase").name()
+    accent_foreground = _semantic_color(
+        widget, gui, "accentForeground", "Text"
+    ).name()
+    popup.setStyleSheet(
+        f"#{_COMBO_POPUP_NAME} {{ background: {background}; "
+        f"border: 1px solid {border}; border-radius: 6px; }} "
+        f"#{_COMBO_POPUP_NAME} QListView {{ background: transparent; "
+        f"color: {foreground}; border: none; border-radius: 0; "
+        "padding: 4px; outline: 0; } "
+        f"#{_COMBO_POPUP_NAME} QListView::item {{ min-height: 28px; "
+        "padding: 2px 8px; border: none; border-radius: 4px; } "
+        f"#{_COMBO_POPUP_NAME} QListView::item:selected {{ "
+        f"background: {accent}; color: {accent_foreground}; }}"
+    )
+
+
+def _mark_native_combo_popup(widget: Any, state: Dict[str, Any]) -> None:
+    _, _, widgets = _qt.qt_modules()
+    view = widget.view()
+    popup = view.window()
+    state["combo_popup"] = {
+        "delegate": view.itemDelegate(),
+        "popup": popup,
+        "popup_name": popup.objectName(),
+        "popup_stylesheet": popup.styleSheet(),
+        "view": view,
+        "view_name": view.objectName(),
+    }
+    delegate = view.itemDelegate()
+    if type(delegate) is widgets.QAbstractItemDelegate:
+        replacement = widgets.QStyledItemDelegate(view)
+        view.setItemDelegate(replacement)
+        state["combo_popup"]["replacement_delegate"] = replacement
+    popup.setObjectName(_COMBO_POPUP_NAME)
+    view.setObjectName(_COMBO_POPUP_VIEW_NAME)
+    _style_native_combo_popup(widget)
+
+
 def _add_native_shadow(widget: Any, gui: Any, widgets: Any, state: Dict[str, Any]) -> None:
     eligible = isinstance(
         widget,
@@ -525,12 +579,15 @@ def _enhancement_filter_type() -> Any:
 
     core, gui, widgets = _qt.qt_modules()
     paint = getattr(core.QEvent, "Paint", None)
+    palette_change = getattr(core.QEvent, "PaletteChange", None)
     resize = getattr(core.QEvent, "Resize", None)
     show = getattr(core.QEvent, "Show", None)
     if paint is None:
         paint = core.QEvent.Type.Paint
         resize = core.QEvent.Type.Resize
         show = core.QEvent.Type.Show
+    if palette_change is None:
+        palette_change = core.QEvent.Type.PaletteChange
 
     class NativeEnhancementFilter(core.QObject):
         def eventFilter(self, watched: Any, event: Any) -> bool:
@@ -538,6 +595,12 @@ def _enhancement_filter_type() -> Any:
                 return False
             if event.type() in {resize, show}:
                 _layout_native_glyphs(watched)
+                if isinstance(watched, widgets.QComboBox):
+                    _style_native_combo_popup(watched)
+            elif event.type() == palette_change and isinstance(
+                watched, widgets.QComboBox
+            ):
+                _style_native_combo_popup(watched)
             elif event.type() == paint and isinstance(
                 watched, (widgets.QCheckBox, widgets.QRadioButton)
             ):
@@ -555,6 +618,8 @@ def _enhance_widget(widget: Any, widgets: Any) -> None:
         state = {}
         widget._shadcn_qt_native_enhancements = state
         _add_native_glyphs(widget, widgets, state)
+        if isinstance(widget, widgets.QComboBox):
+            _mark_native_combo_popup(widget, state)
         _add_native_shadow(widget, gui, widgets, state)
         if isinstance(
             widget,
@@ -602,6 +667,18 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
             view.verticalHeader().setDefaultSectionSize(calendar["section_size"])
         widget.setGridVisible(calendar["grid"])
         widget.setVerticalHeaderFormat(calendar["vertical_header"])
+    combo_popup = state.get("combo_popup")
+    if combo_popup is not None:
+        try:
+            combo_popup["popup"].setObjectName(combo_popup["popup_name"])
+            combo_popup["popup"].setStyleSheet(combo_popup["popup_stylesheet"])
+            combo_popup["view"].setObjectName(combo_popup["view_name"])
+            combo_popup["view"].setItemDelegate(combo_popup["delegate"])
+            replacement = combo_popup.get("replacement_delegate")
+            if replacement is not None:
+                replacement.deleteLater()
+        except RuntimeError:
+            pass
     for glyph in state.get("glyphs", ()):
         glyph.deleteLater()
     event_filter = state.get("event_filter")

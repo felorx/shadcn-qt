@@ -43,6 +43,28 @@ def test_special_catalog_mappings(runtime):
     assert heading.level == "h1"
 
 
+def test_aspect_ratio_keeps_height_when_it_contains_a_layout(runtime):
+    app, QtWidgets = runtime
+    from shadcn_qt import AspectRatio
+
+    ratio = AspectRatio(ratio=16 / 9)
+    content = QtWidgets.QVBoxLayout(ratio)
+    content.addWidget(QtWidgets.QLabel("Preview", ratio))
+    ratio.setFixedWidth(320)
+    ratio.show()
+    app.processEvents()
+    assert ratio.height() == 180
+
+    ratio.setRatio(4 / 3)
+    app.processEvents()
+    assert ratio.height() == 240
+
+    ratio.setFixedWidth(400)
+    app.processEvents()
+    assert ratio.height() == 300
+    ratio.close()
+
+
 def test_accordion_carousel_and_pagination(runtime):
     app, QtWidgets = runtime
     from shadcn_qt import Accordion, Carousel, Pagination

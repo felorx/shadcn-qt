@@ -184,7 +184,13 @@ QAbstractSpinBox[shadcn_qt_component="spin-box"] {
 QComboBox[shadcn_qt_component]:focus,
 QDateTimeEdit[shadcn_qt_component="date-picker"]:focus,
 QAbstractSpinBox[shadcn_qt_component="spin-box"]:focus { border-color: #18181b; }
-QComboBox[shadcn_qt_component]::drop-down { subcontrol-origin: padding; subcontrol-position: top right; width: 28px; border: none; }
+QComboBox[shadcn_qt_component]::drop-down {
+  subcontrol-origin: border; subcontrol-position: top right; width: 32px;
+  margin: 2px; border: none; border-radius: 4px; background: transparent;
+}
+QComboBox[shadcn_qt_component]::drop-down:hover,
+QComboBox[shadcn_qt_component]::drop-down:on { background: #f4f4f5; }
+QComboBox[shadcn_qt_component]::down-arrow { image: none; width: 0; height: 0; }
 QDateTimeEdit[shadcn_qt_component="date-picker"]::drop-down {
   subcontrol-origin: border; subcontrol-position: top right; width: 32px;
   border: none; background: transparent;
@@ -195,6 +201,12 @@ QComboBox[shadcn_qt_component] QAbstractItemView {
   background: transparent; color: #09090b; border: none;
   border-radius: 0; padding: 4px; outline: 0;
   selection-background-color: #f4f4f5; selection-color: #18181b;
+}
+QComboBox[shadcn_qt_component] QAbstractItemView::item {
+  min-height: 28px; padding: 2px 8px; border: none; border-radius: 4px;
+}
+QComboBox[shadcn_qt_component] QAbstractItemView::item:selected {
+  background: #f4f4f5; color: #18181b;
 }
 
 QProgressBar[shadcn_qt_component="progress"] {
@@ -708,7 +720,13 @@ QAbstractSpinBox[shadcn_qt_component="spin-box"] {
 QComboBox[shadcn_qt_component]:focus,
 QDateTimeEdit[shadcn_qt_component="date-picker"]:focus,
 QAbstractSpinBox[shadcn_qt_component="spin-box"]:focus { border-color: #d4d4d8; }
-QComboBox[shadcn_qt_component]::drop-down { subcontrol-origin: padding; subcontrol-position: top right; width: 28px; border: none; }
+QComboBox[shadcn_qt_component]::drop-down {
+  subcontrol-origin: border; subcontrol-position: top right; width: 32px;
+  margin: 2px; border: none; border-radius: 4px; background: transparent;
+}
+QComboBox[shadcn_qt_component]::drop-down:hover,
+QComboBox[shadcn_qt_component]::drop-down:on { background: #27272a; }
+QComboBox[shadcn_qt_component]::down-arrow { image: none; width: 0; height: 0; }
 QDateTimeEdit[shadcn_qt_component="date-picker"]::drop-down {
   subcontrol-origin: border; subcontrol-position: top right; width: 32px;
   border: none; background: transparent;
@@ -719,6 +737,12 @@ QComboBox[shadcn_qt_component] QAbstractItemView {
   background: transparent; color: #fafafa; border: none;
   border-radius: 0; padding: 4px; outline: 0;
   selection-background-color: #27272a; selection-color: #fafafa;
+}
+QComboBox[shadcn_qt_component] QAbstractItemView::item {
+  min-height: 28px; padding: 2px 8px; border: none; border-radius: 4px;
+}
+QComboBox[shadcn_qt_component] QAbstractItemView::item:selected {
+  background: #27272a; color: #fafafa;
 }
 
 QProgressBar[shadcn_qt_component="progress"] {
