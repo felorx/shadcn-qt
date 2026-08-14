@@ -22,17 +22,20 @@ publish a second distribution name for the same release. The project metadata
 and documentation must continue to state that this is an independent Qt
 implementation and is not affiliated with the upstream shadcn project.
 
-Version 0.2.0 adds the complete component and native QtWidgets galleries,
+Version 0.2.0 was published on 2026-08-15 (Asia/Shanghai). It adds the complete
+component and native QtWidgets galleries,
 classic `new-york` + Zinc visual alignment, reversible native-widget adoption,
 visual screenshot regression, font-independent vector glyphs, and the
 Chrome-style `TabPane`. See `CHANGELOG.md` for the release notes.
 
-Initial release files:
+Release files:
 
 | File | SHA-256 |
 | --- | --- |
 | `shadcn_qt-0.1.0-py3-none-any.whl` | `0fca0031d171307156a6013ee62dc83b8966ed3eb918f0805df424c2b4126fd5` |
 | `shadcn_qt-0.1.0.tar.gz` | `64b65840019e5d1a11220fad0c94eb48b0f76d00b5e32e1583ab345bfa5563c2` |
+| `shadcn_qt-0.2.0-py3-none-any.whl` | `f963a3efb9b7e21670d3afc7b874b2e9b0ebbfdeadc30aa7a060c364307a7804` |
+| `shadcn_qt-0.2.0.tar.gz` | `6413576a76382918834e01fe3eede0ba6da8b5df43ea9e26bad2fbfa93c172a5` |
 
 ## One-time publisher setup
 
@@ -94,10 +97,21 @@ already uploaded to PyPI; PyPI release files are immutable.
 
 ## TestPyPI and production
 
-The 0.1.0 project registration used a local PyPI API token after all release
-checks and an isolated wheel smoke test. Future releases must use the Trusted
-Publishing workflow after the GitHub environments and PyPI publisher are
-configured; do not make local token uploads the normal release path.
+Versions 0.1.0 and 0.2.0 used a scoped local PyPI API token after all release
+checks and isolated wheel smoke tests. Version 0.2.0 was uploaded with
+`uv publish` after the tag workflow passed its tests, build, metadata, license,
+and distribution-content jobs but could not exchange OIDC because the PyPI
+Trusted Publisher was not yet registered. Configure Trusted Publishing before
+the next release; retain direct `uv publish` as an explicit maintainer-approved
+fallback rather than requiring browser configuration during a release.
+
+For that fallback, pass the token through `UV_PUBLISH_TOKEN` without placing it
+on the command line or in logs:
+
+```bash
+uv publish --publish-url https://upload.pypi.org/legacy/ \
+  --check-url https://pypi.org/simple/shadcn-qt/ dist/*
+```
 
 Run the `testpypi` workflow manually first. Install its artifact in a clean
 environment without pulling Qt dependencies from TestPyPI:

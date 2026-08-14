@@ -151,6 +151,13 @@ commercial Core Order Form. PyPI installation does not grant commercial rights.
 Pro is separately licensed and privately distributed, not part of the public
 PyPI project.
 
+Use the Trusted Publishing workflow for the normal production path. If the
+maintainer explicitly requests a direct production publish and a scoped token
+is already configured locally, use `uv publish` without opening a browser.
+Pass the credential through `UV_PUBLISH_TOKEN`, never through a visible command
+argument or log, and verify the uploaded hashes plus clean PySide6 and PyQt6
+installs from the production index.
+
 ## Development and Validation
 
 Run a focused test while iterating, then broaden validation in proportion to

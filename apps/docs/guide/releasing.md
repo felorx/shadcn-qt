@@ -8,7 +8,10 @@ Python 3.9, 3.11, and 3.13.
 Version 0.2.0 is published at
 [PyPI](https://pypi.org/project/shadcn-qt/). Its initial project registration
 for version 0.1.0 used an authorized local API token after the complete release
-checks and an isolated installation test.
+checks and an isolated installation test. Version 0.2.0 was likewise published
+with `uv publish` and the existing scoped token after the full release workflow
+validated its tests and artifacts; clean PySide6 and PyQt6 installs were then
+verified from the production index.
 
 Future releases use PyPI Trusted Publishing rather than a stored API token:
 
@@ -18,6 +21,10 @@ Future releases use PyPI Trusted Publishing rather than a stored API token:
 4. update the matching versions in `packages/python/pyproject.toml` and
    `packages/cpp/shadcn_qt/CMakeLists.txt`, then tag exactly `v<version>`;
 5. approve the protected `pypi` deployment after tests and artifact checks.
+
+An explicitly maintainer-approved direct production release may instead use
+`uv publish` with `UV_PUBLISH_TOKEN` when the Trusted Publisher is unavailable.
+Never print the token or pass it as a command-line argument.
 
 The workflow validates GPL/commercial metadata and confirms that all license
 files are inside both the wheel and sdist. See the repository's
