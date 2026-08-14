@@ -448,3 +448,43 @@ def test_tab_pane_uses_scoped_chrome_style(runtime):
     assert "background: #18181a; border: 1px" in dark_qss
     assert "background: transparent; border: none; padding: 3px" in qss
     assert "\nQTabBar {" not in qss
+
+
+@pytest.mark.parametrize(
+    ("theme_name", "surface_color"),
+    (("light", "#fafafa"), ("dark", "#18181a")),
+)
+def test_tab_pane_active_title_and_page_share_surface(
+    runtime, theme_name, surface_color
+):
+    from shadcn_qt import TabPane, apply_theme, theme_stylesheet
+
+    app, _, QtWidgets = runtime
+    apply_theme(app, theme_name)
+    pane = TabPane()
+    pane.resize(420, 180)
+    page = QtWidgets.QWidget(pane)
+    # Match Gallery/native-adapter behavior: otherwise the default transparent
+    # page does not exercise the rule that previously covered the pane surface.
+    page.setProperty("shadcn_qt_component", "widget")
+    page.setProperty("shadcn_qt_native_adopted", True)
+    pane.addTab(page, "Account")
+    pane.show()
+    app.processEvents()
+
+    image = pane.grab().toImage()
+    ratio = image.devicePixelRatio()
+
+    def pixel_color(x, y):
+        return image.pixelColor(round(x * ratio), round(y * ratio)).name()
+
+    tab_rect = pane.tabBar().tabRect(0)
+    title_color = pixel_color(tab_rect.left() + 20, tab_rect.center().y())
+    page_color = pixel_color(pane.width() // 2, pane.height() // 2)
+    assert title_color == surface_color
+    assert page_color == title_color
+    assert (
+        'QTabWidget[shadcn_qt_component="tab-pane"] '
+        "QStackedWidget#qt_tabwidget_stackedwidget > QWidget"
+    ) in theme_stylesheet(theme_name)
+    pane.close()

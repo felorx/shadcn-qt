@@ -408,6 +408,47 @@ def test_native_tab_widget_keeps_behavior_and_owns_its_chrome_bar(runtime):
     pane.close()
 
 
+@pytest.mark.parametrize(
+    ("theme_name", "surface_color"),
+    (("light", "#fafafa"), ("dark", "#18181a")),
+)
+def test_native_tab_widget_initial_page_matches_active_tab_surface(
+    runtime, theme_name, surface_color
+):
+    app, QtWidgets = runtime
+    from shadcn_qt import (
+        apply_theme,
+        disable_native_widget_styling,
+        enable_native_widget_styling,
+    )
+
+    disable_native_widget_styling(app, clear=True)
+    apply_theme(app, theme_name)
+    enable_native_widget_styling(app)
+    pane = QtWidgets.QTabWidget()
+    pane.resize(420, 180)
+    pane.addTab(QtWidgets.QWidget(pane), "Account")
+    pane.addTab(QtWidgets.QWidget(pane), "Security")
+    pane.show()
+    app.processEvents()
+
+    assert pane.widget(0).property("shadcn_qt_native_adopted") is None
+    image = pane.grab().toImage()
+    ratio = image.devicePixelRatio()
+
+    def pixel_color(x, y):
+        return image.pixelColor(round(x * ratio), round(y * ratio)).name()
+
+    tab_rect = pane.tabBar().tabRect(0)
+    title_color = pixel_color(tab_rect.left() + 20, tab_rect.center().y())
+    page_color = pixel_color(pane.width() // 2, pane.height() // 2)
+    assert title_color == surface_color
+    assert page_color == title_color
+
+    pane.close()
+    disable_native_widget_styling(app, clear=True)
+
+
 def test_native_widget_runtime_enhancements_are_reversible(runtime):
     app, QtWidgets = runtime
     from shadcn_qt import (

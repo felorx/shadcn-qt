@@ -68,6 +68,11 @@ def render_stylesheet(
     )
     tabs_tab_bar = 'QTabWidget[shadcn_qt_component="tabs"] QTabBar'
     tab_pane_widget = 'QTabWidget[shadcn_qt_component="tab-pane"]'
+    tab_pane_stack = (
+        f"{tab_pane_widget} "
+        "QStackedWidget#qt_tabwidget_stackedwidget"
+    )
+    tab_pane_pages = f"{tab_pane_stack} > QWidget"
     tab_pane_bars = [f"{tab_pane_widget} QTabBar"]
     if not designer_preview:
         tab_pane_bars.append(
@@ -334,6 +339,7 @@ QTabWidget[shadcn_qt_component="tabs"]::pane {{ border: none; top: 8px; }}
   border-top: 0; border-top-left-radius: 0; border-top-right-radius: 0;
   border-bottom-left-radius: {r_lg}; border-bottom-right-radius: {r_lg}; top: 0;
 }}
+{tab_pane_stack} {{ background: {muted_soft}; }}
 {tab_pane_bar} {{
   background: transparent; border: none; padding: 3px;
 }}
@@ -663,6 +669,9 @@ QMdiArea[shadcn_qt_component="mdi-area"] {{ background: {c["muted"]}; border: 1p
 QMdiSubWindow[shadcn_qt_component="mdi-subwindow"] {{ background: {c["card"]}; border: 1px solid {c["border"]}; border-radius: {r_md}; }}
 QSizeGrip[shadcn_qt_component="size-grip"] {{ background: transparent; width: 14px; height: 14px; }}
 QRubberBand[shadcn_qt_component="rubber-band"] {{ background: {_rgba(c["ring"], 40)}; border: 1px solid {c["ring"]}; }}
+
+/* Keep the selected document page connected after native QWidget fallbacks. */
+{tab_pane_pages} {{ background: {muted_soft}; }}
 """
 
 

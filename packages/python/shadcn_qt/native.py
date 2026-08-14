@@ -68,6 +68,21 @@ def _is_internal_widget(widget: Any, widgets: Any) -> bool:
         # Adopting either child independently would apply a second container
         # frame over the shared Chrome tab-pane contract.
         return True
+    if (
+        isinstance(parent, widgets.QStackedWidget)
+        and parent.objectName() == "qt_tabwidget_stackedwidget"
+    ):
+        tab_widget = parent.parentWidget()
+        component = (
+            tab_widget.property("shadcn_qt_component")
+            if isinstance(tab_widget, widgets.QTabWidget)
+            else None
+        )
+        if component in (None, "", "tab-pane"):
+            # A document tab page is the pane surface itself. Adopting it as a
+            # generic QWidget would repaint it with the window background and
+            # visually disconnect it from the active tab title.
+            return True
     if isinstance(parent, widgets.QTabBar) and isinstance(
         widget, widgets.QAbstractButton
     ):

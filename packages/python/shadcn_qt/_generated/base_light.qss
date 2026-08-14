@@ -237,6 +237,7 @@ QTabWidget[shadcn_qt_component="tab-pane"]::pane {
   border-top: 0; border-top-left-radius: 0; border-top-right-radius: 0;
   border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; top: 0;
 }
+QTabWidget[shadcn_qt_component="tab-pane"] QStackedWidget#qt_tabwidget_stackedwidget { background: #fafafa; }
 QTabWidget[shadcn_qt_component="tab-pane"] QTabBar,
 QTabBar[shadcn_qt_component="tab-pane-bar"] {
   background: transparent; border: none; padding: 3px;
@@ -576,3 +577,6 @@ QMdiArea[shadcn_qt_component="mdi-area"] { background: #f4f4f5; border: 1px soli
 QMdiSubWindow[shadcn_qt_component="mdi-subwindow"] { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 6px; }
 QSizeGrip[shadcn_qt_component="size-grip"] { background: transparent; width: 14px; height: 14px; }
 QRubberBand[shadcn_qt_component="rubber-band"] { background: rgba(24, 24, 27, 40); border: 1px solid #18181b; }
+
+/* Keep the selected document page connected after native QWidget fallbacks. */
+QTabWidget[shadcn_qt_component="tab-pane"] QStackedWidget#qt_tabwidget_stackedwidget > QWidget { background: #fafafa; }
