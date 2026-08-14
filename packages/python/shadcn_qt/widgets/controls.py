@@ -11,6 +11,11 @@ from shadcn_qt.widgets._helpers import (
     set_choice_property,
 )
 from shadcn_qt.widgets._icons import _install_combo_box_chevron
+from shadcn_qt.widgets._tab_pane import (
+    TabPaneBar,
+    prepare_tab_pane,
+    sync_tab_close_buttons,
+)
 from shadcn_qt.widgets._style import (
     clear_graphics_effect,
     enable_antialiasing,
@@ -379,6 +384,27 @@ class Tabs(QtWidgets.QTabWidget):
         initialize_component(self, "tabs")
 
 
+class TabPane(QtWidgets.QTabWidget):
+    """Chrome-style tab container with the complete ``QTabWidget`` API."""
+
+    def __init__(self, parent: Optional[Any] = None) -> None:
+        super().__init__(parent)
+        self.setTabBar(TabPaneBar(self))
+        initialize_component(self, "tab-pane")
+        self.setDocumentMode(True)
+        prepare_tab_pane(self)
+
+    def setTabsClosable(self, closable: bool) -> None:
+        super().setTabsClosable(closable)
+        if closable:
+            QtCore.QTimer.singleShot(0, lambda: sync_tab_close_buttons(self))
+
+    def tabInserted(self, index: int) -> None:
+        super().tabInserted(index)
+        if self.tabsClosable():
+            QtCore.QTimer.singleShot(0, lambda: sync_tab_close_buttons(self))
+
+
 class Badge(QtWidgets.QLabel):
     VARIANTS = ("default", "secondary", "outline", "destructive")
 
@@ -485,6 +511,7 @@ __all__ = [
     "Separator",
     "Slider",
     "Switch",
+    "TabPane",
     "Tabs",
     "TextArea",
 ]

@@ -22,7 +22,7 @@ apply_theme(app, "light")
 | Editors | QLineEdit, QTextEdit, QKeySequenceEdit, SpinBox and date/time editors | input geometry, validation, focus, themed arrows |
 | Selection | QComboBox, QFontComboBox, QSlider, QDial, QScrollBar | themed controls, tracks, handles, popups, arrows |
 | Data | List, Tree, Table, Column, Header and Calendar widgets | selection hierarchy, headers, scrollbars, compact calendar delegate |
-| Containers | Tabs, ToolBox, StackedWidget, GroupBox, Splitter, ScrollArea, GraphicsView, MDI | borders, surfaces, disclosure states, handles |
+| Containers | Chrome-style TabPane/QTabWidget, ToolBox, StackedWidget, GroupBox, Splitter, ScrollArea, GraphicsView, MDI | document-tab states, borders, surfaces, disclosure states, handles |
 | Window chrome | QMenuBar, QMenu, QToolBar, QStatusBar, QDockWidget | themed menus, actions, separators and dock controls |
 | Dialogs | QDialog, QMessageBox, QFileDialog, QWizard and related classes | themed Qt-owned surfaces and child controls |
 | Fallback | uncommon and third-party QWidget subclasses | neutral background and foreground tokens |

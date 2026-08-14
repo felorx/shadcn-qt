@@ -29,6 +29,7 @@ export default defineConfig({
         items: [
           { text: "Catalog", link: "/components/catalog" },
           { text: "Button", link: "/components/button" },
+          { text: "TabPane", link: "/components/tab-pane" },
         ],
       },
       { text: "License Tiers", link: "/tiers" },

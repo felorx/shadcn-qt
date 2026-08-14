@@ -23,8 +23,8 @@ def test_gallery_covers_public_widget_catalog(gallery_runtime):
     _, gallery = gallery_runtime
     from shadcn_qt import widgets
 
-    assert len(gallery.component_names()) == 65
-    assert len(set(gallery.component_names())) == 65
+    assert len(gallery.component_names()) == 66
+    assert len(set(gallery.component_names())) == 66
     assert set(gallery.component_names()) == set(widgets.__all__)
 
 
@@ -169,6 +169,26 @@ def test_gallery_aspect_ratio_preview_is_visible(gallery_runtime):
     assert ratio.layout().count() == 1
     assert ratio.layout().itemAt(0).widget().isVisible()
     window.close()
+
+
+def test_gallery_tab_pane_exposes_chrome_interactions(gallery_runtime):
+    app, gallery = gallery_runtime
+    from shadcn_qt import TabPane
+
+    preview = gallery.build_component_preview("TabPane")
+    preview.show()
+    app.processEvents()
+    pane = preview.findChild(TabPane)
+    assert pane is not None
+    assert pane.count() == 4
+    assert pane.isMovable()
+    assert pane.tabsClosable()
+    assert pane.documentMode()
+
+    pane.tabCloseRequested.emit(1)
+    app.processEvents()
+    assert pane.count() == 3
+    preview.close()
 
 
 def test_gallery_exposes_stock_qtwidgets_previews(gallery_runtime):

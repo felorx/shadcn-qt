@@ -7,7 +7,7 @@ Last verified: 2026-08-14.
 | Area | Status | Evidence |
 |---|---|---|
 | Python binding selection | Complete foundation | Lazy single-binding loader for PySide6, PyQt6, PySide2, and PyQt5; strict environment override |
-| Python component catalog | 65 available | Qt-native mappings cover every named entry in the current shadcn/ui component index, plus Qt-specific conveniences such as `RadioButton` and `TextArea` |
+| Python component catalog | 66 available | Qt-native mappings cover every named entry in the current shadcn/ui component index, plus Qt-specific conveniences such as `RadioButton`, `TextArea`, and the Chrome-style `TabPane` |
 | Composite behavior | Available | Accordion, Collapsible, Carousel, dialogs/sheets/drawers, popovers, menus, command filtering, pagination, OTP, data tables, toast stacking, and message scrolling |
 | Designer Property Editor | Available | Custom Qt properties include variants, sizes, validation, expansion, side, direction, chart type/data, typography level, and inherited Qt properties |
 | Designer Widget Box | Available | Registration catalog, container metadata, DOM XML, and `shadcn-qt-designer` launcher |
@@ -15,13 +15,13 @@ Last verified: 2026-08-14.
 | Global themes | Available | Light/dark, semantic token overrides, radius/font overrides, custom QSS, reusable Theme objects, JSON loader |
 | Existing-project compatibility | Available | QtWidgets-wide automatic styling with component/native-kind mappings, QSS plus reversible painting/delegate/glyph/elevation enhancements, dynamic coverage, scoped adoption, semantic overrides, per-widget opt-out, and cleanup |
 | Token generation | Available | One renderer generates packaged Python and embedded C++ QSS |
-| Python automated tests | Passing | Imports, themes, all 65 constructors, QtWidgets family coverage and reversible enhancements, composites, Gallery, Designer metadata, and real `.ui` reconstruction are covered; current full-suite result is recorded in the implementing commit |
+| Python automated tests | Passing | Imports, themes, all 66 constructors, QtWidgets family coverage and reversible enhancements, composites, Gallery, Designer metadata, and real `.ui` reconstruction are covered; current full-suite result is recorded in the implementing commit |
 | Designer host smoke test | Passing on macOS | `pyside6-designer` opened a custom-widget `.ui` offscreen with no registration/import errors |
 | Python package | Published | Core 0.1.0 is on PyPI; wheel and sdist passed metadata/content checks, hashes matched PyPI, and the public wheel was installed and exercised with PySide6 in an isolated environment |
-| Component gallery | Available | Searchable light/dark application provides interactive previews for all 65 public Core components plus four pages made only from stock QtWidgets |
+| Component gallery | Available | Searchable light/dark application provides interactive previews for all 66 public Core components plus four pages made only from stock QtWidgets |
 | C++ foundation | Available | Button, Input, Card, CMake install package, generated QSS resources; compiled with Qt 6.9 |
 | Documentation | Passing | VitePress production build succeeds |
-| Visual profile | Verified | Classic `new-york` geometry and interaction states with the Zinc light/dark palette; all 65 Gallery previews render and the core metrics are covered by automated contract tests |
+| Visual profile | Verified | Classic `new-york` geometry and interaction states with the Zinc light/dark palette, plus Chrome-style document tabs; all 66 Gallery previews render and the core metrics are covered by automated contract tests |
 | Native screenshot regression | Available | Four stock-QtWidgets Gallery pages have committed light/dark baselines (8 images) with tolerant perceptual regression tests and a reproducible update script |
 
 ## shadcn/ui alignment

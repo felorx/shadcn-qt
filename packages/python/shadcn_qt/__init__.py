@@ -94,6 +94,7 @@ _WIDGET_NAMES = frozenset(
         "Spinner",
         "Switch",
         "Table",
+        "TabPane",
         "Tabs",
         "TextArea",
         "Toast",

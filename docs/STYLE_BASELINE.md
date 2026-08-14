@@ -26,6 +26,7 @@ The baseline was audited on 2026-08-14 against the official registry at:
 | Checkbox/radio | 16px indicator in a 24px row | 3px edge inset keeps borders and focus rings inside the paint clip |
 | Switch | 36x20px track, 16px thumb | Animated custom-painted thumb with checked translation |
 | Progress | 8px track | Native progress model with new-york track geometry |
+| TabPane / adopted QTabWidget | Chrome-style connected document tabs | Transparent strip, distinct connected page surface, uniform title/close padding, and the same outward-shoulder silhouette for selection and inactive hover |
 | Dialog | 24px content inset, 8px radius, dark overlay | Frameless modal QDialog, parent overlay, shadow, and fade |
 
 Qt exposes only one graphics-effect shadow per widget, whereas the browser
@@ -54,6 +55,13 @@ new-york geometry.
   `nativeKind` properties. Checkbox/radio glyphs, editor arrows, elevation,
   and calendar cells use reversible adapter enhancements when QSS alone is
   insufficient.
+- `TabPane` and opted-in `QTabWidget` share one Chrome-style document-tab
+  contract while the existing `Tabs` component keeps its shadcn segmented
+  appearance. The selected tab is joined directly to its page by outward
+  curved lower shoulders rather than a boxed lower border. The surrounding
+  strip stays transparent, while the active tab/page surface remains distinct
+  from its host window. Movable, closable, current-index, page ownership, and
+  signals remain the native QTabWidget implementation.
 - Rendering can vary slightly with platform font rasterization and display
   scaling, but control geometry, semantic states, and visual hierarchy are
   tested as library contracts.

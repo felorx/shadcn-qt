@@ -9,7 +9,7 @@ The project is published by [Felorx](https://felorx.com).
 ## Current status
 
 - **Python:** PySide6, PyQt6, PySide2, and PyQt5 through one public API.
-- **Widgets:** 65 public Python widgets covering the current shadcn/ui catalog with Qt-native mappings, including dialogs, menus, forms, navigation, data display, charts, notifications, and conversation components.
+- **Widgets:** 66 public Python widgets covering the current shadcn/ui catalog and the Chrome-style `TabPane` Qt convenience, including dialogs, menus, forms, navigation, data display, charts, notifications, and conversation components.
 - **Qt Designer:** the Python widgets can appear in a `shadcn-qt` Widget Box group, be dragged onto forms, laid out, and configured through native Qt properties.
 - **Themes:** built-in light/dark themes, process-wide configuration, per-application overrides, JSON themes, custom QSS, radius, and font overrides.
 - **Visual baseline:** classic shadcn/ui `new-york` geometry and states with the Zinc light/dark palette, including custom-painted selection controls and Qt-native overlay transitions.
@@ -126,7 +126,7 @@ pip install "shadcn-qt[designer]"
 shadcn-qt-designer
 ```
 
-The `shadcn-qt` group contains all 65 Python widgets. Properties such as `variant`, `shadcnSize`, `invalid`, `expanded`, `side`, `direction`, `chartType`, and `level` are editable in the Property Editor. Load the resulting form without a code-generation step:
+The `shadcn-qt` group contains all 66 Python widgets. Properties such as `variant`, `shadcnSize`, `invalid`, `expanded`, `side`, `direction`, `chartType`, and `level` are editable in the Property Editor. Load the resulting form without a code-generation step:
 
 ```python
 from shadcn_qt.designer import load_ui
@@ -149,7 +149,7 @@ Run the smoke example:
 python examples/python_minimal/run_pyside6.py
 ```
 
-Browse all 65 Core components with search, interactive states, and light/dark
+Browse all 66 Core components with search, interactive states, and light/dark
 theme switching:
 
 ```bash

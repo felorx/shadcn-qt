@@ -79,7 +79,7 @@ Run a form created with Qt Designer:
 python ../../examples/python_designer/run.py
 ```
 
-Browse the complete 65-component interactive gallery from the repository root:
+Browse the complete 66-component interactive gallery from the repository root:
 
 ```bash
 python examples/python_gallery/run.py

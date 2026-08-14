@@ -6,7 +6,7 @@ real interactions for dialogs, menus, popovers, tooltips, and notifications.
 Every preview uses the classic `new-york` component profile with the Zinc
 light/dark palette. The **Native QtWidgets** section adds four full-family
 pages made exclusively from stock Qt classes, demonstrating the reversible
-compatibility adapter separately from the 65 shadcn-qt subclasses.
+compatibility adapter separately from the 66 shadcn-qt subclasses.
 
 From the repository root:
 

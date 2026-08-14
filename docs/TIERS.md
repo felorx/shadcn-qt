@@ -27,7 +27,7 @@ belong in the Order Form rather than source code.
 
 ## Public Core and private Pro
 
-The public `shadcn-qt` distribution contains the complete current 65-class
+The public `shadcn-qt` distribution contains the complete current 66-class
 catalog, native-widget compatibility, themes, and Qt Designer integration. The
 same artifact can be used under GPL or a commercial Order Form.
 

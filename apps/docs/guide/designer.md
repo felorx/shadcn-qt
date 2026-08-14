@@ -48,7 +48,7 @@ The preview stylesheet is scoped to shadcn-qt components and does not restyle De
 | Pagination / InputOTP | `currentPage`, `pageCount`, `codeLength`, `value` |
 | Other widgets | Their normal Qt properties, such as `checked`, `value`, `items`, and `currentIndex` |
 
-Card, Alert, Tabs, AspectRatio, Direction, Resizable, ScrollArea, and Sidebar are registered as containers. Normal Qt layout tools remain responsible for margins, spacing, stretch, and alignment.
+Card, Alert, Tabs, TabPane, AspectRatio, Direction, Resizable, ScrollArea, and Sidebar are registered as containers. Normal Qt layout tools remain responsible for margins, spacing, stretch, and alignment.
 
 ## Use the saved form
 

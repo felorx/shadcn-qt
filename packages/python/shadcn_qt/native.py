@@ -34,6 +34,7 @@ _CALENDAR_DELEGATE_TYPE: Optional[Any] = None
 _ENHANCEMENT_FILTER_TYPE: Optional[Any] = None
 _NATIVE_GLYPH_TYPE: Optional[Any] = None
 _POPUP_POSITION_FILTER_TYPE: Optional[Any] = None
+_TAB_PANE_FILTER_TYPE: Optional[Any] = None
 
 
 def _refresh_style(widget: Any) -> None:
@@ -59,6 +60,20 @@ def _is_internal_widget(widget: Any, widgets: Any) -> bool:
             if isinstance(parent, widgets.QComboBox):
                 return True
             parent = parent.parentWidget()
+    parent = widget.parentWidget()
+    if isinstance(parent, widgets.QTabWidget) and isinstance(
+        widget, (widgets.QTabBar, widgets.QStackedWidget)
+    ):
+        # A QTabWidget owns and styles its internal bar and page stack.
+        # Adopting either child independently would apply a second container
+        # frame over the shared Chrome tab-pane contract.
+        return True
+    if isinstance(parent, widgets.QTabBar) and isinstance(
+        widget, widgets.QAbstractButton
+    ):
+        # Qt creates close and scroll buttons inside QTabBar. Treating them as
+        # normal shadcn buttons changes their geometry and obscures tab labels.
+        return True
     return False
 
 
@@ -140,8 +155,8 @@ def _native_defaults(widget: Any, widgets: Any) -> Optional[Dict[str, Any]]:
         (widgets.QDial, "dial", {"nativeKind": "dial"}),
         (widgets.QScrollBar, "scrollbar", {"nativeKind": "scroll-bar"}),
         (widgets.QProgressBar, "progress", {"nativeKind": "progress-bar"}),
-        (widgets.QTabWidget, "tabs", {"nativeKind": "tab-widget"}),
-        (widgets.QTabBar, "tab-bar", {"nativeKind": "tab-bar"}),
+        (widgets.QTabWidget, "tab-pane", {"nativeKind": "tab-widget"}),
+        (widgets.QTabBar, "tab-pane-bar", {"nativeKind": "tab-bar"}),
         (widgets.QToolBox, "toolbox", {"nativeKind": "tool-box"}),
         (widgets.QStackedWidget, "stacked-widget", {"nativeKind": "stacked-widget"}),
         (widgets.QTableWidget, "table", {"nativeKind": "table-widget"}),
@@ -681,6 +696,84 @@ def _add_native_shadow(widget: Any, gui: Any, widgets: Any, state: Dict[str, Any
     state["shadow"] = effect
 
 
+def _tab_pane_filter_type() -> Any:
+    global _TAB_PANE_FILTER_TYPE
+    if _TAB_PANE_FILTER_TYPE is not None:
+        return _TAB_PANE_FILTER_TYPE
+
+    core, _, _ = _qt.qt_modules()
+    child_added = getattr(core.QEvent, "ChildAdded", None)
+    layout_request = getattr(core.QEvent, "LayoutRequest", None)
+    paint = getattr(core.QEvent, "Paint", None)
+    show = getattr(core.QEvent, "Show", None)
+    if child_added is None:
+        child_added = core.QEvent.Type.ChildAdded
+        layout_request = core.QEvent.Type.LayoutRequest
+        paint = core.QEvent.Type.Paint
+        show = core.QEvent.Type.Show
+
+    class NativeTabPaneFilter(core.QObject):
+        def __init__(self, tab_widget: Any) -> None:
+            super().__init__(tab_widget)
+            self._tab_widget = tab_widget
+            self._pending = False
+
+        def _sync(self) -> None:
+            self._pending = False
+            try:
+                if not self._tab_widget.property(_ADOPTED_PROPERTY):
+                    return
+                from shadcn_qt.widgets._tab_pane import sync_tab_close_buttons
+
+                sync_tab_close_buttons(self._tab_widget)
+            except RuntimeError:
+                pass
+
+        def eventFilter(self, watched: Any, event: Any) -> bool:
+            if event.type() == paint and watched is self._tab_widget.tabBar():
+                from shadcn_qt.widgets._tab_pane import paint_tab_bar
+
+                paint_tab_bar(watched)
+                return True
+            if event.type() in {child_added, layout_request, show} and not self._pending:
+                self._pending = True
+                core.QTimer.singleShot(0, self._sync)
+            return False
+
+    _TAB_PANE_FILTER_TYPE = NativeTabPaneFilter
+    return _TAB_PANE_FILTER_TYPE
+
+
+def _enhance_native_tab_pane(widget: Any, state: Dict[str, Any]) -> None:
+    if "tab_pane" in state:
+        return
+    core, _, _ = _qt.qt_modules()
+    from shadcn_qt.widgets._tab_pane import (
+        prepare_tab_pane,
+        sync_tab_close_buttons,
+    )
+
+    bar = widget.tabBar()
+    styled_background = getattr(core.Qt, "WA_StyledBackground", None)
+    if styled_background is None:
+        styled_background = core.Qt.WidgetAttribute.WA_StyledBackground
+    event_filter = _tab_pane_filter_type()(widget)
+    state["tab_pane"] = {
+        "bar": bar,
+        "draw_base": bar.drawBase(),
+        "elide_mode": bar.elideMode(),
+        "event_filter": event_filter,
+        "mouse_tracking": bar.hasMouseTracking(),
+        "styled_background": bar.testAttribute(styled_background),
+        "styled_background_attribute": styled_background,
+        "uses_scroll_buttons": bar.usesScrollButtons(),
+    }
+    prepare_tab_pane(widget)
+    widget.installEventFilter(event_filter)
+    bar.installEventFilter(event_filter)
+    sync_tab_close_buttons(widget)
+
+
 def _sync_native_shadow(widget: Any, widgets: Any) -> None:
     state = _enhancement_state(widget)
     if state is None:
@@ -783,6 +876,8 @@ def _enhance_widget(widget: Any, widgets: Any) -> None:
             _mark_native_combo_popup(widget, state)
         if isinstance(widget, widgets.QDateTimeEdit):
             _mark_native_calendar_popup(widget, state)
+        if isinstance(widget, widgets.QTabWidget):
+            _enhance_native_tab_pane(widget, state)
         _add_native_shadow(widget, gui, widgets, state)
         if isinstance(
             widget,
@@ -861,6 +956,27 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
             replacement = combo_popup.get("replacement_delegate")
             if replacement is not None:
                 replacement.deleteLater()
+        except RuntimeError:
+            pass
+    tab_pane = state.get("tab_pane")
+    if tab_pane is not None and isinstance(widget, widgets.QTabWidget):
+        try:
+            bar = tab_pane["bar"]
+            event_filter = tab_pane["event_filter"]
+            widget.removeEventFilter(event_filter)
+            bar.removeEventFilter(event_filter)
+            event_filter.deleteLater()
+            bar.setDrawBase(tab_pane["draw_base"])
+            bar.setElideMode(tab_pane["elide_mode"])
+            bar.setMouseTracking(tab_pane["mouse_tracking"])
+            bar.setUsesScrollButtons(tab_pane["uses_scroll_buttons"])
+            bar.setAttribute(
+                tab_pane["styled_background_attribute"],
+                tab_pane["styled_background"],
+            )
+            if widget.tabsClosable():
+                widget.setTabsClosable(False)
+                widget.setTabsClosable(True)
         except RuntimeError:
             pass
     for glyph in state.get("glyphs", ()):

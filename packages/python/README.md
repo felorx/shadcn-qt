@@ -89,7 +89,7 @@ shadcn-qt-designer
 
 Use `from shadcn_qt.designer import load_ui` to load the saved form under PySide or PyQt.
 
-The public package exports 65 Qt-native classes covering the current named shadcn/ui catalog. Compound widgets retain normal Qt signals, models, layouts, and Designer-editable properties.
+The public package exports 66 Qt-native classes covering the current named shadcn/ui catalog plus the Chrome-style `TabPane` convenience. Compound widgets retain normal Qt signals, models, layouts, and Designer-editable properties.
 
 ## Core and Pro
 

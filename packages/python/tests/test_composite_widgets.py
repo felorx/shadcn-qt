@@ -20,13 +20,14 @@ def test_full_catalog_constructs(runtime):
     from shadcn_qt import widgets
 
     instances = [getattr(widgets, name)() for name in widgets.__all__]
-    assert len(instances) >= 65
+    assert len(instances) >= 66
     assert all(widget.property("shadcn_qt_component") for widget in instances)
 
 
 def test_special_catalog_mappings(runtime):
-    from shadcn_qt.widgets import Chart, Direction, Typography
+    from shadcn_qt.widgets import Chart, Direction, TabPane, Typography
 
+    _, QtWidgets = runtime
     chart = Chart(chart_type="bar", values="1, 3, 2")
     assert chart.valuesList() == [1.0, 3.0, 2.0]
     chart.resize(240, 140)
@@ -41,6 +42,36 @@ def test_special_catalog_mappings(runtime):
 
     heading = Typography("Title", level="h1")
     assert heading.level == "h1"
+
+    pane = TabPane()
+    first = QtWidgets.QWidget(pane)
+    second = QtWidgets.QWidget(pane)
+    assert pane.addTab(first, "First") == 0
+    assert pane.addTab(second, "Second") == 1
+    pane.setMovable(True)
+    pane.setTabsClosable(True)
+    pane.resize(420, 180)
+    pane.show()
+    runtime[0].processEvents()
+    assert pane.isMovable()
+    assert pane.tabsClosable()
+    assert pane.documentMode()
+    assert pane.property("shadcn_qt_component") == "tab-pane"
+    assert pane.tabBar().hasMouseTracking()
+    close_buttons = [
+        button
+        for button in pane.tabBar().findChildren(QtWidgets.QAbstractButton)
+        if button.property("tabPaneCloseButton") is True
+    ]
+    assert len(close_buttons) == 2
+    assert all(button.width() == 24 for button in close_buttons)
+    assert all(button.height() == 20 for button in close_buttons)
+    closed = []
+    pane.tabCloseRequested.connect(closed.append)
+    close_buttons[0].click()
+    assert len(closed) == 1
+    assert 0 <= closed[0] < pane.count()
+    pane.close()
 
 
 def test_aspect_ratio_keeps_height_when_it_contains_a_layout(runtime):

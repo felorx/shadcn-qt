@@ -307,8 +307,8 @@ def test_native_qt_widget_families_are_covered(runtime):
         (QtWidgets.QDial(root), "dial"),
         (QtWidgets.QScrollBar(root), "scrollbar"),
         (QtWidgets.QProgressBar(root), "progress"),
-        (QtWidgets.QTabWidget(root), "tabs"),
-        (QtWidgets.QTabBar(root), "tab-bar"),
+        (QtWidgets.QTabWidget(root), "tab-pane"),
+        (QtWidgets.QTabBar(root), "tab-pane-bar"),
         (QtWidgets.QToolBox(root), "toolbox"),
         (QtWidgets.QStackedWidget(root), "stacked-widget"),
         (QtWidgets.QListView(root), "list-view"),
@@ -346,6 +346,66 @@ def test_native_qt_widget_families_are_covered(runtime):
         assert widget.property("shadcn_qt_component") == expected, type(widget).__name__
 
     disable_native_widget_styling(app, clear=True)
+
+
+def test_native_tab_widget_keeps_behavior_and_owns_its_chrome_bar(runtime):
+    app, QtWidgets = runtime
+    from shadcn_qt import adopt_native_widgets, disable_native_widget_styling
+
+    disable_native_widget_styling(app, clear=True)
+    pane = QtWidgets.QTabWidget()
+    pane.setMovable(True)
+    pane.setTabsClosable(True)
+    original_elide_mode = pane.tabBar().elideMode()
+    pane.tabBar().setMouseTracking(False)
+    pane.tabBar().setUsesScrollButtons(False)
+    pane.addTab(QtWidgets.QWidget(pane), "First")
+    pane.addTab(QtWidgets.QWidget(pane), "Second")
+
+    adopt_native_widgets(pane)
+    pane.resize(420, 180)
+    pane.show()
+    app.processEvents()
+
+    assert pane.property("shadcn_qt_component") == "tab-pane"
+    assert pane.property("nativeKind") == "tab-widget"
+    assert pane.isMovable()
+    assert pane.tabsClosable()
+    assert pane.count() == 2
+    assert pane.tabBar().property("shadcn_qt_native_adopted") is None
+    assert pane.findChild(QtWidgets.QStackedWidget).property(
+        "shadcn_qt_native_adopted"
+    ) is None
+    close_buttons = [
+        button
+        for button in pane.tabBar().findChildren(QtWidgets.QAbstractButton)
+        if button.property("tabPaneCloseButton") is True
+    ]
+    assert len(close_buttons) == 2
+
+    disable_native_widget_styling(app, clear=True)
+    app.processEvents()
+    assert pane.property("shadcn_qt_component") is None
+    assert pane.isMovable()
+    assert pane.tabsClosable()
+    assert pane.tabBar().elideMode() == original_elide_mode
+    assert not pane.tabBar().hasMouseTracking()
+    assert not pane.tabBar().usesScrollButtons()
+    right = getattr(QtWidgets.QTabBar, "RightSide", None)
+    left = getattr(QtWidgets.QTabBar, "LeftSide", None)
+    if right is None:
+        right = QtWidgets.QTabBar.ButtonPosition.RightSide
+        left = QtWidgets.QTabBar.ButtonPosition.LeftSide
+    active_buttons = [
+        pane.tabBar().tabButton(index, position)
+        for index in range(pane.count())
+        for position in (right, left)
+    ]
+    assert not any(
+        button is not None and button.property("tabPaneCloseButton") is True
+        for button in active_buttons
+    )
+    pane.close()
 
 
 def test_native_widget_runtime_enhancements_are_reversible(runtime):

@@ -411,3 +411,40 @@ def test_stylesheet_contains_new_york_states_without_legacy_shortcuts(runtime):
     assert "text-decoration: none" in qss
     assert "padding-top: 9px" not in qss
     assert 'elevated="true"] {\n  border: 2px' not in qss
+
+
+def test_tab_pane_uses_scoped_chrome_style(runtime):
+    from shadcn_qt import TabPane, Tabs, theme_stylesheet
+
+    _, _, QtWidgets = runtime
+    pane = TabPane()
+    tabs = Tabs()
+    assert isinstance(pane, QtWidgets.QTabWidget)
+    assert pane.property("shadcn_qt_component") == "tab-pane"
+    assert tabs.property("shadcn_qt_component") == "tabs"
+
+    qss = theme_stylesheet("light")
+    dark_qss = theme_stylesheet("dark")
+    assert "Chrome-style document tabs" in qss
+    assert (
+        'QTabWidget[shadcn_qt_component="tab-pane"] '
+        "QTabBar::tab:selected"
+    ) in qss
+    assert (
+        'QTabBar[shadcn_qt_component="tab-pane-bar"]::close-button:hover'
+        in qss
+    )
+    assert (
+        'QTabWidget[shadcn_qt_component="tabs"] QTabBar::tab:selected'
+        in qss
+    )
+    assert "border-top: 0" in qss
+    assert "border-bottom-color:" in qss
+    assert "margin-bottom: -1px" in qss
+    assert "border-bottom-color: #f4f4f5" in qss
+    assert "QTabBar::tab:first" in qss
+    assert "margin-left: 10px" in qss
+    assert "background: #fafafa; border: 1px" in qss
+    assert "background: #18181a; border: 1px" in dark_qss
+    assert "background: transparent; border: none; padding: 3px" in qss
+    assert "\nQTabBar {" not in qss

@@ -57,6 +57,7 @@ COMPONENT_CATEGORIES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
             "ScrollArea",
             "Separator",
             "Sidebar",
+            "TabPane",
             "Tabs",
         ),
     ),
@@ -738,14 +739,44 @@ def build_component_preview(name: str, parent: Any = None) -> Any:
         )
         layout.addWidget(toggle)
 
-    elif name == "Tabs":
-        tabs = ui.Tabs(host)
+    elif name in {"Tabs", "TabPane"}:
+        tabs = ui.Tabs(host) if name == "Tabs" else ui.TabPane(host)
+        if name == "TabPane":
+            tabs.setMovable(True)
+            tabs.setTabsClosable(True)
+            tabs.setDocumentMode(True)
         for title, copy in (
             ("Account", "Profile and email settings"),
             ("Security", "Passwords and sessions"),
             ("Billing", "Plan and invoices"),
+            ("Activity", "Recent workspace activity"),
         ):
-            tabs.addTab(_card_with_text(tabs, title, copy), title)
+            if name == "TabPane":
+                page = QtWidgets.QWidget(tabs)
+                page_layout = QtWidgets.QVBoxLayout(page)
+                page_layout.setContentsMargins(24, 24, 24, 24)
+                page_layout.addWidget(_label(title, page, variant="large"))
+                page_layout.addWidget(_label(copy, page))
+                page_layout.addStretch(1)
+            else:
+                page = _card_with_text(tabs, title, copy)
+            tabs.addTab(page, title)
+        if name == "TabPane":
+            def close_tab(index: int) -> None:
+                page = tabs.widget(index)
+                tabs.removeTab(index)
+                if page is not None:
+                    page.deleteLater()
+
+            tabs.tabCloseRequested.connect(close_tab)
+            tabs.setMinimumHeight(260)
+            layout.addWidget(
+                _label(
+                    "Drag labels to reorder them or use the close buttons. "
+                    "All standard QTabWidget signals and methods remain available.",
+                    host,
+                )
+            )
         layout.addWidget(tabs)
 
     elif name == "Alert":
@@ -1416,17 +1447,24 @@ def _native_container_specimen(name: str, parent: Any) -> Any:
         widget.setMinimumHeight(180)
     elif name == "QTabWidget":
         widget = QtWidgets.QTabWidget(parent)
-        for title in ("Account", "Security", "Billing"):
+        widget.setDocumentMode(True)
+        widget.setMovable(True)
+        widget.setTabsClosable(True)
+        for title in ("Account", "Security", "Billing", "Activity"):
             page = QtWidgets.QWidget(widget)
             page_layout = QtWidgets.QVBoxLayout(page)
             page_layout.addWidget(QtWidgets.QLabel(f"{title} settings", page))
             page_layout.addStretch(1)
             widget.addTab(page, title)
+        widget.tabCloseRequested.connect(widget.removeTab)
         widget.setMinimumHeight(220)
     elif name == "QTabBar":
         widget = QtWidgets.QTabBar(parent)
-        for title in ("Account", "Security", "Billing"):
+        widget.setMovable(True)
+        widget.setTabsClosable(True)
+        for title in ("Account", "Security", "Billing", "Activity"):
             widget.addTab(title)
+        widget.tabCloseRequested.connect(widget.removeTab)
     elif name == "QToolBox":
         widget = QtWidgets.QToolBox(parent)
         for title in ("Profile", "Notifications", "Advanced"):
@@ -1961,13 +1999,17 @@ def build_native_preview(name: str, parent: Any = None) -> Any:
         top_layout.setContentsMargins(0, 0, 0, 0)
         top_layout.setSpacing(14)
         tabs = QtWidgets.QTabWidget(top)
-        for title in ("Account", "Security", "Billing"):
+        tabs.setDocumentMode(True)
+        tabs.setMovable(True)
+        tabs.setTabsClosable(True)
+        for title in ("Account", "Security", "Billing", "Activity"):
             page = QtWidgets.QWidget(tabs)
             page_layout = QtWidgets.QVBoxLayout(page)
             page_layout.addWidget(QtWidgets.QLabel(f"{title} settings", page))
             page_layout.addWidget(QtWidgets.QLineEdit(page))
             page_layout.addStretch(1)
             tabs.addTab(page, title)
+        tabs.tabCloseRequested.connect(tabs.removeTab)
         top_layout.addWidget(tabs, 1)
         toolbox = QtWidgets.QToolBox(top)
         for title, body in (

@@ -66,11 +66,27 @@ def render_stylesheet(
         if designer_preview
         else "QMenu, QListView"
     )
-    tab_bar = (
-        'QTabWidget[shadcn_qt_component="tabs"] QTabBar'
-        if designer_preview
-        else "QTabBar"
-    )
+    tabs_tab_bar = 'QTabWidget[shadcn_qt_component="tabs"] QTabBar'
+    tab_pane_widget = 'QTabWidget[shadcn_qt_component="tab-pane"]'
+    tab_pane_bars = [f"{tab_pane_widget} QTabBar"]
+    if not designer_preview:
+        tab_pane_bars.append(
+            'QTabBar[shadcn_qt_component="tab-pane-bar"]'
+        )
+
+    def tab_pane_selectors(suffix: str = "") -> str:
+        return ",\n".join(f"{selector}{suffix}" for selector in tab_pane_bars)
+
+    tab_pane_bar = tab_pane_selectors()
+    tab_pane_tab = tab_pane_selectors("::tab")
+    tab_pane_tab_first = tab_pane_selectors("::tab:first")
+    tab_pane_tab_selected = tab_pane_selectors("::tab:selected")
+    tab_pane_tab_hover = tab_pane_selectors("::tab:hover:!selected")
+    tab_pane_tab_focus = tab_pane_selectors("::tab:focus")
+    tab_pane_tab_disabled = tab_pane_selectors("::tab:disabled")
+    tab_pane_close_button = tab_pane_selectors("::close-button")
+    tab_pane_close_hover = tab_pane_selectors("::close-button:hover")
+    tab_pane_scroller = tab_pane_selectors("::scroller")
 
     primary_hover = _mix(c["primary"], c["background"], 0.90)
     primary_pressed = _mix(c["primary"], c["background"], 0.82)
@@ -302,14 +318,51 @@ QDial[shadcn_qt_component="dial"] {{ background: {c["secondary"]}; border: 1px s
 
 /* Tabs and disclosure */
 QTabWidget[shadcn_qt_component="tabs"]::pane {{ border: none; top: 8px; }}
-{tab_bar} {{ background: {c["muted"]}; border-radius: {r_lg}; }}
-{tab_bar}::tab {{
+{tabs_tab_bar} {{ background: {c["muted"]}; border-radius: {r_lg}; }}
+{tabs_tab_bar}::tab {{
   background: transparent; color: {c["mutedForeground"]}; border: none;
   border-radius: {r_md}; padding: 6px 12px; min-height: 20px; font-weight: 500;
 }}
-{tab_bar}::tab:selected {{ background: {c["background"]}; color: {c["foreground"]}; }}
-{tab_bar}::tab:hover:!selected {{ background: {accent_soft}; color: {c["foreground"]}; }}
-{tab_bar}::tab:focus {{ border: 1px solid {c["ring"]}; }}
+{tabs_tab_bar}::tab:selected {{ background: {c["background"]}; color: {c["foreground"]}; }}
+{tabs_tab_bar}::tab:hover:!selected {{ background: {accent_soft}; color: {c["foreground"]}; }}
+{tabs_tab_bar}::tab:focus {{ border: 1px solid {c["ring"]}; }}
+
+/* Chrome-style document tabs: connected active surface, transparent strip. */
+{tab_pane_widget} {{ background: transparent; border: none; }}
+{tab_pane_widget}::pane {{
+  background: {muted_soft}; border: 1px solid {c["border"]};
+  border-top: 0; border-top-left-radius: 0; border-top-right-radius: 0;
+  border-bottom-left-radius: {r_lg}; border-bottom-right-radius: {r_lg}; top: 0;
+}}
+{tab_pane_bar} {{
+  background: transparent; border: none; padding: 3px;
+}}
+{tab_pane_tab} {{
+  background: transparent; color: {c["mutedForeground"]};
+  border: 1px solid transparent; border-right-color: {c["border"]};
+  border-radius: {r_lg}; margin: 1px; padding: 6px 8px;
+  min-width: 52px; min-height: 22px; font-weight: 500;
+}}
+{tab_pane_tab_first} {{ margin-left: 10px; }}
+{tab_pane_tab_selected} {{
+  background: {muted_soft}; color: {c["foreground"]};
+  border-color: {c["input"]}; border-bottom-color: {muted_soft};
+  margin-bottom: -1px;
+}}
+{tab_pane_tab_hover} {{
+  background: {c["accent"]}; color: {c["accentForeground"]};
+  border-color: {c["input"]}; border-bottom-color: {c["accent"]};
+  margin-bottom: -1px;
+}}
+{tab_pane_tab_focus} {{ border-color: {c["ring"]}; }}
+{tab_pane_tab_disabled} {{ color: {disabled_foreground}; }}
+{tab_pane_close_button} {{
+  subcontrol-position: right; width: 24px; height: 20px;
+  margin-right: 0; border: none; border-radius: 9px;
+  background: transparent;
+}}
+{tab_pane_close_hover} {{ background: {c["accent"]}; }}
+{tab_pane_scroller} {{ width: 36px; }}
 
 QFrame[shadcn_qt_component="accordion"] {{ background: transparent; border: none; }}
 QFrame[shadcn_qt_component="collapsible"] {{ background: transparent; border: none; border-bottom: 1px solid {c["border"]}; border-radius: 0; }}
@@ -527,9 +580,6 @@ QProgressBar[shadcn_qt_native_adopted="true"] {{
 QSlider[shadcn_qt_native_adopted="true"] {{ min-height: 20px; min-width: 20px; }}
 QDial[shadcn_qt_native_adopted="true"] {{ min-width: 64px; min-height: 64px; }}
 
-QTabWidget[shadcn_qt_native_adopted="true"]::pane {{
-  background: {c["card"]}; border: 1px solid {c["border"]}; border-radius: {r_lg}; top: 6px;
-}}
 QToolBox[shadcn_qt_component="toolbox"] {{
   background: {c["background"]}; border: 1px solid {c["border"]}; border-radius: {r_lg};
 }}

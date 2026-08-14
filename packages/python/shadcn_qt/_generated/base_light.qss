@@ -221,14 +221,61 @@ QDial[shadcn_qt_component="dial"] { background: #f4f4f5; border: 1px solid #e4e4
 
 /* Tabs and disclosure */
 QTabWidget[shadcn_qt_component="tabs"]::pane { border: none; top: 8px; }
-QTabBar { background: #f4f4f5; border-radius: 8px; }
-QTabBar::tab {
+QTabWidget[shadcn_qt_component="tabs"] QTabBar { background: #f4f4f5; border-radius: 8px; }
+QTabWidget[shadcn_qt_component="tabs"] QTabBar::tab {
   background: transparent; color: #71717a; border: none;
   border-radius: 6px; padding: 6px 12px; min-height: 20px; font-weight: 500;
 }
-QTabBar::tab:selected { background: #ffffff; color: #09090b; }
-QTabBar::tab:hover:!selected { background: #f7f7f8; color: #09090b; }
-QTabBar::tab:focus { border: 1px solid #18181b; }
+QTabWidget[shadcn_qt_component="tabs"] QTabBar::tab:selected { background: #ffffff; color: #09090b; }
+QTabWidget[shadcn_qt_component="tabs"] QTabBar::tab:hover:!selected { background: #f7f7f8; color: #09090b; }
+QTabWidget[shadcn_qt_component="tabs"] QTabBar::tab:focus { border: 1px solid #18181b; }
+
+/* Chrome-style document tabs: connected active surface, transparent strip. */
+QTabWidget[shadcn_qt_component="tab-pane"] { background: transparent; border: none; }
+QTabWidget[shadcn_qt_component="tab-pane"]::pane {
+  background: #fafafa; border: 1px solid #e4e4e7;
+  border-top: 0; border-top-left-radius: 0; border-top-right-radius: 0;
+  border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; top: 0;
+}
+QTabWidget[shadcn_qt_component="tab-pane"] QTabBar,
+QTabBar[shadcn_qt_component="tab-pane-bar"] {
+  background: transparent; border: none; padding: 3px;
+}
+QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::tab,
+QTabBar[shadcn_qt_component="tab-pane-bar"]::tab {
+  background: transparent; color: #71717a;
+  border: 1px solid transparent; border-right-color: #e4e4e7;
+  border-radius: 8px; margin: 1px; padding: 6px 8px;
+  min-width: 52px; min-height: 22px; font-weight: 500;
+}
+QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::tab:first,
+QTabBar[shadcn_qt_component="tab-pane-bar"]::tab:first { margin-left: 10px; }
+QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::tab:selected,
+QTabBar[shadcn_qt_component="tab-pane-bar"]::tab:selected {
+  background: #fafafa; color: #09090b;
+  border-color: #e4e4e7; border-bottom-color: #fafafa;
+  margin-bottom: -1px;
+}
+QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::tab:hover:!selected,
+QTabBar[shadcn_qt_component="tab-pane-bar"]::tab:hover:!selected {
+  background: #f4f4f5; color: #18181b;
+  border-color: #e4e4e7; border-bottom-color: #f4f4f5;
+  margin-bottom: -1px;
+}
+QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::tab:focus,
+QTabBar[shadcn_qt_component="tab-pane-bar"]::tab:focus { border-color: #18181b; }
+QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::tab:disabled,
+QTabBar[shadcn_qt_component="tab-pane-bar"]::tab:disabled { color: rgba(113, 113, 122, 128); }
+QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::close-button,
+QTabBar[shadcn_qt_component="tab-pane-bar"]::close-button {
+  subcontrol-position: right; width: 24px; height: 20px;
+  margin-right: 0; border: none; border-radius: 9px;
+  background: transparent;
+}
+QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::close-button:hover,
+QTabBar[shadcn_qt_component="tab-pane-bar"]::close-button:hover { background: #f4f4f5; }
+QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::scroller,
+QTabBar[shadcn_qt_component="tab-pane-bar"]::scroller { width: 36px; }
 
 QFrame[shadcn_qt_component="accordion"] { background: transparent; border: none; }
 QFrame[shadcn_qt_component="collapsible"] { background: transparent; border: none; border-bottom: 1px solid #e4e4e7; border-radius: 0; }
@@ -446,9 +493,6 @@ QProgressBar[shadcn_qt_native_adopted="true"] {
 QSlider[shadcn_qt_native_adopted="true"] { min-height: 20px; min-width: 20px; }
 QDial[shadcn_qt_native_adopted="true"] { min-width: 64px; min-height: 64px; }
 
-QTabWidget[shadcn_qt_native_adopted="true"]::pane {
-  background: #ffffff; border: 1px solid #e4e4e7; border-radius: 8px; top: 6px;
-}
 QToolBox[shadcn_qt_component="toolbox"] {
   background: #ffffff; border: 1px solid #e4e4e7; border-radius: 8px;
 }

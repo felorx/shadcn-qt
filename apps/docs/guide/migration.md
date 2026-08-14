@@ -240,7 +240,7 @@ shadcn-qt primitives subclass standard Qt widgets, so their inherited signals, s
 | `QComboBox` | `Select`, `NativeSelect`, `Combobox` | `Combobox` is editable |
 | `QSlider` | `Slider` | Retains range/value APIs |
 | `QProgressBar` | `Progress`, `Spinner` | Spinner uses an indeterminate range |
-| `QTabWidget` | `Tabs` | Retains the normal tab API |
+| `QTabWidget` | `TabPane` | Chrome-style document tabs; retains the normal tab API |
 | `QTableWidget` | `Table` | Native item-based table |
 | `QTableView` | `DataTable` | Includes source/proxy model helpers |
 | `QCalendarWidget` | `Calendar` | Native calendar behavior |
@@ -289,7 +289,7 @@ Common promotions:
 | `QFrame` | `Card` | `shadcn_qt.widgets` |
 | `QLabel` | `Label` | `shadcn_qt.widgets` |
 | `QCheckBox` | `Switch` | `shadcn_qt.widgets` |
-| `QTabWidget` | `Tabs` | `shadcn_qt.widgets` |
+| `QTabWidget` | `TabPane` | `shadcn_qt.widgets` |
 
 After promotion, properties such as `variant`, `shadcnSize`, `invalid`, and
 `elevated` appear in the Property Editor. Use the `shadcn-qt` Widget Box group
