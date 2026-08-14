@@ -15,7 +15,9 @@ from shadcn_qt.widgets._style import (
     clear_graphics_effect,
     enable_antialiasing,
     handle_combo_mouse_press,
+    handle_combo_mouse_release,
     install_shadow,
+    position_combo_popup,
     semantic_color,
     style_combo_popup,
     text_width,
@@ -25,6 +27,11 @@ from shadcn_qt.widgets._style import (
 QtCore, QtGui, QtWidgets = _qt.qt_modules()
 
 _CHOICE_EDGE_INSET = 3
+_CHOICE_SHADOW_OFFSET_Y = 1.0
+# Three low-opacity contours approximate Tailwind's shadow-xs blur without
+# applying a QGraphicsEffect to the label text. Their combined alpha is 13/255
+# (about 5%), matching ``0 1px 2px rgb(0 0 0 / 0.05)``.
+_CHOICE_SHADOW_LAYERS = ((1.0, 3), (0.5, 4), (0.0, 6))
 
 
 def _alignment_flag(name: str) -> Any:
@@ -83,6 +90,36 @@ def _draw_choice_text(widget: Any, painter: Any, rect: Any) -> None:
     painter.setPen(foreground)
     flags = _alignment_flag("AlignVCenter") | _alignment_flag("AlignLeft")
     painter.drawText(rect, int(flags), widget.text())
+
+
+def _draw_choice_shadow(
+    painter: Any,
+    indicator: Any,
+    *,
+    radio: bool,
+    enabled: bool,
+) -> None:
+    painter.save()
+    painter.setPen(_qt_enum("NoPen", "PenStyle"))
+    for expansion, alpha in _CHOICE_SHADOW_LAYERS:
+        if not enabled:
+            alpha = round(alpha * 0.5)
+        painter.setBrush(with_alpha(QtGui.QColor(0, 0, 0), alpha))
+        shadow_rect = indicator.adjusted(
+            -expansion,
+            -expansion,
+            expansion,
+            expansion,
+        ).translated(0, _CHOICE_SHADOW_OFFSET_Y)
+        if radio:
+            painter.drawEllipse(shadow_rect)
+        else:
+            painter.drawRoundedRect(
+                shadow_rect,
+                3.0 + expansion,
+                3.0 + expansion,
+            )
+    painter.restore()
 
 
 def _text_parent(text: Any, parent: Optional[Any]) -> tuple[str, Optional[Any]]:
@@ -166,9 +203,13 @@ class Checkbox(QtWidgets.QCheckBox):
             painter.drawRoundedRect(
                 indicator.adjusted(-1.5, -1.5, 1.5, 1.5), 5, 5
             )
+        _draw_choice_shadow(
+            painter,
+            indicator,
+            radio=False,
+            enabled=self.isEnabled(),
+        )
         painter.setPen(QtGui.QPen(border, 1))
-        painter.setBrush(with_alpha(QtGui.QColor(0, 0, 0), 24))
-        painter.drawRoundedRect(indicator.translated(0, 1), 3, 3)
         painter.setBrush(primary if self.isChecked() else background)
         painter.drawRoundedRect(indicator, 3, 3)
         if self.isChecked():
@@ -211,9 +252,13 @@ class RadioButton(QtWidgets.QRadioButton):
             painter.setBrush(_qt_enum("NoBrush", "BrushStyle"))
             painter.setPen(QtGui.QPen(semantic_color(self, "ring"), 1))
             painter.drawEllipse(indicator.adjusted(-1.5, -1.5, 1.5, 1.5))
+        _draw_choice_shadow(
+            painter,
+            indicator,
+            radio=True,
+            enabled=self.isEnabled(),
+        )
         painter.setPen(QtGui.QPen(border, 1))
-        painter.setBrush(with_alpha(QtGui.QColor(0, 0, 0), 24))
-        painter.drawEllipse(indicator.translated(0, 1))
         painter.setBrush(background)
         painter.drawEllipse(indicator)
         if self.isChecked():
@@ -296,12 +341,17 @@ class Select(QtWidgets.QComboBox):
         _install_combo_box_chevron(self, "chevron-down")
 
     def showPopup(self) -> None:
-        style_combo_popup(self)
+        popup = style_combo_popup(self)
         super().showPopup()
+        position_combo_popup(self, popup)
 
     def mousePressEvent(self, event: Any) -> None:
         if not handle_combo_mouse_press(self, event, trigger_only=False):
             super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event: Any) -> None:
+        if not handle_combo_mouse_release(self, event):
+            super().mouseReleaseEvent(event)
 
 
 class Slider(QtWidgets.QSlider):

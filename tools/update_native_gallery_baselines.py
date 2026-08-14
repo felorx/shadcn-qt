@@ -27,7 +27,7 @@ def main() -> int:
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     BASELINE_DIR.mkdir(parents=True, exist_ok=True)
     for theme in ("light", "dark"):
-        for name in gallery.native_preview_names():
+        for name in gallery.native_overview_names():
             window = gallery.GalleryWindow(theme=theme, component=name)
             window.show()
             for _ in range(4):

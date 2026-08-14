@@ -1,3 +1,4 @@
+import inspect
 import os
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -46,7 +47,12 @@ def test_gallery_search_and_theme_controls(gallery_runtime):
     app, gallery = gallery_runtime
     window = gallery.GalleryWindow(theme="light", component="Chart")
     window.filter_components("message")
-    assert window.visible_component_names() == ["Message", "MessageScroller"]
+    assert window.visible_component_names() == [
+        "Message",
+        "MessageScroller",
+        "QMessageBox",
+        "QErrorMessage",
+    ]
 
     window.set_theme("dark")
     assert app.property("shadcn_qt_gallery_theme") == "dark"
@@ -167,20 +173,73 @@ def test_gallery_aspect_ratio_preview_is_visible(gallery_runtime):
 
 def test_gallery_exposes_stock_qtwidgets_previews(gallery_runtime):
     app, gallery = gallery_runtime
+    QtWidgets = gallery.QtWidgets
     window = gallery.GalleryWindow(component="Native Forms")
 
-    assert gallery.native_preview_names() == (
+    assert gallery.native_overview_names() == (
         "Native Forms",
         "Native Data Views",
         "Native Containers",
         "Native Window Chrome",
     )
+    individual_names = gallery.native_individual_preview_names()
+    expected_individual_count = 67 + int(hasattr(QtWidgets, "QDesktopWidget"))
+    expected_individual_count += int(hasattr(QtWidgets, "QRhiWidget"))
+    assert len(individual_names) == expected_individual_count
+    assert len(gallery.native_preview_names()) == expected_individual_count + 4
+    assert len(set(gallery.native_preview_names())) == expected_individual_count + 4
+
+    abstract_bases = {
+        "QAbstractButton",
+        "QAbstractItemView",
+        "QAbstractScrollArea",
+        "QAbstractSlider",
+        "QAbstractSpinBox",
+    }
+    qtwidget_subclasses = set()
+    for class_name in dir(QtWidgets):
+        widget_type = getattr(QtWidgets, class_name)
+        if not inspect.isclass(widget_type):
+            continue
+        try:
+            if issubclass(widget_type, QtWidgets.QWidget):
+                qtwidget_subclasses.add(class_name)
+        except TypeError:
+            continue
+    assert set(individual_names) == qtwidget_subclasses - abstract_bases
     for name in gallery.native_preview_names():
         preview = window.show_component(name)
         app.processEvents()
         assert preview.property("gallery_native_preview") is True
         assert preview.property("gallery_component") == name
+        if name in individual_names:
+            expected_type = getattr(QtWidgets, name)
+            specimen = preview.findChild(expected_type, f"nativeGallery{name}")
+            assert specimen is not None, name
+            assert specimen.property("shadcn_qt_native_adopted") is True
 
     window.filter_components("Native QtWidgets")
-    assert window.visible_component_names() == list(gallery.native_preview_names())
+    assert window.visible_component_names() == list(gallery.native_overview_names())
+    window.filter_components("QLineEdit")
+    assert window.visible_component_names() == ["QLineEdit"]
     window.close()
+
+
+def test_native_forms_overview_places_each_control_on_its_own_row(gallery_runtime):
+    app, gallery = gallery_runtime
+    QtWidgets = gallery.QtWidgets
+    preview = gallery.build_native_preview("Native Forms")
+    preview.show()
+    app.processEvents()
+
+    controls = [
+        widget
+        for widget in preview.findChildren(QtWidgets.QWidget)
+        if widget.property("nativeGalleryFormControl") is True
+    ]
+    assert len(controls) == 28
+    for control in controls:
+        parent_layout = control.parentWidget().layout()
+        assert type(parent_layout).__name__ == "QVBoxLayout"
+        assert parent_layout.indexOf(control) >= 0
+    preview.close()

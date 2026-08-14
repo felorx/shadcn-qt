@@ -199,6 +199,12 @@ class DropdownMenu(QtWidgets.QMenu):
             action.triggered.connect(callback)
         return action
 
+    def showAt(self, anchor: Any) -> None:
+        """Open left-aligned directly below an anchor widget."""
+
+        point = anchor.mapToGlobal(QtCore.QPoint(0, anchor.height()))
+        self.popup(point)
+
 
 class ContextMenu(DropdownMenu):
     def __init__(self, parent: Optional[Any] = None) -> None:

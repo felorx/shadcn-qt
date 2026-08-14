@@ -103,13 +103,34 @@ def style_combo_popup(widget: Any) -> Any:
     return popup
 
 
+def position_popup_below(
+    widget: Any,
+    popup: Any,
+    *,
+    match_width: bool = False,
+) -> Any:
+    """Left-align a popup directly below its trigger control."""
+
+    if match_width:
+        popup.setFixedWidth(max(1, widget.width()))
+    popup.move(widget.mapToGlobal(QtCore.QPoint(0, widget.height())))
+    return popup
+
+
+def position_combo_popup(widget: Any, popup: Any = None) -> Any:
+    """Left-align a combo popup below its trigger and match its width."""
+
+    popup = popup or widget.view().window()
+    return position_popup_below(widget, popup, match_width=True)
+
+
 def handle_combo_mouse_press(
     widget: Any,
     event: Any,
     *,
     trigger_only: bool,
 ) -> bool:
-    """Open a combo popup without Qt's delayed mouse-release suppression."""
+    """Begin a combo click without opening its popup before mouse release."""
 
     left_button = getattr(QtCore.Qt, "LeftButton", None)
     if left_button is None:
@@ -122,8 +143,27 @@ def handle_combo_mouse_press(
         controller = getattr(widget, "_shadcn_qt_combo_chevron", None)
         if controller is None or not controller.glyph.geometry().contains(point):
             return False
+    widget._shadcn_qt_combo_click_pending = True
     widget.setFocus()
-    widget.showPopup()
+    event.accept()
+    return True
+
+
+def handle_combo_mouse_release(widget: Any, event: Any) -> bool:
+    """Open a pending combo popup after Cocoa has delivered mouse release."""
+
+    if not getattr(widget, "_shadcn_qt_combo_click_pending", False):
+        return False
+    widget._shadcn_qt_combo_click_pending = False
+    left_button = getattr(QtCore.Qt, "LeftButton", None)
+    if left_button is None:
+        left_button = QtCore.Qt.MouseButton.LeftButton
+    if event.button() != left_button:
+        return False
+    position = getattr(event, "position", None)
+    point = position().toPoint() if callable(position) else event.pos()
+    if widget.rect().contains(point):
+        widget.showPopup()
     event.accept()
     return True
 
@@ -163,7 +203,10 @@ __all__ = [
     "clear_graphics_effect",
     "enable_antialiasing",
     "handle_combo_mouse_press",
+    "handle_combo_mouse_release",
     "install_shadow",
+    "position_combo_popup",
+    "position_popup_below",
     "semantic_color",
     "style_combo_popup",
     "text_width",

@@ -111,16 +111,107 @@ COMPONENT_CATEGORIES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     ),
 )
 
+NATIVE_OVERVIEW_NAMES: Tuple[str, ...] = (
+    "Native Forms",
+    "Native Data Views",
+    "Native Containers",
+    "Native Window Chrome",
+)
+
+NATIVE_FORM_NAMES: Tuple[str, ...] = (
+    "QLabel",
+    "QPushButton",
+    "QCommandLinkButton",
+    "QToolButton",
+    "QCheckBox",
+    "QRadioButton",
+    "QLineEdit",
+    "QPlainTextEdit",
+    "QTextEdit",
+    "QTextBrowser",
+    "QKeySequenceEdit",
+    "QSpinBox",
+    "QDoubleSpinBox",
+    "QDateEdit",
+    "QTimeEdit",
+    "QDateTimeEdit",
+    "QComboBox",
+    "QFontComboBox",
+    "QSlider",
+    "QDial",
+    "QScrollBar",
+    "QProgressBar",
+    "QDialogButtonBox",
+    "QLCDNumber",
+)
+
+NATIVE_DATA_VIEW_NAMES: Tuple[str, ...] = (
+    "QListView",
+    "QListWidget",
+    "QTreeView",
+    "QTreeWidget",
+    "QTableView",
+    "QTableWidget",
+    "QColumnView",
+    "QHeaderView",
+    "QCalendarWidget",
+    "QUndoView",
+)
+
+NATIVE_CONTAINER_NAMES: Tuple[str, ...] = (
+    "QWidget",
+    "QFrame",
+    "QGroupBox",
+    "QTabWidget",
+    "QTabBar",
+    "QToolBox",
+    "QStackedWidget",
+    "QScrollArea",
+    "QSplitter",
+    "QSplitterHandle",
+    "QMdiArea",
+    "QMdiSubWindow",
+    "QGraphicsView",
+    "QFocusFrame",
+    "QSizeGrip",
+    "QRubberBand",
+    *(("QDesktopWidget",) if hasattr(QtWidgets, "QDesktopWidget") else ()),
+    *(("QRhiWidget",) if hasattr(QtWidgets, "QRhiWidget") else ()),
+)
+
+NATIVE_WINDOW_NAMES: Tuple[str, ...] = (
+    "QMenuBar",
+    "QMenu",
+    "QToolBar",
+    "QStatusBar",
+    "QDockWidget",
+    "QDialog",
+    "QMainWindow",
+    "QWizard",
+    "QWizardPage",
+    "QSplashScreen",
+)
+
+NATIVE_DIALOG_NAMES: Tuple[str, ...] = (
+    "QMessageBox",
+    "QFileDialog",
+    "QColorDialog",
+    "QFontDialog",
+    "QInputDialog",
+    "QProgressDialog",
+    "QErrorMessage",
+)
+
 NATIVE_WIDGET_CATEGORIES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     (
         "Native QtWidgets",
-        (
-            "Native Forms",
-            "Native Data Views",
-            "Native Containers",
-            "Native Window Chrome",
-        ),
+        NATIVE_OVERVIEW_NAMES,
     ),
+    ("Native Forms", NATIVE_FORM_NAMES),
+    ("Native Data Views", NATIVE_DATA_VIEW_NAMES),
+    ("Native Containers", NATIVE_CONTAINER_NAMES),
+    ("Native Windows", NATIVE_WINDOW_NAMES),
+    ("Native Dialogs", NATIVE_DIALOG_NAMES),
 )
 
 CATEGORY_DESCRIPTIONS: Dict[str, str] = {
@@ -131,8 +222,13 @@ CATEGORY_DESCRIPTIONS: Dict[str, str] = {
     "Data and content": "Structured data, status, visualization, and typography.",
     "Conversation": "Attachments, message bubbles, markers, and chat scrolling.",
     "Native QtWidgets": (
-        "Unmodified QtWidgets adopted by the reversible new-york + Zinc adapter."
+        "Composite views of stock QtWidgets adopted by the reversible adapter."
     ),
+    "Native Forms": "One stock Qt form control per preview page.",
+    "Native Data Views": "One Qt model/view control per preview page.",
+    "Native Containers": "One Qt container family per preview page.",
+    "Native Windows": "One native window surface per preview page.",
+    "Native Dialogs": "One embedded stock Qt dialog per preview page.",
 }
 
 GALLERY_QSS = """
@@ -252,6 +348,20 @@ def native_preview_names() -> Tuple[str, ...]:
     )
 
 
+def native_overview_names() -> Tuple[str, ...]:
+    return NATIVE_OVERVIEW_NAMES
+
+
+def native_individual_preview_names() -> Tuple[str, ...]:
+    return (
+        NATIVE_FORM_NAMES
+        + NATIVE_DATA_VIEW_NAMES
+        + NATIVE_CONTAINER_NAMES
+        + NATIVE_WINDOW_NAMES
+        + NATIVE_DIALOG_NAMES
+    )
+
+
 def gallery_names() -> Tuple[str, ...]:
     return component_names() + native_preview_names()
 
@@ -328,8 +438,12 @@ def _card_with_text(parent: Any, title: str, description: str) -> Any:
 
 
 def _menu_popup(menu: Any, button: Any) -> None:
-    point = button.mapToGlobal(QtCore.QPoint(0, button.height() + 4))
-    menu.popup(point)
+    show_at = getattr(menu, "showAt", None)
+    if callable(show_at):
+        show_at(button)
+    else:
+        point = button.mapToGlobal(QtCore.QPoint(0, button.height()))
+        menu.popup(point)
 
 
 def build_component_preview(name: str, parent: Any = None) -> Any:
@@ -935,7 +1049,8 @@ def build_component_preview(name: str, parent: Any = None) -> Any:
             ("lead", "One API for PySide and PyQt."),
             (
                 "p",
-                "Components retain native signals, models, layouts, and accessibility behavior.",
+                "Components retain native signals, models, layouts, and "
+                "accessibility behavior.",
             ),
             ("code", "python -m pip install shadcn-qt[pyside6]"),
             (
@@ -1032,6 +1147,14 @@ def _native_heading(text: str, parent: Any) -> Any:
     return label
 
 
+def _add_native_form_control(
+    layout: Any, label: str, widget: Any, parent: Any
+) -> None:
+    widget.setProperty("nativeGalleryFormControl", True)
+    layout.addWidget(_native_heading(label, parent))
+    layout.addWidget(widget)
+
+
 def _native_horizontal() -> Any:
     value = getattr(QtCore.Qt, "Horizontal", None)
     return value if value is not None else QtCore.Qt.Orientation.Horizontal
@@ -1053,6 +1176,568 @@ def _native_standard_buttons(*names: str) -> Any:
     return result
 
 
+def _native_message_buttons(*names: str) -> Any:
+    scope = getattr(QtWidgets.QMessageBox, "StandardButton", None)
+    result = None
+    for name in names:
+        value = getattr(QtWidgets.QMessageBox, name, None)
+        if value is None:
+            value = getattr(scope, name)
+        result = value if result is None else result | value
+    return result
+
+
+def _native_enum(owner: Any, name: str, group: str) -> Any:
+    value = getattr(owner, name, None)
+    return value if value is not None else getattr(getattr(owner, group), name)
+
+
+def _native_form_specimen(name: str, parent: Any) -> Any:
+    if name == "QLabel":
+        widget = QtWidgets.QLabel(
+            "QLabel keeps selection, word wrapping, and native text metrics.", parent
+        )
+        widget.setWordWrap(True)
+    elif name == "QPushButton":
+        widget = QtWidgets.QPushButton("Save changes", parent)
+    elif name == "QCommandLinkButton":
+        widget = QtWidgets.QCommandLinkButton(
+            "Open workspace", "Continue with an existing project", parent
+        )
+    elif name == "QToolButton":
+        widget = QtWidgets.QToolButton(parent)
+        widget.setText("Tool action")
+    elif name == "QCheckBox":
+        widget = QtWidgets.QCheckBox("Enable notifications", parent)
+        widget.setChecked(True)
+    elif name == "QRadioButton":
+        widget = QtWidgets.QRadioButton("Team plan", parent)
+        widget.setChecked(True)
+    elif name == "QLineEdit":
+        widget = QtWidgets.QLineEdit(parent)
+        widget.setPlaceholderText("name@example.com")
+    elif name == "QPlainTextEdit":
+        widget = QtWidgets.QPlainTextEdit(parent)
+        widget.setPlainText("QPlainTextEdit preserves its QTextDocument API.")
+        widget.setMinimumHeight(150)
+    elif name == "QTextEdit":
+        widget = QtWidgets.QTextEdit(parent)
+        widget.setHtml("<b>QTextEdit</b><br>Rich text editing remains available.")
+        widget.setMinimumHeight(150)
+    elif name == "QTextBrowser":
+        widget = QtWidgets.QTextBrowser(parent)
+        widget.setHtml(
+            "<h3>Native document</h3><p>Links, selection, and scrolling remain "
+            "unchanged.</p>"
+        )
+        widget.setMinimumHeight(180)
+    elif name == "QKeySequenceEdit":
+        widget = QtWidgets.QKeySequenceEdit(parent)
+        widget.setKeySequence(QtGui.QKeySequence("Ctrl+K"))
+    elif name == "QSpinBox":
+        widget = QtWidgets.QSpinBox(parent)
+        widget.setRange(0, 100)
+        widget.setValue(24)
+    elif name == "QDoubleSpinBox":
+        widget = QtWidgets.QDoubleSpinBox(parent)
+        widget.setRange(0.0, 100.0)
+        widget.setValue(12.5)
+    elif name == "QDateEdit":
+        widget = QtWidgets.QDateEdit(QtCore.QDate(2026, 8, 14), parent)
+        widget.setCalendarPopup(True)
+    elif name == "QTimeEdit":
+        widget = QtWidgets.QTimeEdit(QtCore.QTime(9, 30), parent)
+    elif name == "QDateTimeEdit":
+        widget = QtWidgets.QDateTimeEdit(
+            QtCore.QDateTime(QtCore.QDate(2026, 8, 14), QtCore.QTime(9, 30)),
+            parent,
+        )
+        widget.setCalendarPopup(True)
+    elif name == "QComboBox":
+        widget = QtWidgets.QComboBox(parent)
+        widget.addItems(["PySide6", "PyQt6", "PySide2", "PyQt5"])
+    elif name == "QFontComboBox":
+        widget = QtWidgets.QFontComboBox(parent)
+    elif name == "QSlider":
+        widget = QtWidgets.QSlider(_native_horizontal(), parent)
+        widget.setValue(64)
+    elif name == "QDial":
+        widget = QtWidgets.QDial(parent)
+        widget.setRange(0, 100)
+        widget.setValue(64)
+        widget.setNotchesVisible(True)
+        widget.setFixedSize(140, 140)
+    elif name == "QScrollBar":
+        widget = QtWidgets.QScrollBar(_native_horizontal(), parent)
+        widget.setRange(0, 100)
+        widget.setValue(40)
+    elif name == "QProgressBar":
+        widget = QtWidgets.QProgressBar(parent)
+        widget.setValue(64)
+    elif name == "QDialogButtonBox":
+        widget = QtWidgets.QDialogButtonBox(
+            _native_standard_buttons("Cancel", "Save"), parent
+        )
+    elif name == "QLCDNumber":
+        widget = QtWidgets.QLCDNumber(parent)
+        widget.setDigitCount(6)
+        widget.display(2026)
+        widget.setMinimumHeight(100)
+    else:
+        raise KeyError(name)
+    return widget
+
+
+def _native_tree_model(parent: Any) -> Any:
+    model = QtGui.QStandardItemModel(parent)
+    model.setHorizontalHeaderLabels(["Workspace", "State"])
+    project = QtGui.QStandardItem("shadcn-qt")
+    project.appendRow([QtGui.QStandardItem("Python"), QtGui.QStandardItem("Ready")])
+    project.appendRow([QtGui.QStandardItem("C++"), QtGui.QStandardItem("Planned")])
+    model.appendRow([project, QtGui.QStandardItem("Active")])
+    return model
+
+
+def _native_table_model(parent: Any) -> Any:
+    model = QtGui.QStandardItemModel(3, 3, parent)
+    model.setHorizontalHeaderLabels(["Component", "Binding", "State"])
+    for row, values in enumerate(
+        (
+            ("Button", "PySide6", "Ready"),
+            ("Calendar", "PyQt6", "Ready"),
+            ("Dialog", "Qt 5/6", "Ready"),
+        )
+    ):
+        for column, value in enumerate(values):
+            model.setItem(row, column, QtGui.QStandardItem(value))
+    return model
+
+
+def _native_data_specimen(name: str, parent: Any) -> Any:
+    if name == "QListView":
+        widget = QtWidgets.QListView(parent)
+        model = QtGui.QStandardItemModel(widget)
+        for text in ("Overview", "Activity", "Settings", "Billing"):
+            model.appendRow(QtGui.QStandardItem(text))
+        widget.setModel(model)
+        widget.setCurrentIndex(model.index(1, 0))
+    elif name == "QListWidget":
+        widget = QtWidgets.QListWidget(parent)
+        widget.addItems(["Overview", "Activity", "Settings", "Billing"])
+        widget.setCurrentRow(1)
+    elif name == "QTreeView":
+        widget = QtWidgets.QTreeView(parent)
+        model = _native_tree_model(widget)
+        widget.setModel(model)
+        widget.expandAll()
+    elif name == "QTreeWidget":
+        widget = QtWidgets.QTreeWidget(parent)
+        widget.setHeaderLabels(["Workspace", "State"])
+        project = QtWidgets.QTreeWidgetItem(["shadcn-qt", "Active"])
+        project.addChild(QtWidgets.QTreeWidgetItem(["Python", "Ready"]))
+        project.addChild(QtWidgets.QTreeWidgetItem(["C++", "Planned"]))
+        widget.addTopLevelItem(project)
+        project.setExpanded(True)
+    elif name == "QTableView":
+        widget = QtWidgets.QTableView(parent)
+        widget.setModel(_native_table_model(widget))
+        widget.horizontalHeader().setStretchLastSection(True)
+    elif name == "QTableWidget":
+        widget = QtWidgets.QTableWidget(3, 3, parent)
+        widget.setHorizontalHeaderLabels(["Component", "Binding", "State"])
+        for row, values in enumerate(
+            (
+                ("Button", "PySide6", "Ready"),
+                ("Calendar", "PyQt6", "Ready"),
+                ("Dialog", "Qt 5/6", "Ready"),
+            )
+        ):
+            for column, value in enumerate(values):
+                widget.setItem(row, column, QtWidgets.QTableWidgetItem(value))
+        widget.horizontalHeader().setStretchLastSection(True)
+    elif name == "QColumnView":
+        widget = QtWidgets.QColumnView(parent)
+        model = _native_tree_model(widget)
+        widget.setModel(model)
+        widget.setCurrentIndex(model.index(0, 0))
+    elif name == "QHeaderView":
+        widget = QtWidgets.QHeaderView(_native_horizontal(), parent)
+        model = _native_table_model(widget)
+        widget.setModel(model)
+        widget.setStretchLastSection(True)
+        widget.setFixedHeight(40)
+    elif name == "QCalendarWidget":
+        widget = QtWidgets.QCalendarWidget(parent)
+        widget.setSelectedDate(QtCore.QDate(2026, 8, 14))
+        widget.setMaximumWidth(520)
+    elif name == "QUndoView":
+        widget = QtWidgets.QUndoView(parent)
+        stack_type = getattr(QtGui, "QUndoStack", None) or getattr(
+            QtWidgets, "QUndoStack"
+        )
+        command_type = getattr(QtGui, "QUndoCommand", None) or getattr(
+            QtWidgets, "QUndoCommand"
+        )
+        stack = stack_type(widget)
+        for text in ("Create workspace", "Apply Zinc theme", "Add Gallery page"):
+            stack.push(command_type(text))
+        widget.setStack(stack)
+        widget.setCurrentIndex(widget.model().index(1, 0))
+    else:
+        raise KeyError(name)
+    if name != "QHeaderView":
+        widget.setMinimumHeight(240)
+    return widget
+
+
+def _native_container_specimen(name: str, parent: Any) -> Any:
+    if name == "QWidget":
+        widget = QtWidgets.QWidget(parent)
+        content = QtWidgets.QVBoxLayout(widget)
+        content.addWidget(QtWidgets.QLabel("Base QWidget content", widget))
+        content.addWidget(QtWidgets.QPushButton("Native child control", widget))
+        content.addStretch(1)
+        widget.setMinimumHeight(180)
+    elif name == "QFrame":
+        widget = QtWidgets.QFrame(parent)
+        widget.setFrameShape(
+            _native_enum(QtWidgets.QFrame, "StyledPanel", "Shape")
+        )
+        content = QtWidgets.QVBoxLayout(widget)
+        content.addWidget(QtWidgets.QLabel("QFrame panel content", widget))
+        content.addStretch(1)
+        widget.setMinimumHeight(180)
+    elif name == "QGroupBox":
+        widget = QtWidgets.QGroupBox("Native group box", parent)
+        content = QtWidgets.QVBoxLayout(widget)
+        content.addWidget(QtWidgets.QCheckBox("Preserve signals", widget))
+        content.addWidget(QtWidgets.QRadioButton("Use Qt models", widget))
+        content.addStretch(1)
+        widget.setMinimumHeight(180)
+    elif name == "QTabWidget":
+        widget = QtWidgets.QTabWidget(parent)
+        for title in ("Account", "Security", "Billing"):
+            page = QtWidgets.QWidget(widget)
+            page_layout = QtWidgets.QVBoxLayout(page)
+            page_layout.addWidget(QtWidgets.QLabel(f"{title} settings", page))
+            page_layout.addStretch(1)
+            widget.addTab(page, title)
+        widget.setMinimumHeight(220)
+    elif name == "QTabBar":
+        widget = QtWidgets.QTabBar(parent)
+        for title in ("Account", "Security", "Billing"):
+            widget.addTab(title)
+    elif name == "QToolBox":
+        widget = QtWidgets.QToolBox(parent)
+        for title in ("Profile", "Notifications", "Advanced"):
+            page = QtWidgets.QWidget(widget)
+            page_layout = QtWidgets.QVBoxLayout(page)
+            page_layout.addWidget(QtWidgets.QLabel(f"{title} settings", page))
+            page_layout.addStretch(1)
+            widget.addItem(page, title)
+        widget.setMinimumHeight(240)
+    elif name == "QStackedWidget":
+        wrapper = QtWidgets.QWidget(parent)
+        wrapper_layout = QtWidgets.QVBoxLayout(wrapper)
+        wrapper_layout.setContentsMargins(0, 0, 0, 0)
+        widget = QtWidgets.QStackedWidget(wrapper)
+        for title in ("Account", "Security", "Billing"):
+            widget.addWidget(QtWidgets.QLabel(f"{title} page", widget))
+        widget.setCurrentIndex(1)
+        wrapper_layout.addWidget(widget)
+        wrapper.setMinimumHeight(180)
+        return wrapper
+    elif name == "QScrollArea":
+        widget = QtWidgets.QScrollArea(parent)
+        widget.setWidgetResizable(True)
+        content = QtWidgets.QWidget(widget)
+        content_layout = QtWidgets.QVBoxLayout(content)
+        for index in range(1, 9):
+            content_layout.addWidget(
+                QtWidgets.QLabel(f"Scrollable row {index}", content)
+            )
+        content_layout.addStretch(1)
+        widget.setWidget(content)
+        widget.setMinimumHeight(240)
+    elif name == "QSplitter":
+        widget = QtWidgets.QSplitter(_native_horizontal(), parent)
+        widget.addWidget(QtWidgets.QTextEdit("Left pane", widget))
+        widget.addWidget(QtWidgets.QTextEdit("Right pane", widget))
+        widget.setSizes([260, 420])
+        widget.setMinimumHeight(220)
+    elif name == "QSplitterHandle":
+        widget = QtWidgets.QSplitter(_native_horizontal(), parent)
+        widget.setHandleWidth(12)
+        widget.addWidget(QtWidgets.QTextEdit("Drag the handle", widget))
+        widget.addWidget(QtWidgets.QTextEdit("to resize panes", widget))
+        widget.setSizes([320, 320])
+        widget.setMinimumHeight(220)
+    elif name in {"QMdiArea", "QMdiSubWindow"}:
+        widget = QtWidgets.QMdiArea(parent)
+        for index in range(1, 3 if name == "QMdiArea" else 2):
+            subwindow = QtWidgets.QMdiSubWindow(widget)
+            subwindow.setWindowTitle(f"Subwindow {index}")
+            subwindow.setWidget(QtWidgets.QLabel("Native MDI content", subwindow))
+            widget.addSubWindow(subwindow)
+            subwindow.show()
+        widget.setMinimumHeight(260)
+    elif name == "QGraphicsView":
+        widget = QtWidgets.QGraphicsView(parent)
+        scene = QtWidgets.QGraphicsScene(widget)
+        path = QtGui.QPainterPath()
+        path.addRoundedRect(20, 20, 260, 110, 8, 8)
+        scene.addPath(path)
+        scene.addText("QGraphicsView scene")
+        widget.setScene(scene)
+        widget.setMinimumHeight(240)
+    elif name == "QFocusFrame":
+        wrapper = QtWidgets.QWidget(parent)
+        wrapper.setMinimumHeight(160)
+        content = QtWidgets.QVBoxLayout(wrapper)
+        target = QtWidgets.QLineEdit(wrapper)
+        target.setText("Focused control")
+        content.addWidget(target)
+        content.addStretch(1)
+        focus = QtWidgets.QFocusFrame(wrapper)
+        focus.setWidget(target)
+        # QFocusFrame reparents itself to the target's window on Cocoa, while
+        # the offscreen plugin keeps it below ``wrapper``. Preserve the actual
+        # specimen explicitly instead of relying on platform-specific QObject
+        # ancestry during preview validation.
+        wrapper._native_gallery_target = focus
+        target.setFocus()
+        return wrapper
+    elif name == "QSizeGrip":
+        wrapper = QtWidgets.QWidget(parent)
+        wrapper.setMinimumHeight(180)
+        content = QtWidgets.QHBoxLayout(wrapper)
+        content.addWidget(QtWidgets.QLabel("Resize handle", wrapper))
+        content.addStretch(1)
+        bottom = QtWidgets.QVBoxLayout()
+        bottom.addStretch(1)
+        bottom.addWidget(QtWidgets.QSizeGrip(wrapper))
+        content.addLayout(bottom)
+        return wrapper
+    elif name == "QRubberBand":
+        wrapper = QtWidgets.QWidget(parent)
+        wrapper.setMinimumHeight(220)
+        rubber = QtWidgets.QRubberBand(
+            _native_enum(QtWidgets.QRubberBand, "Rectangle", "Shape"), wrapper
+        )
+        rubber.setGeometry(48, 48, 280, 110)
+        rubber.show()
+        return wrapper
+    elif name == "QDesktopWidget" and hasattr(QtWidgets, "QDesktopWidget"):
+        widget = QtWidgets.QDesktopWidget(parent)
+        content = QtWidgets.QVBoxLayout(widget)
+        geometry = widget.availableGeometry()
+        content.addWidget(
+            QtWidgets.QLabel(
+                f"Available desktop: {geometry.width()} × {geometry.height()}",
+                widget,
+            )
+        )
+        content.addStretch(1)
+        widget.setMinimumHeight(180)
+    elif name == "QRhiWidget" and hasattr(QtWidgets, "QRhiWidget"):
+        # Configure the backend before parenting into a visible Gallery. On
+        # Cocoa, constructing directly below a visible parent can polish the
+        # widget while its API is still Null and emit misleading "No QRhi"
+        # diagnostics.
+        widget = QtWidgets.QRhiWidget()
+        platform_name = QtWidgets.QApplication.platformName().casefold()
+        api_name = {
+            "cocoa": "Metal",
+            "windows": "Direct3D11",
+            "xcb": "OpenGL",
+            "wayland": "OpenGL",
+        }.get(platform_name, "Null")
+        api_scope = getattr(QtWidgets.QRhiWidget, "Api", QtWidgets.QRhiWidget)
+        widget.setApi(getattr(api_scope, api_name))
+        widget.setParent(parent)
+        content = QtWidgets.QVBoxLayout(widget)
+        content.addWidget(
+            QtWidgets.QLabel(
+                "QRhiWidget render surface · backend supplied by the host", widget
+            )
+        )
+        content.addStretch(1)
+        widget.setMinimumHeight(220)
+    else:
+        raise KeyError(name)
+    return widget
+
+
+def _native_window_specimen(name: str, parent: Any) -> Any:
+    if name == "QMenuBar":
+        widget = QtWidgets.QMenuBar(parent)
+        widget.addMenu("File").addAction("New project")
+        widget.addMenu("Edit").addAction("Preferences")
+    elif name == "QMenu":
+        widget = QtWidgets.QMenu("Workspace", parent)
+        widget.setWindowFlags(_native_widget_flag())
+        widget.addAction("New project")
+        widget.addAction("Open workspace")
+        widget.addSeparator()
+        widget.addAction("Preferences")
+        widget.setMinimumWidth(240)
+    elif name == "QToolBar":
+        widget = QtWidgets.QToolBar("Workspace", parent)
+        widget.addAction("New")
+        widget.addAction("Open")
+        widget.addSeparator()
+        widget.addAction("Save")
+    elif name == "QStatusBar":
+        widget = QtWidgets.QStatusBar(parent)
+        widget.showMessage("Ready · native status message")
+    elif name == "QDockWidget":
+        widget = QtWidgets.QDockWidget("Inspector", parent)
+        contents = QtWidgets.QListWidget(widget)
+        contents.addItems(["Geometry", "Appearance", "Accessibility"])
+        widget.setWidget(contents)
+        widget.setMinimumHeight(220)
+    elif name == "QDialog":
+        widget = QtWidgets.QDialog(parent)
+        widget.setWindowFlags(_native_widget_flag())
+        content = QtWidgets.QVBoxLayout(widget)
+        content.addWidget(QtWidgets.QLabel("Embedded QDialog", widget))
+        content.addWidget(QtWidgets.QLineEdit(widget))
+        content.addStretch(1)
+        content.addWidget(
+            QtWidgets.QDialogButtonBox(
+                _native_standard_buttons("Cancel", "Ok"), widget
+            )
+        )
+        widget.setMinimumHeight(220)
+    elif name == "QMainWindow":
+        widget = QtWidgets.QMainWindow(parent)
+        widget.setWindowFlags(_native_widget_flag())
+        widget.menuBar().addMenu("File").addAction("New project")
+        toolbar = QtWidgets.QToolBar("Workspace", widget)
+        toolbar.addAction("Save")
+        widget.addToolBar(toolbar)
+        widget.setCentralWidget(QtWidgets.QLabel("QMainWindow content", widget))
+        widget.statusBar().showMessage("Ready")
+        widget.setMinimumHeight(280)
+    elif name == "QWizard":
+        widget = QtWidgets.QWizard(parent)
+        widget.setWindowFlags(_native_widget_flag())
+        page = QtWidgets.QWizardPage(widget)
+        page.setTitle("Create a workspace")
+        page.setSubTitle("Wizard navigation remains native.")
+        page_layout = QtWidgets.QVBoxLayout(page)
+        page_layout.addWidget(QtWidgets.QLineEdit(page))
+        widget.addPage(page)
+        widget.setMinimumHeight(300)
+    elif name == "QWizardPage":
+        widget = QtWidgets.QWizardPage(parent)
+        widget.setTitle("Workspace details")
+        widget.setSubTitle("A standalone QWizardPage specimen.")
+        content = QtWidgets.QVBoxLayout(widget)
+        content.addWidget(QtWidgets.QLabel("Page content", widget))
+        content.addWidget(QtWidgets.QLineEdit(widget))
+        content.addStretch(1)
+        widget.setMinimumHeight(220)
+    elif name == "QSplashScreen":
+        pixmap = QtGui.QPixmap(640, 240)
+        pixmap.fill(QtGui.QColor("#18181b"))
+        widget = QtWidgets.QSplashScreen(pixmap)
+        widget.setParent(parent)
+        widget.setWindowFlags(_native_widget_flag())
+        widget.setPixmap(pixmap)
+        widget.setFixedSize(pixmap.size())
+        alignment = getattr(QtCore.Qt, "AlignCenter", None)
+        if alignment is None:
+            alignment = QtCore.Qt.AlignmentFlag.AlignCenter
+        widget.showMessage(
+            "shadcn-qt\nLoading native components…",
+            alignment,
+            QtGui.QColor("#fafafa"),
+        )
+    else:
+        raise KeyError(name)
+    return widget
+
+
+def _set_embedded_dialog(widget: Any) -> Any:
+    widget.setWindowFlags(_native_widget_flag())
+    set_modal = getattr(widget, "setModal", None)
+    if callable(set_modal):
+        set_modal(False)
+    widget.setMinimumWidth(560)
+    widget.setMinimumHeight(300)
+    return widget
+
+
+def _native_dialog_specimen(name: str, parent: Any) -> Any:
+    if name == "QMessageBox":
+        widget = QtWidgets.QMessageBox(parent)
+        widget.setWindowTitle("Confirm workspace")
+        widget.setText("Create the new workspace?")
+        widget.setInformativeText("Existing files will remain unchanged.")
+        widget.setStandardButtons(_native_message_buttons("Cancel", "Ok"))
+    elif name == "QFileDialog":
+        widget = QtWidgets.QFileDialog(parent, "Choose a project folder")
+        widget.setOption(
+            _native_enum(QtWidgets.QFileDialog, "DontUseNativeDialog", "Option"),
+            True,
+        )
+    elif name == "QColorDialog":
+        widget = QtWidgets.QColorDialog(QtGui.QColor("#18181b"), parent)
+        widget.setOption(
+            _native_enum(
+                QtWidgets.QColorDialog,
+                "DontUseNativeDialog",
+                "ColorDialogOption",
+            ),
+            True,
+        )
+    elif name == "QFontDialog":
+        widget = QtWidgets.QFontDialog(parent)
+        widget.setOption(
+            _native_enum(
+                QtWidgets.QFontDialog,
+                "DontUseNativeDialog",
+                "FontDialogOption",
+            ),
+            True,
+        )
+    elif name == "QInputDialog":
+        widget = QtWidgets.QInputDialog(parent)
+        widget.setWindowTitle("Workspace name")
+        widget.setLabelText("Name")
+        widget.setTextValue("shadcn-qt")
+    elif name == "QProgressDialog":
+        widget = QtWidgets.QProgressDialog(
+            "Indexing components…", "Cancel", 0, 100, parent
+        )
+        widget.setAutoClose(False)
+        widget.setMinimumDuration(100000)
+        widget.setValue(64)
+    elif name == "QErrorMessage":
+        widget = QtWidgets.QErrorMessage(parent)
+        message = widget.findChild(QtWidgets.QLabel)
+        if message is not None:
+            message.setText("The selected theme file could not be loaded.")
+    else:
+        raise KeyError(name)
+    return _set_embedded_dialog(widget)
+
+
+def _native_individual_specimen(name: str, parent: Any) -> Any:
+    if name in NATIVE_FORM_NAMES:
+        return _native_form_specimen(name, parent)
+    if name in NATIVE_DATA_VIEW_NAMES:
+        return _native_data_specimen(name, parent)
+    if name in NATIVE_CONTAINER_NAMES:
+        return _native_container_specimen(name, parent)
+    if name in NATIVE_WINDOW_NAMES:
+        return _native_window_specimen(name, parent)
+    if name in NATIVE_DIALOG_NAMES:
+        return _native_dialog_specimen(name, parent)
+    raise KeyError(name)
+
+
 def build_native_preview(name: str, parent: Any = None) -> Any:
     """Build a preview composed exclusively from stock QtWidgets classes."""
 
@@ -1060,13 +1745,30 @@ def build_native_preview(name: str, parent: Any = None) -> Any:
         raise KeyError(f"Unknown native gallery preview: {name}")
     host, layout = _preview_host(parent)
 
-    if name == "Native Forms":
-        columns = QtWidgets.QWidget(host)
-        columns_layout = QtWidgets.QHBoxLayout(columns)
-        columns_layout.setContentsMargins(0, 0, 0, 0)
-        columns_layout.setSpacing(14)
+    if name in native_individual_preview_names():
+        specimen_group, specimen_layout = _native_group(name, host)
+        specimen_layout.addWidget(
+            QtWidgets.QLabel(
+                f"Stock {name} · automatically adopted by shadcn-qt", specimen_group
+            )
+        )
+        specimen = _native_individual_specimen(name, specimen_group)
+        expected_type = getattr(QtWidgets, name)
+        target = getattr(specimen, "_native_gallery_target", None)
+        if not isinstance(target, expected_type):
+            target = (
+                specimen
+                if isinstance(specimen, expected_type)
+                else specimen.findChild(expected_type)
+            )
+        if target is None:
+            raise RuntimeError(f"Native preview {name} did not create a {name}")
+        target.setObjectName(f"nativeGallery{name}")
+        specimen_layout.addWidget(specimen)
+        layout.addWidget(specimen_group)
 
-        editors, editors_layout = _native_group("Editors and selectors", columns)
+    elif name == "Native Forms":
+        editors, editors_layout = _native_group("Editors and selectors", host)
         line_edit = QtWidgets.QLineEdit(editors)
         line_edit.setPlaceholderText("name@example.com")
         invalid = QtWidgets.QLineEdit("Invalid value", editors)
@@ -1076,98 +1778,110 @@ def build_native_preview(name: str, parent: Any = None) -> Any:
         editable_combo = QtWidgets.QComboBox(editors)
         editable_combo.setEditable(True)
         editable_combo.addItems(["New York", "Shanghai", "London"])
-        spin_row = QtWidgets.QWidget(editors)
-        spin_layout = QtWidgets.QHBoxLayout(spin_row)
-        spin_layout.setContentsMargins(0, 0, 0, 0)
-        spin = QtWidgets.QSpinBox(spin_row)
+        font_combo = QtWidgets.QFontComboBox(editors)
+        spin = QtWidgets.QSpinBox(editors)
         spin.setRange(0, 100)
         spin.setValue(24)
-        double_spin = QtWidgets.QDoubleSpinBox(spin_row)
+        double_spin = QtWidgets.QDoubleSpinBox(editors)
         double_spin.setValue(12.5)
-        spin_layout.addWidget(spin)
-        spin_layout.addWidget(double_spin)
-        date_row = QtWidgets.QWidget(editors)
-        date_layout = QtWidgets.QHBoxLayout(date_row)
-        date_layout.setContentsMargins(0, 0, 0, 0)
-        date_layout.addWidget(QtWidgets.QDateEdit(QtCore.QDate(2026, 8, 14), date_row))
-        date_layout.addWidget(QtWidgets.QTimeEdit(QtCore.QTime(9, 30), date_row))
+        date = QtWidgets.QDateEdit(QtCore.QDate(2026, 8, 14), editors)
+        date.setCalendarPopup(True)
+        time = QtWidgets.QTimeEdit(QtCore.QTime(9, 30), editors)
+        date_time = QtWidgets.QDateTimeEdit(
+            QtCore.QDateTime(QtCore.QDate(2026, 8, 14), QtCore.QTime(9, 30)),
+            editors,
+        )
+        date_time.setCalendarPopup(True)
         shortcut = QtWidgets.QKeySequenceEdit(editors)
         shortcut.setKeySequence(QtGui.QKeySequence("Ctrl+K"))
         for label, widget in (
             ("QLineEdit", line_edit),
-            ("Invalid state", invalid),
+            ("Invalid QLineEdit", invalid),
             ("QComboBox", combo),
-            ("Editable combo", editable_combo),
-            ("Spin boxes", spin_row),
-            ("Date and time", date_row),
-            ("Shortcut", shortcut),
+            ("Editable QComboBox", editable_combo),
+            ("QFontComboBox", font_combo),
+            ("QSpinBox", spin),
+            ("QDoubleSpinBox", double_spin),
+            ("QDateEdit", date),
+            ("QTimeEdit", time),
+            ("QDateTimeEdit", date_time),
+            ("QKeySequenceEdit", shortcut),
         ):
-            editors_layout.addWidget(_native_heading(label, editors))
-            editors_layout.addWidget(widget)
-        columns_layout.addWidget(editors, 1)
+            _add_native_form_control(editors_layout, label, widget, editors)
+        layout.addWidget(editors)
 
-        actions, actions_layout = _native_group("Actions and choices", columns)
-        button_row = QtWidgets.QWidget(actions)
-        button_layout = QtWidgets.QHBoxLayout(button_row)
-        button_layout.setContentsMargins(0, 0, 0, 0)
+        actions, actions_layout = _native_group("Actions and choices", host)
         for text, variant in (
             ("Primary", "default"),
             ("Secondary", "secondary"),
             ("Outline", "outline"),
         ):
-            button = QtWidgets.QPushButton(text, button_row)
+            button = QtWidgets.QPushButton(text, actions)
             button.setProperty("variant", variant)
-            button_layout.addWidget(button)
-        button_layout.addStretch(1)
+            _add_native_form_control(
+                actions_layout, f"QPushButton · {text}", button, actions
+            )
         command = QtWidgets.QCommandLinkButton(
             "Open workspace", "Continue with an existing project", actions
         )
-        choices = QtWidgets.QWidget(actions)
-        choices_layout = QtWidgets.QHBoxLayout(choices)
-        choices_layout.setContentsMargins(0, 0, 0, 0)
-        check = QtWidgets.QCheckBox("Notifications", choices)
+        tool = QtWidgets.QToolButton(actions)
+        tool.setText("Tool action")
+        check = QtWidgets.QCheckBox("Notifications", actions)
         check.setChecked(True)
-        partial = QtWidgets.QCheckBox("Inherited", choices)
+        partial = QtWidgets.QCheckBox("Inherited", actions)
         partial.setTristate(True)
         partial_state = getattr(QtCore.Qt, "PartiallyChecked", None)
         if partial_state is None:
             partial_state = QtCore.Qt.CheckState.PartiallyChecked
         partial.setCheckState(partial_state)
-        radio = QtWidgets.QRadioButton("Team plan", choices)
+        radio = QtWidgets.QRadioButton("Team plan", actions)
         radio.setChecked(True)
-        for control in (check, partial, radio):
-            choices_layout.addWidget(control)
-        choices_layout.addStretch(1)
         slider = QtWidgets.QSlider(_native_horizontal(), actions)
         slider.setValue(64)
+        dial = QtWidgets.QDial(actions)
+        dial.setValue(64)
+        dial.setNotchesVisible(True)
+        dial.setFixedSize(120, 120)
+        scrollbar = QtWidgets.QScrollBar(_native_horizontal(), actions)
+        scrollbar.setValue(40)
         progress = QtWidgets.QProgressBar(actions)
         progress.setValue(64)
         dialog_buttons = QtWidgets.QDialogButtonBox(
             _native_standard_buttons("Cancel", "Save"), actions
         )
-        actions_layout.addWidget(button_row)
-        actions_layout.addWidget(command)
-        actions_layout.addWidget(choices)
-        actions_layout.addWidget(_native_heading("Slider and progress", actions))
-        actions_layout.addWidget(slider)
-        actions_layout.addWidget(progress)
-        actions_layout.addStretch(1)
-        actions_layout.addWidget(dialog_buttons)
-        columns_layout.addWidget(actions, 1)
-        layout.addWidget(columns)
+        lcd = QtWidgets.QLCDNumber(actions)
+        lcd.display(2026)
+        lcd.setFixedHeight(80)
+        for label, widget in (
+            ("QCommandLinkButton", command),
+            ("QToolButton", tool),
+            ("QCheckBox · checked", check),
+            ("QCheckBox · partially checked", partial),
+            ("QRadioButton", radio),
+            ("QSlider", slider),
+            ("QDial", dial),
+            ("QScrollBar", scrollbar),
+            ("QProgressBar", progress),
+            ("QDialogButtonBox", dialog_buttons),
+            ("QLCDNumber", lcd),
+        ):
+            _add_native_form_control(actions_layout, label, widget, actions)
+        layout.addWidget(actions)
 
         text_group, text_layout = _native_group("Text editors", host)
-        text_row = QtWidgets.QWidget(text_group)
-        text_row_layout = QtWidgets.QHBoxLayout(text_row)
-        text_row_layout.setContentsMargins(0, 0, 0, 0)
         plain = QtWidgets.QPlainTextEdit(text_group)
         plain.setPlainText("QPlainTextEdit keeps its native document API.")
         rich = QtWidgets.QTextEdit(text_group)
         rich.setHtml("<b>QTextEdit</b><br>Rich text remains available.")
-        for editor in (plain, rich):
-            editor.setMaximumHeight(84)
-            text_row_layout.addWidget(editor)
-        text_layout.addWidget(text_row)
+        browser = QtWidgets.QTextBrowser(text_group)
+        browser.setHtml("<b>QTextBrowser</b><br>Read-only document navigation.")
+        for label, editor in (
+            ("QPlainTextEdit", plain),
+            ("QTextEdit", rich),
+            ("QTextBrowser", browser),
+        ):
+            editor.setFixedHeight(110)
+            _add_native_form_control(text_layout, label, editor, text_group)
         layout.addWidget(text_group)
 
     elif name == "Native Data Views":
@@ -1421,7 +2135,7 @@ class GalleryWindow(QtWidgets.QMainWindow):
             ui.Label("Component Gallery", self.sidebar, variant="muted")
         )
         self.search = ui.Input(self.sidebar)
-        self.search.setPlaceholderText("Search 65 components + native previews…")
+        self.search.setPlaceholderText(f"Search {len(gallery_names())} components…")
         sidebar_layout.addWidget(self.search)
         self.navigation = _GalleryNavigationTree(self.sidebar)
         self.navigation.setObjectName("galleryNavigation")

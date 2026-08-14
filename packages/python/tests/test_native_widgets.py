@@ -19,7 +19,6 @@ def test_adopt_native_widgets_preserves_explicit_choices(runtime):
     app, QtWidgets = runtime
     from shadcn_qt import Button, adopt_native_widgets
     from shadcn_qt._qt import QtCore
-
     root = QtWidgets.QWidget()
     button = QtWidgets.QPushButton("Save", root)
     button.setProperty("variant", "outline")
@@ -86,6 +85,9 @@ def test_native_combo_popup_has_one_outer_border(runtime):
         apply_theme,
         disable_native_widget_styling,
     )
+    from shadcn_qt._qt import QtCore, import_qt_module
+
+    QtTest = import_qt_module("QtTest")
 
     disable_native_widget_styling(app, clear=True)
     apply_theme(app, "light")
@@ -96,6 +98,8 @@ def test_native_combo_popup_has_one_outer_border(runtime):
     popup = view.window()
     original_popup_name = popup.objectName()
     original_popup_stylesheet = popup.styleSheet()
+    original_popup_minimum_width = popup.minimumWidth()
+    original_popup_maximum_width = popup.maximumWidth()
     original_view_name = view.objectName()
 
     assert adopt_native_widgets(combo) >= 1
@@ -107,8 +111,20 @@ def test_native_combo_popup_has_one_outer_border(runtime):
     assert "border: none" in popup.styleSheet()
 
     combo.show()
-    combo.showPopup()
     app.processEvents()
+    left_button = getattr(QtCore.Qt, "LeftButton", None)
+    if left_button is None:
+        left_button = QtCore.Qt.MouseButton.LeftButton
+    trigger_point = combo.rect().center()
+    QtTest.QTest.mousePress(combo, left_button, pos=trigger_point)
+    app.processEvents()
+    assert not view.isVisible()
+    QtTest.QTest.mouseRelease(combo, left_button, pos=trigger_point)
+    app.processEvents()
+    assert view.isVisible()
+    expected_popup_position = combo.mapToGlobal(QtCore.QPoint(0, combo.height()))
+    assert popup.pos() == expected_popup_position
+    assert popup.width() == combo.width()
     assert view.frameWidth() == 4
     image = popup.grab().toImage()
     center_x = image.width() // 2
@@ -130,8 +146,47 @@ def test_native_combo_popup_has_one_outer_border(runtime):
     assert disable_native_widget_styling(app, clear=True) >= 1
     assert popup.objectName() == original_popup_name
     assert popup.styleSheet() == original_popup_stylesheet
+    assert popup.minimumWidth() == original_popup_minimum_width
+    assert popup.maximumWidth() == original_popup_maximum_width
     assert view.objectName() == original_view_name
     combo.close()
+
+
+def test_native_date_popup_is_left_aligned_directly_below(runtime):
+    app, QtWidgets = runtime
+    from shadcn_qt import (
+        disable_native_widget_styling,
+        enable_native_widget_styling,
+    )
+    from shadcn_qt._qt import QtCore, import_qt_module
+
+    QtTest = import_qt_module("QtTest")
+    disable_native_widget_styling(app, clear=True)
+    enable_native_widget_styling(app)
+    date = QtWidgets.QDateEdit()
+    date.setCalendarPopup(True)
+    date.resize(300, 36)
+    date.show()
+    app.processEvents()
+
+    left_button = getattr(QtCore.Qt, "LeftButton", None)
+    if left_button is None:
+        left_button = QtCore.Qt.MouseButton.LeftButton
+    QtTest.QTest.mouseClick(
+        date,
+        left_button,
+        pos=QtCore.QPoint(date.width() - 16, date.height() // 2),
+    )
+    app.processEvents()
+
+    popup = date.calendarWidget().window()
+    expected_popup_position = date.mapToGlobal(QtCore.QPoint(0, date.height()))
+    assert popup.isVisible()
+    assert popup.pos() == expected_popup_position
+
+    popup.hide()
+    disable_native_widget_styling(app, clear=True)
+    date.close()
 
 
 def test_global_adapter_handles_future_widgets_and_opt_out(runtime):
@@ -178,6 +233,35 @@ def test_global_adapter_handles_future_widgets_and_opt_out(runtime):
     after_disable.ensurePolished()
     app.processEvents()
     assert after_disable.property("shadcn_qt_component") is None
+
+
+def test_future_font_combo_restores_runtime_enhancements(runtime):
+    app, QtWidgets = runtime
+    from shadcn_qt import disable_native_widget_styling, enable_native_widget_styling
+    from shadcn_qt._qt import QtCore
+
+    disable_native_widget_styling(app, clear=True)
+    enable_native_widget_styling(app)
+    combo = QtWidgets.QFontComboBox()
+    combo.resize(300, 36)
+    combo.show()
+    app.processEvents()
+
+    state = combo._shadcn_qt_native_enhancements
+    assert combo.property("shadcn_qt_component") == "select"
+    assert [glyph.direction for glyph in state["glyphs"]] == ["down"]
+    assert state["glyphs"][0].isVisible()
+    assert state.get("combo_popup") is not None
+
+    combo.showPopup()
+    app.processEvents()
+    popup = combo.view().window()
+    expected_popup_position = combo.mapToGlobal(QtCore.QPoint(0, combo.height()))
+    assert popup.pos() == expected_popup_position
+    combo.hidePopup()
+
+    disable_native_widget_styling(app, clear=True)
+    combo.close()
 
 
 def test_native_qt_widget_families_are_covered(runtime):

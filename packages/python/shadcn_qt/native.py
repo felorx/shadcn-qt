@@ -14,9 +14,12 @@ from shadcn_qt import _qt
 _ADAPTER_ATTRIBUTE = "_shadcn_qt_native_widget_styling_adapter"
 _ADOPTED_PROPERTY = "shadcn_qt_native_adopted"
 _ADDED_PROPERTIES = "shadcn_qt_native_properties"
+_ENHANCEMENTS_PROPERTY = "shadcn_qt_native_enhancements"
 _PREFERENCE_PROPERTY = "shadcn_qt_native_styling"
 _COMBO_POPUP_NAME = "shadcnQtNativeComboPopup"
 _COMBO_POPUP_VIEW_NAME = "shadcnQtNativeComboPopupView"
+_CHOICE_SHADOW_OFFSET_Y = 1.0
+_CHOICE_SHADOW_LAYERS = ((1.0, 3), (0.5, 4), (0.0, 6))
 _STYLE_PROPERTIES = frozenset(
     {
         "shadcn_qt_component",
@@ -30,6 +33,7 @@ _ADAPTER_TYPE: Optional[Any] = None
 _CALENDAR_DELEGATE_TYPE: Optional[Any] = None
 _ENHANCEMENT_FILTER_TYPE: Optional[Any] = None
 _NATIVE_GLYPH_TYPE: Optional[Any] = None
+_POPUP_POSITION_FILTER_TYPE: Optional[Any] = None
 
 
 def _refresh_style(widget: Any) -> None:
@@ -214,6 +218,38 @@ def _with_alpha(gui: Any, color: Any, alpha: int) -> Any:
     return result
 
 
+def _paint_native_choice_shadow(
+    painter: Any,
+    indicator: Any,
+    *,
+    radio: bool,
+    enabled: bool,
+    core: Any,
+    gui: Any,
+) -> None:
+    painter.save()
+    painter.setPen(_qt_enum(core, "NoPen", "PenStyle"))
+    for expansion, alpha in _CHOICE_SHADOW_LAYERS:
+        if not enabled:
+            alpha = round(alpha * 0.5)
+        painter.setBrush(_with_alpha(gui, gui.QColor(0, 0, 0), alpha))
+        shadow_rect = indicator.adjusted(
+            -expansion,
+            -expansion,
+            expansion,
+            expansion,
+        ).translated(0, _CHOICE_SHADOW_OFFSET_Y)
+        if radio:
+            painter.drawEllipse(shadow_rect)
+        else:
+            painter.drawRoundedRect(
+                shadow_rect,
+                3.0 + expansion,
+                3.0 + expansion,
+            )
+    painter.restore()
+
+
 def _paint_native_choice(widget: Any, core: Any, gui: Any, widgets: Any) -> bool:
     component = widget.property("shadcn_qt_component")
     if component not in {"checkbox", "radio"}:
@@ -271,6 +307,14 @@ def _paint_native_choice(widget: Any, core: Any, gui: Any, widgets: Any) -> bool
                 indicator.adjusted(-1.5, -1.5, 1.5, 1.5), 5, 5
             )
 
+    _paint_native_choice_shadow(
+        painter,
+        indicator,
+        radio=component == "radio",
+        enabled=enabled,
+        core=core,
+        gui=gui,
+    )
     painter.setPen(gui.QPen(primary, 1))
     if widget.underMouse() and not checked and not partial:
         painter.setBrush(accent)
@@ -442,8 +486,27 @@ def _native_glyph_type() -> Any:
     return _NATIVE_GLYPH_TYPE
 
 
-def _layout_native_glyphs(widget: Any) -> None:
+def _enhancement_state(widget: Any) -> Optional[Dict[str, Any]]:
     state = getattr(widget, "_shadcn_qt_native_enhancements", None)
+    if state is not None:
+        return state
+    state = widget.property(_ENHANCEMENTS_PROPERTY)
+    if isinstance(state, dict):
+        widget._shadcn_qt_native_enhancements = state
+        return state
+    return None
+
+
+def _store_enhancement_state(widget: Any, state: Dict[str, Any]) -> None:
+    widget._shadcn_qt_native_enhancements = state
+    # Qt dynamic properties belong to the C++ object, so this state remains
+    # reachable even when a binding creates a replacement Python wrapper while
+    # constructing a complex subclass such as QFontComboBox.
+    widget.setProperty(_ENHANCEMENTS_PROPERTY, state)
+
+
+def _layout_native_glyphs(widget: Any) -> None:
+    state = _enhancement_state(widget)
     if not state or not state.get("glyphs"):
         return
     glyphs = state["glyphs"]
@@ -502,6 +565,49 @@ def _style_native_combo_popup(widget: Any) -> None:
         f"#{_COMBO_POPUP_NAME} QListView::item:selected {{ "
         f"background: {accent}; color: {accent_foreground}; }}"
     )
+    popup.setFixedWidth(max(1, widget.width()))
+
+
+def _position_native_popup_below(
+    widget: Any,
+    popup: Any,
+    *,
+    match_width: bool = False,
+) -> None:
+    core, _, _ = _qt.qt_modules()
+    if match_width:
+        popup.setFixedWidth(max(1, widget.width()))
+    popup.move(widget.mapToGlobal(core.QPoint(0, widget.height())))
+
+
+def _popup_position_filter_type() -> Any:
+    global _POPUP_POSITION_FILTER_TYPE
+    if _POPUP_POSITION_FILTER_TYPE is not None:
+        return _POPUP_POSITION_FILTER_TYPE
+
+    core, _, _ = _qt.qt_modules()
+    show = getattr(core.QEvent, "Show", None)
+    if show is None:
+        show = core.QEvent.Type.Show
+
+    class NativePopupPositionFilter(core.QObject):
+        def __init__(self, popup: Any, *, match_width: bool) -> None:
+            super().__init__(popup)
+            self._match_width = match_width
+
+        def eventFilter(self, watched: Any, event: Any) -> bool:
+            if event.type() == show:
+                anchor = watched.parentWidget()
+                if anchor is not None:
+                    _position_native_popup_below(
+                        anchor,
+                        watched,
+                        match_width=self._match_width,
+                    )
+            return False
+
+    _POPUP_POSITION_FILTER_TYPE = NativePopupPositionFilter
+    return _POPUP_POSITION_FILTER_TYPE
 
 
 def _mark_native_combo_popup(widget: Any, state: Dict[str, Any]) -> None:
@@ -511,6 +617,8 @@ def _mark_native_combo_popup(widget: Any, state: Dict[str, Any]) -> None:
     state["combo_popup"] = {
         "delegate": view.itemDelegate(),
         "popup": popup,
+        "popup_maximum_width": popup.maximumWidth(),
+        "popup_minimum_width": popup.minimumWidth(),
         "popup_name": popup.objectName(),
         "popup_stylesheet": popup.styleSheet(),
         "view": view,
@@ -523,7 +631,25 @@ def _mark_native_combo_popup(widget: Any, state: Dict[str, Any]) -> None:
         state["combo_popup"]["replacement_delegate"] = replacement
     popup.setObjectName(_COMBO_POPUP_NAME)
     view.setObjectName(_COMBO_POPUP_VIEW_NAME)
+    position_filter = _popup_position_filter_type()(popup, match_width=True)
+    popup.installEventFilter(position_filter)
+    state["combo_popup"]["position_filter"] = position_filter
     _style_native_combo_popup(widget)
+
+
+def _mark_native_calendar_popup(widget: Any, state: Dict[str, Any]) -> None:
+    if "calendar_popup" in state or not widget.calendarPopup():
+        return
+    calendar = widget.calendarWidget()
+    if calendar is None:
+        return
+    popup = calendar.window()
+    position_filter = _popup_position_filter_type()(popup, match_width=False)
+    popup.installEventFilter(position_filter)
+    state["calendar_popup"] = {
+        "popup": popup,
+        "position_filter": position_filter,
+    }
 
 
 def _add_native_shadow(widget: Any, gui: Any, widgets: Any, state: Dict[str, Any]) -> None:
@@ -556,7 +682,7 @@ def _add_native_shadow(widget: Any, gui: Any, widgets: Any, state: Dict[str, Any
 
 
 def _sync_native_shadow(widget: Any, widgets: Any) -> None:
-    state = getattr(widget, "_shadcn_qt_native_enhancements", None)
+    state = _enhancement_state(widget)
     if state is None:
         return
     shadow = state.get("shadow")
@@ -570,6 +696,7 @@ def _sync_native_shadow(widget: Any, widgets: Any) -> None:
     elif wants_shadow and shadow is None:
         _, gui, _ = _qt.qt_modules()
         _add_native_shadow(widget, gui, widgets, state)
+    _store_enhancement_state(widget, state)
 
 
 def _enhancement_filter_type() -> Any:
@@ -580,6 +707,8 @@ def _enhancement_filter_type() -> Any:
     core, gui, widgets = _qt.qt_modules()
     paint = getattr(core.QEvent, "Paint", None)
     palette_change = getattr(core.QEvent, "PaletteChange", None)
+    mouse_press = getattr(core.QEvent, "MouseButtonPress", None)
+    mouse_release = getattr(core.QEvent, "MouseButtonRelease", None)
     resize = getattr(core.QEvent, "Resize", None)
     show = getattr(core.QEvent, "Show", None)
     if paint is None:
@@ -588,20 +717,52 @@ def _enhancement_filter_type() -> Any:
         show = core.QEvent.Type.Show
     if palette_change is None:
         palette_change = core.QEvent.Type.PaletteChange
+    if mouse_press is None:
+        mouse_press = core.QEvent.Type.MouseButtonPress
+        mouse_release = core.QEvent.Type.MouseButtonRelease
 
     class NativeEnhancementFilter(core.QObject):
         def eventFilter(self, watched: Any, event: Any) -> bool:
             if not watched.property(_ADOPTED_PROPERTY):
                 return False
-            if event.type() in {resize, show}:
+            event_type = event.type()
+            if isinstance(watched, widgets.QComboBox) and event_type in {
+                mouse_press,
+                mouse_release,
+            }:
+                left_button = _qt_enum(core, "LeftButton", "MouseButton")
+                if event_type == mouse_press and event.button() == left_button:
+                    watched._shadcn_qt_combo_click_pending = True
+                    watched.setFocus()
+                    event.accept()
+                    return True
+                pending = getattr(
+                    watched,
+                    "_shadcn_qt_combo_click_pending",
+                    False,
+                )
+                if event_type == mouse_release and pending:
+                    watched._shadcn_qt_combo_click_pending = False
+                    if event.button() == left_button:
+                        position = getattr(event, "position", None)
+                        point = (
+                            position().toPoint()
+                            if callable(position)
+                            else event.pos()
+                        )
+                        if watched.rect().contains(point):
+                            watched.showPopup()
+                    event.accept()
+                    return True
+            if event_type in {resize, show}:
                 _layout_native_glyphs(watched)
                 if isinstance(watched, widgets.QComboBox):
                     _style_native_combo_popup(watched)
-            elif event.type() == palette_change and isinstance(
+            elif event_type == palette_change and isinstance(
                 watched, widgets.QComboBox
             ):
                 _style_native_combo_popup(watched)
-            elif event.type() == paint and isinstance(
+            elif event_type == paint and isinstance(
                 watched, (widgets.QCheckBox, widgets.QRadioButton)
             ):
                 return _paint_native_choice(watched, core, gui, widgets)
@@ -613,13 +774,15 @@ def _enhancement_filter_type() -> Any:
 
 def _enhance_widget(widget: Any, widgets: Any) -> None:
     core, gui, _ = _qt.qt_modules()
-    state = getattr(widget, "_shadcn_qt_native_enhancements", None)
+    state = _enhancement_state(widget)
     if state is None:
         state = {}
         widget._shadcn_qt_native_enhancements = state
         _add_native_glyphs(widget, widgets, state)
         if isinstance(widget, widgets.QComboBox):
             _mark_native_combo_popup(widget, state)
+        if isinstance(widget, widgets.QDateTimeEdit):
+            _mark_native_calendar_popup(widget, state)
         _add_native_shadow(widget, gui, widgets, state)
         if isinstance(
             widget,
@@ -636,27 +799,29 @@ def _enhance_widget(widget: Any, widgets: Any) -> None:
 
     if isinstance(widget, widgets.QCalendarWidget):
         view = widget.findChild(widgets.QTableView, "qt_calendar_calendarview")
-        if view is None or "calendar" in state:
-            return
-        state["calendar"] = {
-            "delegate": view.itemDelegate(),
-            "grid": widget.isGridVisible(),
-            "vertical_header": widget.verticalHeaderFormat(),
-            "section_size": view.verticalHeader().defaultSectionSize(),
-        }
-        widget.setGridVisible(False)
-        no_header = getattr(widgets.QCalendarWidget, "NoVerticalHeader", None)
-        if no_header is None:
-            no_header = widgets.QCalendarWidget.VerticalHeaderFormat.NoVerticalHeader
-        widget.setVerticalHeaderFormat(no_header)
-        view.setMouseTracking(True)
-        view.verticalHeader().setMinimumSectionSize(36)
-        view.verticalHeader().setDefaultSectionSize(36)
-        view.setItemDelegate(_calendar_delegate_type()(view))
+        if view is not None and "calendar" not in state:
+            state["calendar"] = {
+                "delegate": view.itemDelegate(),
+                "grid": widget.isGridVisible(),
+                "vertical_header": widget.verticalHeaderFormat(),
+                "section_size": view.verticalHeader().defaultSectionSize(),
+            }
+            widget.setGridVisible(False)
+            no_header = getattr(widgets.QCalendarWidget, "NoVerticalHeader", None)
+            if no_header is None:
+                no_header = (
+                    widgets.QCalendarWidget.VerticalHeaderFormat.NoVerticalHeader
+                )
+            widget.setVerticalHeaderFormat(no_header)
+            view.setMouseTracking(True)
+            view.verticalHeader().setMinimumSectionSize(36)
+            view.verticalHeader().setDefaultSectionSize(36)
+            view.setItemDelegate(_calendar_delegate_type()(view))
+    _store_enhancement_state(widget, state)
 
 
 def _restore_widget(widget: Any, widgets: Any) -> None:
-    state = getattr(widget, "_shadcn_qt_native_enhancements", None)
+    state = _enhancement_state(widget)
     if state is None:
         return
     calendar = state.get("calendar")
@@ -667,11 +832,30 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
             view.verticalHeader().setDefaultSectionSize(calendar["section_size"])
         widget.setGridVisible(calendar["grid"])
         widget.setVerticalHeaderFormat(calendar["vertical_header"])
+    calendar_popup = state.get("calendar_popup")
+    if calendar_popup is not None:
+        try:
+            popup = calendar_popup["popup"]
+            position_filter = calendar_popup["position_filter"]
+            popup.removeEventFilter(position_filter)
+            position_filter.deleteLater()
+        except RuntimeError:
+            pass
     combo_popup = state.get("combo_popup")
     if combo_popup is not None:
         try:
+            position_filter = combo_popup.get("position_filter")
+            if position_filter is not None:
+                combo_popup["popup"].removeEventFilter(position_filter)
+                position_filter.deleteLater()
             combo_popup["popup"].setObjectName(combo_popup["popup_name"])
             combo_popup["popup"].setStyleSheet(combo_popup["popup_stylesheet"])
+            combo_popup["popup"].setMinimumWidth(
+                combo_popup["popup_minimum_width"]
+            )
+            combo_popup["popup"].setMaximumWidth(
+                combo_popup["popup_maximum_width"]
+            )
             combo_popup["view"].setObjectName(combo_popup["view_name"])
             combo_popup["view"].setItemDelegate(combo_popup["delegate"])
             replacement = combo_popup.get("replacement_delegate")
@@ -689,7 +873,11 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
     if shadow is not None and widget.graphicsEffect() is shadow:
         # Qt owns and deletes the old effect when it is detached.
         widget.setGraphicsEffect(None)
-    delattr(widget, "_shadcn_qt_native_enhancements")
+    if hasattr(widget, "_shadcn_qt_combo_click_pending"):
+        delattr(widget, "_shadcn_qt_combo_click_pending")
+    widget.setProperty(_ENHANCEMENTS_PROPERTY, None)
+    if hasattr(widget, "_shadcn_qt_native_enhancements"):
+        delattr(widget, "_shadcn_qt_native_enhancements")
 
 
 def _preference(widget: Any) -> Optional[bool]:
@@ -807,6 +995,15 @@ def _adapter_type() -> Any:
                 return False
             if event.type() == polish:
                 _adopt_widget(watched, widgets, refresh=False)
+                parent = watched.parentWidget()
+                if (
+                    isinstance(parent, widgets.QDateTimeEdit)
+                    and parent.property(_ADOPTED_PROPERTY)
+                ):
+                    state = _enhancement_state(parent)
+                    if state is not None:
+                        _mark_native_calendar_popup(parent, state)
+                        _store_enhancement_state(parent, state)
             elif (
                 event.type() == dynamic_change
                 and _event_property_name(event) == _PREFERENCE_PROPERTY

@@ -15,7 +15,10 @@ from shadcn_qt.widgets._style import (
     clear_graphics_effect,
     enable_antialiasing,
     handle_combo_mouse_press,
+    handle_combo_mouse_release,
     install_shadow,
+    position_combo_popup,
+    position_popup_below,
     semantic_color,
     style_combo_popup,
     with_alpha,
@@ -25,6 +28,29 @@ from shadcn_qt.widgets.controls import Label, RadioButton
 from shadcn_qt.widgets.input import Input
 
 QtCore, QtGui, QtWidgets = _qt.qt_modules()
+
+_DATE_PICKER_POPUP_FILTER_TYPE = None
+
+
+def _date_picker_popup_filter_type() -> Any:
+    global _DATE_PICKER_POPUP_FILTER_TYPE
+    if _DATE_PICKER_POPUP_FILTER_TYPE is not None:
+        return _DATE_PICKER_POPUP_FILTER_TYPE
+
+    show = getattr(QtCore.QEvent, "Show", None)
+    if show is None:
+        show = QtCore.QEvent.Type.Show
+
+    class DatePickerPopupFilter(QtCore.QObject):
+        def eventFilter(self, watched: Any, event: Any) -> bool:
+            if event.type() == show:
+                picker = watched.parentWidget()
+                if picker is not None:
+                    position_popup_below(picker, watched)
+            return False
+
+    _DATE_PICKER_POPUP_FILTER_TYPE = DatePickerPopupFilter
+    return _DATE_PICKER_POPUP_FILTER_TYPE
 
 
 def _align_center() -> Any:
@@ -443,12 +469,17 @@ class Combobox(QtWidgets.QComboBox):
         _install_combo_box_chevron(self, "chevrons-up-down")
 
     def showPopup(self) -> None:
-        style_combo_popup(self)
+        popup = style_combo_popup(self)
         super().showPopup()
+        position_combo_popup(self, popup)
 
     def mousePressEvent(self, event: Any) -> None:
         if not handle_combo_mouse_press(self, event, trigger_only=True):
             super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event: Any) -> None:
+        if not handle_combo_mouse_release(self, event):
+            super().mouseReleaseEvent(event)
 
     def setOptions(self, options: Iterable[str]) -> None:
         self.clear()
@@ -464,12 +495,17 @@ class NativeSelect(QtWidgets.QComboBox):
         _install_combo_box_chevron(self, "chevron-down")
 
     def showPopup(self) -> None:
-        style_combo_popup(self)
+        popup = style_combo_popup(self)
         super().showPopup()
+        position_combo_popup(self, popup)
 
     def mousePressEvent(self, event: Any) -> None:
         if not handle_combo_mouse_press(self, event, trigger_only=False):
             super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event: Any) -> None:
+        if not handle_combo_mouse_release(self, event):
+            super().mouseReleaseEvent(event)
 
 
 class DatePicker(QtWidgets.QDateEdit):
@@ -478,6 +514,10 @@ class DatePicker(QtWidgets.QDateEdit):
         initialize_component(self, "date-picker")
         self._drop_down_hovered = False
         self.setCalendarPopup(True)
+        calendar_popup = self.calendarWidget().window()
+        popup_filter = _date_picker_popup_filter_type()(calendar_popup)
+        calendar_popup.installEventFilter(popup_filter)
+        self._calendar_popup_position_filter = popup_filter
         self.setDate(QtCore.QDate.currentDate())
         self.setFixedHeight(36)
         self.setMouseTracking(True)

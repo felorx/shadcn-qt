@@ -56,10 +56,30 @@ def test_new_york_control_geometry(runtime):
     assert all(control.height() == 36 for control in controls)
 
 
+def test_choice_controls_use_shadow_xs_contract(runtime):
+    del runtime
+    from shadcn_qt import native
+    from shadcn_qt.widgets import controls
+
+    expected_layers = ((1.0, 3), (0.5, 4), (0.0, 6))
+    assert controls._CHOICE_SHADOW_OFFSET_Y == 1.0
+    assert controls._CHOICE_SHADOW_LAYERS == expected_layers
+    assert native._CHOICE_SHADOW_OFFSET_Y == controls._CHOICE_SHADOW_OFFSET_Y
+    assert native._CHOICE_SHADOW_LAYERS == expected_layers
+
+    combined_opacity = 1.0
+    for _, alpha in expected_layers:
+        combined_opacity *= 1.0 - alpha / 255.0
+    combined_opacity = 1.0 - combined_opacity
+    assert combined_opacity == pytest.approx(0.05, abs=0.001)
+
+
 def test_date_picker_uses_one_outer_border_and_custom_chevron(runtime):
     from shadcn_qt import DatePicker, apply_theme, theme_stylesheet
+    from shadcn_qt._qt import import_qt_module
 
-    app, _, _ = runtime
+    app, QtCore, _ = runtime
+    QtTest = import_qt_module("QtTest")
     apply_theme(app, "light")
     picker = DatePicker()
     picker.resize(260, 36)
@@ -78,6 +98,22 @@ def test_date_picker_uses_one_outer_border_and_custom_chevron(runtime):
     assert normal_image.pixelColor(
         hover_sample_x, hover_sample_y
     ) != hovered_image.pixelColor(hover_sample_x, hover_sample_y)
+
+    left_button = getattr(QtCore.Qt, "LeftButton", None)
+    if left_button is None:
+        left_button = QtCore.Qt.MouseButton.LeftButton
+    QtTest.QTest.mouseClick(
+        picker,
+        left_button,
+        pos=QtCore.QPoint(picker.width() - 16, picker.height() // 2),
+    )
+    app.processEvents()
+    calendar_popup = picker.calendarWidget().window()
+    expected_popup_position = picker.mapToGlobal(
+        QtCore.QPoint(0, picker.height())
+    )
+    assert calendar_popup.pos() == expected_popup_position
+    calendar_popup.hide()
 
     qss = theme_stylesheet("light")
     selector = 'QDateTimeEdit[shadcn_qt_component="date-picker"]::drop-down'
@@ -121,7 +157,14 @@ def test_combo_family_popups_use_one_outer_border(runtime):
             trigger_point = glyph.geometry().center()
         else:
             trigger_point = control.rect().center()
-        QtTest.QTest.mouseClick(
+        QtTest.QTest.mousePress(
+            control,
+            left_button,
+            pos=trigger_point,
+        )
+        app.processEvents()
+        assert not control.view().isVisible()
+        QtTest.QTest.mouseRelease(
             control,
             left_button,
             pos=trigger_point,
@@ -132,6 +175,10 @@ def test_combo_family_popups_use_one_outer_border(runtime):
         assert popup.objectName() == "shadcnQtComboPopup"
         assert "border: 1px solid #e4e4e7" in popup.styleSheet()
         assert popup.width() == control.width()
+        expected_popup_position = control.mapToGlobal(
+            QtCore.QPoint(0, control.height())
+        )
+        assert popup.pos() == expected_popup_position
         second_row = control.view().visualRect(control.model().index(1, 0))
         assert second_row.height() == 32
         assert second_row.width() <= control.view().viewport().width()
@@ -164,6 +211,32 @@ def test_combo_family_popups_use_one_outer_border(runtime):
     assert "margin: 2px" in drop_down_rule
     assert "border-radius: 4px" in drop_down_rule
     assert "QComboBox[shadcn_qt_component]::drop-down:hover" in qss
+
+
+def test_dropdown_menu_opens_left_aligned_directly_below(runtime):
+    from shadcn_qt import Button, DropdownMenu
+
+    app, QtCore, QtWidgets = runtime
+    host = QtWidgets.QWidget()
+    host.setGeometry(100, 100, 600, 300)
+    trigger = Button("Open menu", host, variant="outline")
+    trigger.setGeometry(70, 60, 180, 36)
+    menu = DropdownMenu("Account", host)
+    menu.addItem("Profile")
+    menu.addItem("Billing")
+    host.show()
+    app.processEvents()
+
+    menu.showAt(trigger)
+    app.processEvents()
+
+    expected_popup_position = trigger.mapToGlobal(
+        QtCore.QPoint(0, trigger.height())
+    )
+    assert menu.pos() == expected_popup_position
+
+    menu.close()
+    host.close()
 
 
 def test_new_york_elevation_and_variant_contract(runtime):
