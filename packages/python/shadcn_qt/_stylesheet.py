@@ -301,7 +301,7 @@ QTabWidget[shadcn_qt_component="tabs"]::pane {{ border: none; top: 8px; }}
 
 QFrame[shadcn_qt_component="accordion"] {{ background: transparent; border: none; }}
 QFrame[shadcn_qt_component="collapsible"] {{ background: transparent; border: none; border-bottom: 1px solid {c["border"]}; border-radius: 0; }}
-QFrame[shadcn_qt_component="collapsible"] QPushButton {{ text-align: left; }}
+QFrame[shadcn_qt_component="collapsible"] QPushButton {{ text-align: left; padding-right: 32px; }}
 QFrame[shadcn_qt_component="separator"] {{ background: {c["border"]}; border: none; }}
 QSplitter[shadcn_qt_component="resizable"]::handle {{ background: {c["border"]}; width: 1px; height: 1px; }}
 QAbstractScrollArea[shadcn_qt_component="scroll-area"] {{ background: transparent; border: none; border-radius: {r_md}; }}
@@ -495,18 +495,18 @@ QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-button {{
 QComboBox[shadcn_qt_native_adopted="true"]::down-arrow,
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::up-arrow,
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-arrow {{ image: none; width: 0; height: 0; }}
-QLabel[nativeGlyph="true"] {{
-  background: transparent; color: {c["mutedForeground"]}; border: none;
-  font-size: 13px; font-weight: 500; padding: 0;
-}}
+QWidget[nativeGlyph="true"] {{ background: transparent; border: none; padding: 0; }}
 QComboBox[shadcn_qt_native_adopted="true"]::drop-down:hover,
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::up-button:hover,
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-button:hover {{ background: {c["accent"]}; }}
+QComboBox[shadcn_qt_native_adopted="true"]::drop-down {{
+  margin: 2px; border-radius: {r_sm};
+}}
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::up-button {{
-  subcontrol-position: top right; border-top-right-radius: {r_md};
+  subcontrol-position: top right; margin: 2px 2px 0 0; border-radius: {r_sm};
 }}
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-button {{
-  subcontrol-position: bottom right; border-bottom-right-radius: {r_md};
+  subcontrol-position: bottom right; margin: 0 2px 2px 0; border-radius: {r_sm};
 }}
 
 QProgressBar[shadcn_qt_native_adopted="true"] {{

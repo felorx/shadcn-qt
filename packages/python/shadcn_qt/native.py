@@ -27,6 +27,7 @@ _STYLE_PROPERTIES = frozenset(
 _ADAPTER_TYPE: Optional[Any] = None
 _CALENDAR_DELEGATE_TYPE: Optional[Any] = None
 _ENHANCEMENT_FILTER_TYPE: Optional[Any] = None
+_NATIVE_GLYPH_TYPE: Optional[Any] = None
 
 
 def _refresh_style(widget: Any) -> None:
@@ -388,6 +389,51 @@ def _set_mouse_transparent(widget: Any, core: Any) -> None:
     widget.setAttribute(attribute, True)
 
 
+def _native_glyph_type() -> Any:
+    global _NATIVE_GLYPH_TYPE
+    if _NATIVE_GLYPH_TYPE is not None:
+        return _NATIVE_GLYPH_TYPE
+
+    core, gui, widgets = _qt.qt_modules()
+
+    class NativeGlyph(widgets.QWidget):
+        def __init__(self, direction: str, parent: Any) -> None:
+            super().__init__(parent)
+            self.direction = direction
+            self.setObjectName(f"shadcnQtNativeGlyph{direction.title()}")
+            self.setProperty(_PREFERENCE_PROPERTY, False)
+            self.setProperty("nativeGlyph", True)
+            _set_mouse_transparent(self, core)
+
+        def _icon_path(self) -> Any:
+            center = core.QRectF(self.rect()).center()
+            vertical = -2.0 if self.direction == "up" else 2.0
+            path = gui.QPainterPath()
+            path.moveTo(center.x() - 4.0, center.y() - vertical)
+            path.lineTo(center.x(), center.y() + vertical)
+            path.lineTo(center.x() + 4.0, center.y() - vertical)
+            return path
+
+        def paintEvent(self, event: Any) -> None:
+            del event
+            painter = gui.QPainter(self)
+            antialiasing = getattr(gui.QPainter, "Antialiasing", None)
+            if antialiasing is None:
+                antialiasing = gui.QPainter.RenderHint.Antialiasing
+            painter.setRenderHint(antialiasing, True)
+            color = _semantic_color(self, gui, "mutedForeground", "WindowText")
+            if not self.isEnabled():
+                color = _with_alpha(gui, color, 128)
+            pen = gui.QPen(color, 1.5)
+            pen.setCapStyle(_qt_enum(core, "RoundCap", "PenCapStyle"))
+            pen.setJoinStyle(_qt_enum(core, "RoundJoin", "PenJoinStyle"))
+            painter.setPen(pen)
+            painter.drawPath(self._icon_path())
+
+    _NATIVE_GLYPH_TYPE = NativeGlyph
+    return _NATIVE_GLYPH_TYPE
+
+
 def _layout_native_glyphs(widget: Any) -> None:
     state = getattr(widget, "_shadcn_qt_native_enhancements", None)
     if not state or not state.get("glyphs"):
@@ -396,32 +442,30 @@ def _layout_native_glyphs(widget: Any) -> None:
     width = 28
     right = max(0, widget.width() - width)
     if len(glyphs) == 1:
-        glyphs[0].setGeometry(right, 0, width, widget.height())
+        glyphs[0].setGeometry(right, 2, width - 2, max(1, widget.height() - 4))
         return
     top_height = max(1, widget.height() // 2)
-    glyphs[0].setGeometry(right, 0, width, top_height)
+    glyphs[0].setGeometry(right, 2, width - 2, max(1, top_height - 2))
     glyphs[1].setGeometry(
-        right, top_height, width, max(1, widget.height() - top_height)
+        right,
+        top_height,
+        width - 2,
+        max(1, widget.height() - top_height - 2),
     )
 
 
-def _add_native_glyphs(widget: Any, core: Any, widgets: Any, state: Dict[str, Any]) -> None:
-    texts: Tuple[str, ...]
+def _add_native_glyphs(widget: Any, widgets: Any, state: Dict[str, Any]) -> None:
+    directions: Tuple[str, ...]
     if isinstance(widget, widgets.QComboBox):
-        texts = ("⌄",)
+        directions = ("down",)
     elif isinstance(widget, widgets.QAbstractSpinBox):
-        texts = ("⌃", "⌄")
+        directions = ("up", "down")
     else:
         return
-    center = _qt_enum(core, "AlignCenter", "AlignmentFlag")
     glyphs = []
-    for index, text in enumerate(texts):
-        glyph = widgets.QLabel(text, widget)
-        glyph.setObjectName(f"shadcnQtNativeGlyph{index}")
-        glyph.setProperty(_PREFERENCE_PROPERTY, False)
-        glyph.setProperty("nativeGlyph", True)
-        glyph.setAlignment(center)
-        _set_mouse_transparent(glyph, core)
+    glyph_type = _native_glyph_type()
+    for direction in directions:
+        glyph = glyph_type(direction, widget)
         glyph.show()
         glyphs.append(glyph)
     state["glyphs"] = glyphs
@@ -510,7 +554,7 @@ def _enhance_widget(widget: Any, widgets: Any) -> None:
     if state is None:
         state = {}
         widget._shadcn_qt_native_enhancements = state
-        _add_native_glyphs(widget, core, widgets, state)
+        _add_native_glyphs(widget, widgets, state)
         _add_native_shadow(widget, gui, widgets, state)
         if isinstance(
             widget,

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -43,8 +44,9 @@ def test_special_catalog_mappings(runtime):
 
 
 def test_accordion_carousel_and_pagination(runtime):
-    _, QtWidgets = runtime
+    app, QtWidgets = runtime
     from shadcn_qt import Accordion, Carousel, Pagination
+    from shadcn_qt._qt import QtCore
 
     accordion = Accordion()
     first = accordion.addItem(QtWidgets.QLabel("One"), "First")
@@ -53,6 +55,14 @@ def test_accordion_carousel_and_pagination(runtime):
     assert second.expanded is True
     assert first.expanded is False
     assert accordion.currentIndex() == 1
+    accordion.resize(420, accordion.sizeHint().height())
+    accordion.show()
+    app.processEvents()
+    assert first.trigger.text() == "First"
+    assert first.trigger._icon_name == "chevron-down"
+    first_icon_bounds = first.trigger._icon_path().boundingRect()
+    assert (first_icon_bounds.width(), first_icon_bounds.height()) == (8.0, 4.0)
+    assert first_icon_bounds.center() == first.trigger._icon_rect().center()
 
     carousel = Carousel()
     carousel.addWidget(QtWidgets.QLabel("One"))
@@ -61,12 +71,36 @@ def test_accordion_carousel_and_pagination(runtime):
     assert carousel.currentIndex() == 1
     carousel.next()
     assert carousel.currentIndex() == 0
+    carousel.resize(420, 180)
+    carousel.show()
+    app.processEvents()
+    for button, accessible_name in (
+        (carousel.previousButton, "Previous slide"),
+        (carousel.nextButton, "Next slide"),
+    ):
+        assert button.text() == ""
+        assert button.accessibleName() == accessible_name
+        icon_bounds = button._icon_path().boundingRect()
+        assert (icon_bounds.width(), icon_bounds.height()) == (4.0, 8.0)
+        assert icon_bounds.center() == QtCore.QRectF(button.rect()).center()
 
     pagination = Pagination(page_count=4)
     pagination.setPage(3)
     pagination.next()
     assert pagination.currentPage == 4
     assert not pagination.nextButton.isEnabled()
+
+
+def test_component_sources_do_not_use_font_icon_glyphs():
+    widget_root = Path(__file__).parents[1] / "shadcn_qt" / "widgets"
+    banned = set("▴▾‹›×✕✖✓✔▲▼◀▶⌃⌄")
+    offenders = []
+    for source_path in widget_root.glob("*.py"):
+        text = source_path.read_text(encoding="utf-8")
+        used = sorted(banned.intersection(text))
+        if used:
+            offenders.append(f"{source_path.name}: {''.join(used)}")
+    assert not offenders, "font-backed UI icons found: " + ", ".join(offenders)
 
 
 def test_form_compositions(runtime):
@@ -160,7 +194,20 @@ def test_form_compositions(runtime):
 
 
 def test_data_command_and_conversation(runtime):
-    from shadcn_qt import Command, DataTable, Message, MessageScroller
+    from shadcn_qt import Attachment, Command, DataTable, Message, MessageScroller
+    from shadcn_qt._qt import QtCore
+
+    attachment = Attachment(name="report.pdf")
+    attachment.resize(360, attachment.sizeHint().height())
+    attachment.show()
+    runtime[0].processEvents()
+    assert attachment.removeButton.text() == ""
+    assert attachment.removeButton.accessibleName() == "Remove attachment"
+    remove_icon_bounds = attachment.removeButton._icon_path().boundingRect()
+    assert (remove_icon_bounds.width(), remove_icon_bounds.height()) == (7.0, 7.0)
+    assert remove_icon_bounds.center() == QtCore.QRectF(
+        attachment.removeButton.rect()
+    ).center()
 
     table = DataTable()
     table.setRows(["Name", "Role"], [["Ada", "Admin"], ["Lin", "User"]])

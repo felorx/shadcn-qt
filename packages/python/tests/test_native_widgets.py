@@ -18,6 +18,7 @@ def runtime():
 def test_adopt_native_widgets_preserves_explicit_choices(runtime):
     app, QtWidgets = runtime
     from shadcn_qt import Button, adopt_native_widgets
+    from shadcn_qt._qt import QtCore
 
     root = QtWidgets.QWidget()
     button = QtWidgets.QPushButton("Save", root)
@@ -31,6 +32,7 @@ def test_adopt_native_widgets_preserves_explicit_choices(runtime):
     combo = QtWidgets.QComboBox(root)
     combo.setEditable(True)
     internal_line_edit = combo.lineEdit()
+    spin = QtWidgets.QSpinBox(root)
 
     adopted = adopt_native_widgets(root)
 
@@ -48,7 +50,24 @@ def test_adopt_native_widgets_preserves_explicit_choices(runtime):
     app.processEvents()
     assert not checkbox.grab().isNull()
     assert checkbox._shadcn_qt_native_enhancements.get("event_filter") is not None
-    assert len(combo._shadcn_qt_native_enhancements.get("glyphs", ())) == 1
+    combo_glyphs = combo._shadcn_qt_native_enhancements.get("glyphs", ())
+    assert [glyph.direction for glyph in combo_glyphs] == ["down"]
+    combo_glyph = combo_glyphs[0]
+    combo_icon_bounds = combo_glyph._icon_path().boundingRect()
+    assert (combo_icon_bounds.width(), combo_icon_bounds.height()) == (8.0, 4.0)
+    assert combo_icon_bounds.center() == QtCore.QRectF(combo_glyph.rect()).center()
+    assert combo_glyph.geometry().top() == 2
+    assert combo_glyph.geometry().right() <= combo.rect().right() - 2
+    assert combo_glyph.geometry().bottom() == combo.rect().bottom() - 2
+    spin_glyphs = spin._shadcn_qt_native_enhancements.get("glyphs", ())
+    assert [glyph.direction for glyph in spin_glyphs] == ["up", "down"]
+    for glyph in spin_glyphs:
+        icon_bounds = glyph._icon_path().boundingRect()
+        assert (icon_bounds.width(), icon_bounds.height()) == (8.0, 4.0)
+        assert icon_bounds.center() == QtCore.QRectF(glyph.rect()).center()
+        assert glyph.geometry().right() <= spin.rect().right() - 2
+    assert spin_glyphs[0].geometry().top() == 2
+    assert spin_glyphs[-1].geometry().bottom() == spin.rect().bottom() - 2
     assert line_edit.graphicsEffect().blurRadius() == 2.0
     assert line_edit.graphicsEffect().color().alpha() == 13
     assert button.graphicsEffect().blurRadius() == 4.0
@@ -272,6 +291,9 @@ def test_native_stylesheet_has_dedicated_family_rules(runtime):
     assert 'QAbstractItemView[shadcn_qt_native_adopted="true"]::item:selected' in qss
     assert 'QAbstractItemView[shadcn_qt_native_adopted="true"]::item:selected:hover' in qss
     assert "QTableView::item:hover:!selected" in qss
+    assert "margin: 2px; border-radius: 4px" in qss
+    assert "margin: 2px 2px 0 0; border-radius: 4px" in qss
+    assert "margin: 0 2px 2px 0; border-radius: 4px" in qss
     selected_rule = qss.split(
         'QAbstractItemView[shadcn_qt_native_adopted="true"]::item:selected:hover',
         1,

@@ -6,6 +6,7 @@ from typing import Any, Iterable, Optional, Sequence, Union
 
 from shadcn_qt import _qt
 from shadcn_qt.widgets._helpers import initialize_component, refresh_style
+from shadcn_qt.widgets._icons import _VectorIconButton, _VectorIconGlyph
 from shadcn_qt.widgets._style import (
     enable_antialiasing,
     semantic_color,
@@ -425,36 +426,9 @@ def _qt_pen_none() -> Any:
     return QtCore.Qt.PenStyle.NoPen
 
 
-class _CalendarMonthIndicator(QtWidgets.QWidget):
+class _CalendarMonthIndicator(_VectorIconGlyph):
     def __init__(self, parent: Any) -> None:
-        super().__init__(parent)
-        transparent = getattr(QtCore.Qt, "WA_TransparentForMouseEvents", None)
-        if transparent is None:
-            transparent = QtCore.Qt.WidgetAttribute.WA_TransparentForMouseEvents
-        self.setAttribute(transparent, True)
-
-    def _icon_path(self) -> Any:
-        center = QtCore.QRectF(self.rect()).center()
-        path = QtGui.QPainterPath()
-        path.moveTo(center.x() - 4.0, center.y() - 2.0)
-        path.lineTo(center.x(), center.y() + 2.0)
-        path.lineTo(center.x() + 4.0, center.y() - 2.0)
-        return path
-
-    def paintEvent(self, event: Any) -> None:
-        del event
-        painter = QtGui.QPainter(self)
-        enable_antialiasing(painter)
-        pen = QtGui.QPen(semantic_color(self, "mutedForeground"), 1.5)
-        cap = getattr(QtCore.Qt, "RoundCap", None)
-        join = getattr(QtCore.Qt, "RoundJoin", None)
-        if cap is None:
-            cap = QtCore.Qt.PenCapStyle.RoundCap
-            join = QtCore.Qt.PenJoinStyle.RoundJoin
-        pen.setCapStyle(cap)
-        pen.setJoinStyle(join)
-        painter.setPen(pen)
-        painter.drawPath(self._icon_path())
+        super().__init__("chevron-down", parent)
 
 
 class Calendar(QtWidgets.QCalendarWidget):
@@ -470,15 +444,21 @@ class Calendar(QtWidgets.QCalendarWidget):
                 QtWidgets.QCalendarWidget.VerticalHeaderFormat.NoVerticalHeader
             )
         self.setVerticalHeaderFormat(no_vertical_header)
-        for object_name, glyph in (
-            ("qt_calendar_prevmonth", "‹"),
-            ("qt_calendar_nextmonth", "›"),
+        self._navigation_indicators = []
+        for object_name, icon_name, accessible_name in (
+            ("qt_calendar_prevmonth", "chevron-left", "Previous month"),
+            ("qt_calendar_nextmonth", "chevron-right", "Next month"),
         ):
             button = self.findChild(QtWidgets.QToolButton, object_name)
             if button is not None:
                 button.setIcon(QtGui.QIcon())
-                button.setText(glyph)
+                button.setText("")
+                button.setAccessibleName(accessible_name)
                 button.setFixedSize(32, 32)
+                indicator = _VectorIconGlyph(icon_name, button)
+                indicator.setGeometry(button.rect())
+                indicator.show()
+                self._navigation_indicators.append(indicator)
         self._month_button = self.findChild(
             QtWidgets.QToolButton, "qt_calendar_monthbutton"
         )
@@ -569,6 +549,8 @@ class Calendar(QtWidgets.QCalendarWidget):
             month_indicator = getattr(self, "_month_indicator", None)
             if month_indicator is not None:
                 month_indicator.update()
+            for indicator in getattr(self, "_navigation_indicators", ()):
+                indicator.update()
             self._install_delegate()
         super().changeEvent(event)
 
@@ -733,7 +715,9 @@ class Attachment(QtWidgets.QFrame):
         layout.setContentsMargins(10, 8, 10, 8)
         self.nameLabel = Label(name, self, variant="small")
         self.detailLabel = Label(detail, self, variant="muted")
-        self.removeButton = Button("×", self, variant="ghost", size="icon")
+        self.removeButton = _VectorIconButton(
+            "close", self, accessible_name="Remove attachment"
+        )
         self.removeButton.clicked.connect(self.removed)
         layout.addWidget(self.nameLabel)
         layout.addWidget(self.detailLabel, 1)

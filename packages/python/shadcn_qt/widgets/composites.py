@@ -6,9 +6,14 @@ from typing import Any, Optional
 
 from shadcn_qt import _qt
 from shadcn_qt.widgets._helpers import initialize_component, refresh_style
+from shadcn_qt.widgets._icons import (
+    _paint_vector_icon,
+    _vector_icon_path,
+    _VectorIconButton,
+)
 from shadcn_qt.widgets.button import Button
 
-QtCore, _, QtWidgets = _qt.qt_modules()
+QtCore, QtGui, QtWidgets = _qt.qt_modules()
 
 
 def _orientation(name: str) -> Any:
@@ -111,6 +116,29 @@ class Direction(QtWidgets.QFrame):
     direction = _qt.qt_property(str, fget=get_direction, fset=set_direction)
 
 
+class _CollapsibleTrigger(Button):
+    def __init__(self, parent: Any) -> None:
+        super().__init__("", parent, variant="ghost", size="sm")
+        self._icon_name = "chevron-up"
+
+    def sync(self, title: str, expanded: bool) -> None:
+        self.setText(title)
+        self._icon_name = "chevron-up" if expanded else "chevron-down"
+        self.setAccessibleName(f"{title}: {'expanded' if expanded else 'collapsed'}")
+        self.update()
+
+    def _icon_rect(self) -> Any:
+        return QtCore.QRectF(max(0, self.width() - 28), 0, 20, self.height())
+
+    def _icon_path(self) -> Any:
+        return _vector_icon_path(self._icon_rect(), self._icon_name)
+
+    def paintEvent(self, event: Any) -> None:
+        super().paintEvent(event)
+        painter = QtGui.QPainter(self)
+        _paint_vector_icon(self, painter, self._icon_name, rect=self._icon_rect())
+
+
 class Collapsible(QtWidgets.QFrame):
     expandedChanged = _qt.qt_signal(bool)
 
@@ -128,7 +156,7 @@ class Collapsible(QtWidgets.QFrame):
         self._layout = QtWidgets.QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
-        self.trigger = Button("", self, variant="ghost", size="sm")
+        self.trigger = _CollapsibleTrigger(self)
         _horizontal_expanding(self.trigger)
         self.trigger.setCheckable(True)
         self.trigger.clicked.connect(self.set_expanded)
@@ -153,8 +181,7 @@ class Collapsible(QtWidgets.QFrame):
         self._sync_trigger()
 
     def _sync_trigger(self) -> None:
-        indicator = "▴" if self._expanded else "▾"
-        self.trigger.setText(f"{self._title}  {indicator}")
+        self.trigger.sync(self._title, self._expanded)
 
     def is_expanded(self) -> bool:
         return self._expanded
@@ -252,9 +279,19 @@ class Carousel(QtWidgets.QFrame):
         layout = QtWidgets.QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
-        self.previousButton = Button("‹", self, variant="outline", size="icon")
+        self.previousButton = _VectorIconButton(
+            "chevron-left",
+            self,
+            accessible_name="Previous slide",
+            variant="outline",
+        )
         self.stack = QtWidgets.QStackedWidget(self)
-        self.nextButton = Button("›", self, variant="outline", size="icon")
+        self.nextButton = _VectorIconButton(
+            "chevron-right",
+            self,
+            accessible_name="Next slide",
+            variant="outline",
+        )
         layout.addWidget(self.previousButton)
         layout.addWidget(self.stack, 1)
         layout.addWidget(self.nextButton)

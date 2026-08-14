@@ -204,6 +204,24 @@ def test_calendar_uses_compact_day_buttons_without_native_week_colors(runtime):
     icon_bounds = indicator._icon_path().boundingRect()
     assert (icon_bounds.width(), icon_bounds.height()) == (8.0, 4.0)
     assert icon_bounds.center() == QtCore.QRectF(indicator.rect()).center()
+    navigation_buttons = (
+        calendar.findChild(QtWidgets.QToolButton, "qt_calendar_prevmonth"),
+        calendar.findChild(QtWidgets.QToolButton, "qt_calendar_nextmonth"),
+    )
+    assert len(calendar._navigation_indicators) == 2
+    for button, navigation_indicator, accessible_name in zip(
+        navigation_buttons,
+        calendar._navigation_indicators,
+        ("Previous month", "Next month"),
+    ):
+        assert button.text() == ""
+        assert button.accessibleName() == accessible_name
+        assert navigation_indicator.geometry() == button.rect()
+        navigation_bounds = navigation_indicator._icon_path().boundingRect()
+        assert (navigation_bounds.width(), navigation_bounds.height()) == (4.0, 8.0)
+        assert navigation_bounds.center() == QtCore.QRectF(
+            navigation_indicator.rect()
+        ).center()
     qss = theme_stylesheet("light")
     assert (
         'QToolButton#qt_calendar_monthbutton::menu-indicator { image: none; '

@@ -222,7 +222,7 @@ QTabBar::tab:focus { border: 1px solid #18181b; }
 
 QFrame[shadcn_qt_component="accordion"] { background: transparent; border: none; }
 QFrame[shadcn_qt_component="collapsible"] { background: transparent; border: none; border-bottom: 1px solid #e4e4e7; border-radius: 0; }
-QFrame[shadcn_qt_component="collapsible"] QPushButton { text-align: left; }
+QFrame[shadcn_qt_component="collapsible"] QPushButton { text-align: left; padding-right: 32px; }
 QFrame[shadcn_qt_component="separator"] { background: #e4e4e7; border: none; }
 QSplitter[shadcn_qt_component="resizable"]::handle { background: #e4e4e7; width: 1px; height: 1px; }
 QAbstractScrollArea[shadcn_qt_component="scroll-area"] { background: transparent; border: none; border-radius: 6px; }
@@ -416,18 +416,18 @@ QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-button {
 QComboBox[shadcn_qt_native_adopted="true"]::down-arrow,
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::up-arrow,
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-arrow { image: none; width: 0; height: 0; }
-QLabel[nativeGlyph="true"] {
-  background: transparent; color: #71717a; border: none;
-  font-size: 13px; font-weight: 500; padding: 0;
-}
+QWidget[nativeGlyph="true"] { background: transparent; border: none; padding: 0; }
 QComboBox[shadcn_qt_native_adopted="true"]::drop-down:hover,
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::up-button:hover,
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-button:hover { background: #f4f4f5; }
+QComboBox[shadcn_qt_native_adopted="true"]::drop-down {
+  margin: 2px; border-radius: 4px;
+}
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::up-button {
-  subcontrol-position: top right; border-top-right-radius: 6px;
+  subcontrol-position: top right; margin: 2px 2px 0 0; border-radius: 4px;
 }
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-button {
-  subcontrol-position: bottom right; border-bottom-right-radius: 6px;
+  subcontrol-position: bottom right; margin: 0 2px 2px 0; border-radius: 4px;
 }
 
 QProgressBar[shadcn_qt_native_adopted="true"] {
@@ -746,7 +746,7 @@ QTabBar::tab:focus { border: 1px solid #d4d4d8; }
 
 QFrame[shadcn_qt_component="accordion"] { background: transparent; border: none; }
 QFrame[shadcn_qt_component="collapsible"] { background: transparent; border: none; border-bottom: 1px solid #27272a; border-radius: 0; }
-QFrame[shadcn_qt_component="collapsible"] QPushButton { text-align: left; }
+QFrame[shadcn_qt_component="collapsible"] QPushButton { text-align: left; padding-right: 32px; }
 QFrame[shadcn_qt_component="separator"] { background: #27272a; border: none; }
 QSplitter[shadcn_qt_component="resizable"]::handle { background: #27272a; width: 1px; height: 1px; }
 QAbstractScrollArea[shadcn_qt_component="scroll-area"] { background: transparent; border: none; border-radius: 6px; }
@@ -940,18 +940,18 @@ QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-button {
 QComboBox[shadcn_qt_native_adopted="true"]::down-arrow,
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::up-arrow,
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-arrow { image: none; width: 0; height: 0; }
-QLabel[nativeGlyph="true"] {
-  background: transparent; color: #a1a1aa; border: none;
-  font-size: 13px; font-weight: 500; padding: 0;
-}
+QWidget[nativeGlyph="true"] { background: transparent; border: none; padding: 0; }
 QComboBox[shadcn_qt_native_adopted="true"]::drop-down:hover,
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::up-button:hover,
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-button:hover { background: #27272a; }
+QComboBox[shadcn_qt_native_adopted="true"]::drop-down {
+  margin: 2px; border-radius: 4px;
+}
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::up-button {
-  subcontrol-position: top right; border-top-right-radius: 6px;
+  subcontrol-position: top right; margin: 2px 2px 0 0; border-radius: 4px;
 }
 QAbstractSpinBox[shadcn_qt_native_adopted="true"]::down-button {
-  subcontrol-position: bottom right; border-bottom-right-radius: 6px;
+  subcontrol-position: bottom right; margin: 0 2px 2px 0; border-radius: 4px;
 }
 
 QProgressBar[shadcn_qt_native_adopted="true"] {
