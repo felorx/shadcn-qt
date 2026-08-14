@@ -5,9 +5,14 @@ QtWidgets application without replacing its widget classes. The compatibility
 layer is opt-in, continuously adopts widgets created later, and is reversible.
 
 ```python
-from shadcn_qt import apply_theme, enable_native_widget_styling
+from shadcn_qt import (
+    apply_theme,
+    configure_high_dpi,
+    enable_native_widget_styling,
+)
 from shadcn_qt._qt import QtWidgets
 
+configure_high_dpi()
 app = QtWidgets.QApplication([])
 enable_native_widget_styling(app)
 apply_theme(app, "light")

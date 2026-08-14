@@ -59,6 +59,26 @@ apply_theme()  # uses the current QApplication
 
 JSON theme files can be loaded with `load_theme("brand.json")`.
 
+## High-DPI startup
+
+Configure DPI handling before creating `QApplication`. This keeps fractional
+Windows display scales such as 125%, 150%, and 175% exact instead of allowing
+Qt 5 to round them to a larger integer scale:
+
+```python
+from shadcn_qt import apply_theme, configure_high_dpi
+from shadcn_qt._qt import QtWidgets
+
+configure_high_dpi()
+app = QtWidgets.QApplication([])
+apply_theme(app, "light")
+```
+
+Qt 6 already enables high-DPI rendering; the initializer selects precise
+fractional scaling. On Qt 5 it also enables high-DPI widgets and pixmaps. Do
+not combine normal Windows display scaling with a production
+`QT_SCALE_FACTOR`; Qt multiplies that override by the native scale.
+
 ## Existing native widgets
 
 Apply full default shadcn-qt styling to the complete existing and future QtWidgets family without replacing classes. Known controls use component-specific rules; uncommon or third-party QWidget subclasses receive a neutral themed fallback:

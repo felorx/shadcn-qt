@@ -2,7 +2,7 @@
 
 ## Python
 
-shadcn-qt Core 0.1.0 is published on
+shadcn-qt Core 0.2.1 is published on
 [PyPI](https://pypi.org/project/shadcn-qt/). The distribution name is
 `shadcn-qt`; Python normalizes it to the import identifier `shadcn_qt`. Python
 3.9 or newer is required.
@@ -39,7 +39,7 @@ selection and incremental adoption.
 python -c "from importlib.metadata import version; print(version('shadcn-qt'))"
 ```
 
-The command should print `0.1.0` for the initial release. Then verify that the
+The command should print `0.2.1`. Then verify that the
 selected binding and package import together:
 
 ```bash
@@ -72,6 +72,23 @@ Run a minimal window:
 ```bash
 python ../../examples/python_minimal/run_pyside6.py
 ```
+
+### Windows and high-DPI displays
+
+Initialize high-DPI behavior before constructing `QApplication`:
+
+```python
+from shadcn_qt import configure_high_dpi
+from shadcn_qt._qt import QtWidgets
+
+configure_high_dpi()
+app = QtWidgets.QApplication([])
+```
+
+This preserves fractional Windows scales such as 125%, 150%, and 175%. Qt 5
+also receives the required high-DPI widget and pixmap attributes. Do not set
+`QT_SCALE_FACTOR` in a normal production launch: Qt already reads the Windows
+display scale, and the environment override would multiply it a second time.
 
 Run a form created with Qt Designer:
 
@@ -115,8 +132,8 @@ cmake --build build
 ```
 
 The static library `ShadcnQt` embeds generated QSS via Qt resources (`:/shadcn_qt/base_light.qss`).
-Its installed CMake package exposes version `0.1.0`; downstream projects may
-use `find_package(ShadcnQt 0.1 CONFIG REQUIRED)`.
+Its installed CMake package exposes version `0.2.1`; downstream projects may
+use `find_package(ShadcnQt 0.2 CONFIG REQUIRED)`.
 
 ## Regenerate styles
 

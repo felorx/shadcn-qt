@@ -13,6 +13,7 @@ from shadcn_qt import (
     __version__,
     app_exec,
     apply_theme,
+    configure_high_dpi,
     enable_native_widget_styling,
 )
 from shadcn_qt import widgets as ui
@@ -2394,6 +2395,8 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = _parse_args(argv)
+    if QtWidgets.QApplication.instance() is None:
+        configure_high_dpi()
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     window = GalleryWindow(theme=args.theme, component=args.component)
     window.show()

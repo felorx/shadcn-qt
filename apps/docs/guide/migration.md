@@ -55,8 +55,9 @@ import os
 os.environ.setdefault("SHADCN_QT_BINDING", "PyQt5")
 
 from PyQt5.QtWidgets import QApplication
-from shadcn_qt import apply_theme, configure
+from shadcn_qt import apply_theme, configure, configure_high_dpi
 
+configure_high_dpi()
 app = QApplication([])
 
 configure(
@@ -68,6 +69,10 @@ apply_theme(app)
 ```
 
 This immediately supplies the global palette, window colors, menus, tooltips, table headers, and shared tokens. Enable native-widget styling for full default component styling without replacing widget classes.
+
+`configure_high_dpi()` must run before `QApplication`. It keeps fractional
+Windows scaling exact across Qt 5 and Qt 6; do not compensate by dividing
+widget dimensions or by combining the system scale with `QT_SCALE_FACTOR`.
 
 If the application relies heavily on its existing `QPalette`, begin with palette changes disabled:
 

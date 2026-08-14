@@ -28,6 +28,11 @@ classic `new-york` + Zinc visual alignment, reversible native-widget adoption,
 visual screenshot regression, font-independent vector glyphs, and the
 Chrome-style `TabPane`. See `CHANGELOG.md` for the release notes.
 
+Version 0.2.1 was published on 2026-08-15 (Asia/Shanghai). It preserves
+fractional Windows display scales through the public pre-`QApplication`
+`configure_high_dpi()` initializer and keeps the active tab title and page on
+one connected surface. See `CHANGELOG.md` for the complete release notes.
+
 Release files:
 
 | File | SHA-256 |
@@ -36,6 +41,8 @@ Release files:
 | `shadcn_qt-0.1.0.tar.gz` | `64b65840019e5d1a11220fad0c94eb48b0f76d00b5e32e1583ab345bfa5563c2` |
 | `shadcn_qt-0.2.0-py3-none-any.whl` | `f963a3efb9b7e21670d3afc7b874b2e9b0ebbfdeadc30aa7a060c364307a7804` |
 | `shadcn_qt-0.2.0.tar.gz` | `6413576a76382918834e01fe3eede0ba6da8b5df43ea9e26bad2fbfa93c172a5` |
+| `shadcn_qt-0.2.1-py3-none-any.whl` | `3496077e852a2fcd86178a973cf85b8e25c9f3249d076925a2143b534adebe38` |
+| `shadcn_qt-0.2.1.tar.gz` | `ace372cb4e21bc9389e55cbae2f41110a8fd400b12e240d3176d2ba777fc9ff6` |
 
 ## One-time publisher setup
 
@@ -97,7 +104,7 @@ already uploaded to PyPI; PyPI release files are immutable.
 
 ## TestPyPI and production
 
-Versions 0.1.0 and 0.2.0 used a scoped local PyPI API token after all release
+Versions 0.1.0, 0.2.0, and 0.2.1 used a scoped local PyPI API token after all release
 checks and isolated wheel smoke tests. Version 0.2.0 was uploaded with
 `uv publish` after the tag workflow passed its tests, build, metadata, license,
 and distribution-content jobs but could not exchange OIDC because the PyPI
@@ -119,14 +126,14 @@ environment without pulling Qt dependencies from TestPyPI:
 ```bash
 python -m pip install PySide6
 python -m pip install --index-url https://test.pypi.org/simple \
-  --no-deps shadcn-qt==0.2.0
+  --no-deps shadcn-qt==<version>
 ```
 
 After verification, create and push the exact version tag:
 
 ```bash
-git tag -s v0.2.0 -m "shadcn-qt 0.2.0"
-git push origin v0.2.0
+git tag -s v<version> -m "shadcn-qt <version>"
+git push origin v<version>
 ```
 
 The `release.yml` workflow verifies that the tag equals `v<package-version>`,

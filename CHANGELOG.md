@@ -3,6 +3,25 @@
 All notable changes to shadcn-qt Core are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## 0.2.1 - 2026-08-15
+
+### Added
+
+- Added `configure_high_dpi()` as a public pre-`QApplication` initializer for
+  consistent fractional scaling across PySide6, PyQt6, PySide2, and PyQt5.
+
+### Changed
+
+- Updated the Gallery, runnable examples, developer documentation, and the
+  `developing-shadcn-qt` AI skill with the high-DPI startup contract.
+
+### Fixed
+
+- Preserved Windows 125%, 150%, and 175% display scales instead of allowing
+  Qt 5 to round fractional scale factors to an oversized integer scale.
+- Kept the selected `TabPane` and adopted `QTabWidget` page background
+  connected to the active tab title in light and dark themes.
+
 ## 0.2.0 - 2026-08-15
 
 ### Added

@@ -80,4 +80,13 @@ surfaces unless the application requests Qt's non-native implementation. MDI
 title chrome can therefore vary while its content and surrounding tokens stay
 themed.
 
+## High-DPI geometry
+
+Component dimensions and QSS pixel units are device-independent pixels. Call
+`configure_high_dpi()` before creating `QApplication`: Qt 5 enables high-DPI
+widgets and pixmaps, while Qt 5 and Qt 6 both preserve fractional operating
+system scale factors instead of rounding Windows 150% to 200%. Applications
+must not divide component geometry by the display scale or combine ordinary
+Windows display scaling with a production `QT_SCALE_FACTOR` override.
+
 shadcn-qt is independent and is not affiliated with shadcn or Vercel.

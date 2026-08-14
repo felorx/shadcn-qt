@@ -12,6 +12,7 @@ class TestImportCore(unittest.TestCase):
         self.assertIsInstance(shadcn_qt.__version__, str)
         self.assertTrue(shadcn_qt.__version__)
         self.assertTrue(hasattr(shadcn_qt, "apply_theme"))
+        self.assertTrue(hasattr(shadcn_qt, "configure_high_dpi"))
         self.assertTrue(hasattr(shadcn_qt, "detect_binding"))
         self.assertTrue(hasattr(shadcn_qt, "enable_native_widget_styling"))
 

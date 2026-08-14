@@ -17,7 +17,7 @@ Last verified: 2026-08-15.
 | Token generation | Available | One renderer generates packaged Python and embedded C++ QSS |
 | Python automated tests | Passing | Imports, themes, all 66 constructors, QtWidgets family coverage and reversible enhancements, composites, Gallery, Designer metadata, and real `.ui` reconstruction are covered; current full-suite result is recorded in the implementing commit |
 | Designer host smoke test | Passing on macOS | `pyside6-designer` opened a custom-widget `.ui` offscreen with no registration/import errors |
-| Python package | Published | Core 0.2.0 is on PyPI; wheel and sdist pass metadata/content checks, exclude private Pro implementation, and are verified through isolated PySide6 and PyQt installation tests |
+| Python package | Published | Core 0.2.1 is on PyPI; wheel and sdist pass metadata/content checks, exclude private Pro implementation, and are verified through isolated PySide6 and PyQt installation tests |
 | Component gallery | Available | Searchable light/dark application provides interactive previews for all 66 public Core components plus four pages made only from stock QtWidgets |
 | C++ foundation | Available | Button, Input, Card, CMake install package, generated QSS resources; compiled with Qt 6.9 |
 | Documentation | Passing | VitePress production build succeeds |

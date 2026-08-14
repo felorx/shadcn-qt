@@ -5,11 +5,19 @@ import os
 
 os.environ.setdefault("SHADCN_QT_BINDING", "PySide6")
 
-from shadcn_qt import Button, Card, Input, apply_theme, app_exec
+from shadcn_qt import (
+    Button,
+    Card,
+    Input,
+    apply_theme,
+    app_exec,
+    configure_high_dpi,
+)
 from shadcn_qt._qt import QtWidgets
 
 
 def main() -> None:
+    configure_high_dpi()
     app = QtWidgets.QApplication([])
     apply_theme(app, "light")
 

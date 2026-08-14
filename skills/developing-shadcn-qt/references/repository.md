@@ -83,6 +83,10 @@ switching while fixing an individual component.
 - Verify focused editors still expose a useful content rectangle; selected OTP
   digits, placeholder text, and table selection text must not be clipped or
   disappear on hover.
+- Keep geometry and QSS `px` values in device-independent pixels. Call
+  `configure_high_dpi()` before `QApplication` in runnable examples so Qt 5
+  enables high-DPI rendering and all bindings preserve fractional Windows
+  scales such as 150%; never compensate by shrinking component tokens.
 
 ### Tabs versus TabPane
 
@@ -126,7 +130,7 @@ created later are adopted through its application event filter.
 ## Installation Guidance
 
 The public distribution name is `shadcn-qt`; the import name is `shadcn_qt`.
-The current published baseline is 0.2.0.
+The current published baseline is 0.2.1.
 
 ```bash
 # New environment: choose exactly one binding extra.

@@ -5,7 +5,7 @@ from __future__ import annotations
 from importlib.metadata import PackageNotFoundError, version
 from typing import Any, TYPE_CHECKING
 
-from shadcn_qt._qt import app_exec, detect_binding
+from shadcn_qt._qt import app_exec, configure_high_dpi, detect_binding
 from shadcn_qt.designer.loader import load_ui
 from shadcn_qt.native import (
     adopt_native_widgets,
@@ -118,6 +118,7 @@ __all__ = sorted(_WIDGET_NAMES) + [
     "adopt_native_widgets",
     "available_themes",
     "configure",
+    "configure_high_dpi",
     "create_theme",
     "current_theme",
     "detect_binding",

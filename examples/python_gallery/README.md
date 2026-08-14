@@ -31,6 +31,8 @@ QT_QPA_PLATFORM=offscreen python examples/python_gallery/run.py \
 
 Set `SHADCN_QT_BINDING` before launch to run the same gallery with PyQt6,
 PySide2, or PyQt5. Keep exactly one Qt binding loaded in each process.
+The Gallery calls `configure_high_dpi()` before creating `QApplication`, so
+Windows 125%, 150%, and 175% display scales remain fractional on every binding.
 
 The eight committed light/dark native baselines can be regenerated with:
 

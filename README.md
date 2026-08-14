@@ -48,7 +48,7 @@ See [Core and Pro architecture](docs/PRO.md) and [license tiers](docs/TIERS.md).
 
 ## Install the free Core package (Python)
 
-shadcn-qt Core 0.2.0 is available from
+shadcn-qt Core 0.2.1 is available from
 [PyPI](https://pypi.org/project/shadcn-qt/). It is publicly downloadable at no
 cost for GPL-3.0-compatible use; proprietary applications require a commercial
 Core license. Pro is a separate private package.
@@ -91,10 +91,17 @@ python -m pip install -e "./packages/python[pyside6,dev]"
 Create and theme widgets:
 
 ```python
-from shadcn_qt import Button, Input, apply_theme, configure
+from shadcn_qt import (
+    Button,
+    Input,
+    apply_theme,
+    configure,
+    configure_high_dpi,
+)
 from shadcn_qt._qt import QtWidgets
 
 configure(theme="dark", colors={"primary": "#7c3aed"}, radius={"md": "10px"})
+configure_high_dpi()  # before QApplication; preserves Windows 125%/150%/175%
 app = QtWidgets.QApplication([])
 apply_theme(app)
 
@@ -167,7 +174,7 @@ cmake --build build
 ```
 
 Use Qt 5.15 by pointing `CMAKE_PREFIX_PATH` at a Qt5 kit; the same `CMakeLists.txt` selects Qt5 or Qt6 automatically.
-Installed packages expose version `0.2.0`, so downstream projects can require
+Installed packages expose version `0.2.1`, so downstream projects can require
 `find_package(ShadcnQt 0.2 CONFIG REQUIRED)`.
 
 ## Docs

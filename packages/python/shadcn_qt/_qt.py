@@ -15,11 +15,47 @@ _VALID = frozenset({"PySide6", "PyQt6", "PySide2", "PyQt5"})
 _ORDER = ("PySide6", "PyQt6", "PySide2", "PyQt5")
 
 
+def _enum_value(namespace: Any, name: str, group: str) -> Any:
+    value = getattr(namespace, name, None)
+    if value is not None:
+        return value
+    return getattr(getattr(namespace, group), name)
+
+
+def _configure_high_dpi_defaults(core: Any, gui: Any) -> bool:
+    """Apply the process-wide DPI contract before QApplication exists."""
+
+    if core.QCoreApplication.instance() is not None:
+        return False
+
+    qt_major = int(str(core.qVersion()).split(".", 1)[0])
+    if qt_major < 6:
+        for attribute_name in (
+            "AA_EnableHighDpiScaling",
+            "AA_UseHighDpiPixmaps",
+        ):
+            attribute = _enum_value(
+                core.Qt,
+                attribute_name,
+                "ApplicationAttribute",
+            )
+            core.QCoreApplication.setAttribute(attribute, True)
+
+    pass_through = _enum_value(
+        core.Qt,
+        "PassThrough",
+        "HighDpiScaleFactorRoundingPolicy",
+    )
+    gui.QGuiApplication.setHighDpiScaleFactorRoundingPolicy(pass_through)
+    return True
+
+
 def _load(binding: str) -> None:
     global _BINDING
     core = importlib.import_module(f"{binding}.QtCore")
     gui = importlib.import_module(f"{binding}.QtGui")
     widgets = importlib.import_module(f"{binding}.QtWidgets")
+    _configure_high_dpi_defaults(core, gui)
     globals()["QtCore"] = core
     globals()["QtGui"] = gui
     globals()["QtWidgets"] = widgets
@@ -76,6 +112,24 @@ def qt_modules() -> Tuple[Any, Any, Any]:
     return globals()["QtCore"], globals()["QtGui"], globals()["QtWidgets"]
 
 
+def configure_high_dpi() -> None:
+    """Configure precise high-DPI scaling before creating QApplication.
+
+    The selected Qt binding is loaded lazily, Qt 5 high-DPI support is enabled,
+    and fractional operating-system scale factors such as Windows 150% remain
+    fractional instead of being rounded to 200%.
+    """
+
+    detect_binding()
+    core = globals()["QtCore"]
+    gui = globals()["QtGui"]
+    if core.QCoreApplication.instance() is not None:
+        raise RuntimeError(
+            "configure_high_dpi() must be called before creating QApplication"
+        )
+    _configure_high_dpi_defaults(core, gui)
+
+
 def qt_property(*args: Any, **kwargs: Any) -> Any:
     """Cross-binding alias for ``Property`` / ``pyqtProperty``."""
 
@@ -120,6 +174,7 @@ __all__ = [
     "QtGui",
     "QtWidgets",
     "app_exec",
+    "configure_high_dpi",
     "detect_binding",
     "import_qt_module",
     "qt_modules",

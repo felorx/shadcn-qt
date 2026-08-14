@@ -52,6 +52,9 @@ Designer, Gallery, and documentation.
 
 ### Native QtWidgets Compatibility
 
+- Call `configure_high_dpi()` before constructing `QApplication` in runnable
+  applications and examples. Preserve fractional Windows scale factors; never
+  compensate for DPI by shrinking component geometry or QSS pixel values.
 - Keep `configure`, `apply_theme`, and `enable_native_widget_styling` separate.
   Native adoption is opt-in, continuously covers later widgets, and must be
   reversible through `disable_native_widget_styling`.
@@ -92,6 +95,8 @@ Designer, Gallery, and documentation.
 Run focused tests first, then the applicable quality gates and visual commands
 from [the repository reference](references/repository.md). Load only one Qt
 binding per process and use `QT_QPA_PLATFORM=offscreen` for automated Qt tests.
+For DPI changes, exercise Qt 5 and Qt 6 with a fractional 1.5 scale and verify
+logical widget dimensions remain unchanged rather than rounding to 2.0.
 Run `python tools/check_core_boundary.py` for boundary-related changes.
 
 ## Contribution Boundaries
