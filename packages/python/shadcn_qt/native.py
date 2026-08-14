@@ -220,11 +220,16 @@ def _paint_native_choice(widget: Any, core: Any, gui: Any, widgets: Any) -> bool
     rtl = widget.layoutDirection() == _qt_enum(
         core, "RightToLeft", "LayoutDirection"
     )
-    left = widget.width() - size if rtl else 0.0
+    edge_inset = 3.0
+    left = widget.width() - size - edge_inset if rtl else edge_inset
     indicator = core.QRectF(left, (widget.height() - size) / 2.0, size, size)
     if rtl:
-        text_rect = core.QRectF(0, 0, max(0.0, left - 8.0), widget.height())
+        text_rect = core.QRectF(
+            0, 0, max(0.0, widget.width() - size - 8.0), widget.height()
+        )
     else:
+        # Keep the stock Qt size hint viable: moving the indicator inward
+        # trades only 3px of the visual gap rather than clipping label text.
         text_rect = core.QRectF(
             size + 8.0, 0, max(0.0, widget.width() - size - 8.0), widget.height()
         )
@@ -251,9 +256,11 @@ def _paint_native_choice(widget: Any, core: Any, gui: Any, widgets: Any) -> bool
         painter.setBrush(no_brush)
         painter.setPen(gui.QPen(ring, 1))
         if component == "radio":
-            painter.drawEllipse(indicator.adjusted(-2, -2, 2, 2))
+            painter.drawEllipse(indicator.adjusted(-1.5, -1.5, 1.5, 1.5))
         else:
-            painter.drawRoundedRect(indicator.adjusted(-2, -2, 2, 2), 5, 5)
+            painter.drawRoundedRect(
+                indicator.adjusted(-1.5, -1.5, 1.5, 1.5), 5, 5
+            )
 
     painter.setPen(gui.QPen(primary, 1))
     if widget.underMouse() and not checked and not partial:
@@ -442,9 +449,10 @@ def _add_native_shadow(widget: Any, gui: Any, widgets: Any, state: Dict[str, Any
     }:
         return
     effect = widgets.QGraphicsDropShadowEffect(widget)
-    effect.setBlurRadius(4.0)
+    is_button = isinstance(widget, widgets.QPushButton)
+    effect.setBlurRadius(4.0 if is_button else 2.0)
     effect.setOffset(0.0, 1.0)
-    effect.setColor(gui.QColor(0, 0, 0, 30))
+    effect.setColor(gui.QColor(0, 0, 0, 16 if is_button else 13))
     widget.setGraphicsEffect(effect)
     state["shadow"] = effect
 

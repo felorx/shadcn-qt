@@ -70,13 +70,74 @@ def test_accordion_carousel_and_pagination(runtime):
 
 
 def test_form_compositions(runtime):
-    from shadcn_qt import Field, Input, InputOTP, RadioGroup, ToggleGroup
+    app, QtWidgets = runtime
+    from shadcn_qt import (
+        Field,
+        Input,
+        InputGroup,
+        InputOTP,
+        RadioGroup,
+        ToggleGroup,
+        apply_theme,
+    )
 
+    apply_theme(app, "light")
     otp = InputOTP(length=4)
     otp.setText("1234")
     assert otp.value == "1234"
     otp.codeLength = 6
     assert otp.codeLength == 6
+    otp.resize(600, 36)
+    otp.show()
+    app.processEvents()
+    assert otp.sizeHint().height() == 36
+    assert otp.height() == 36
+    assert all(
+        edit.minimumHeight() == 36
+        and edit.maximumHeight() == 36
+        and edit.height() == 36
+        for edit in otp._edits
+    )
+    assert [edit.x() for edit in otp._edits] == [0, 36, 72, 108, 144, 180]
+    assert otp._edits[0].property("otpPosition") == "first"
+    assert otp._edits[-1].property("otpPosition") == "last"
+    assert all(
+        right.x() == left.x() + left.width()
+        for left, right in zip(otp._edits, otp._edits[1:])
+    )
+    otp_image = otp.grab().toImage()
+    center_y = otp._edits[0].height() // 2
+    assert otp_image.pixelColor(0, center_y) != otp_image.pixelColor(3, center_y)
+    selected_slot = otp._edits[2]
+    selected_slot.setFocus()
+    selected_slot.selectAll()
+    app.processEvents()
+    option = QtWidgets.QStyleOptionFrame()
+    selected_slot.initStyleOption(option)
+    line_edit_contents = getattr(QtWidgets.QStyle, "SE_LineEditContents", None)
+    if line_edit_contents is None:
+        line_edit_contents = QtWidgets.QStyle.SubElement.SE_LineEditContents
+    content_rect = selected_slot.style().subElementRect(
+        line_edit_contents, option, selected_slot
+    )
+    assert content_rect.width() >= 28
+    assert content_rect.width() >= selected_slot.fontMetrics().horizontalAdvance("8") * 3
+
+    input_group = InputGroup()
+    input_group.prefix = "@"
+    input_group.suffix = ".com"
+    input_group.resize(360, 36)
+    input_group.show()
+    input_group.input.setFocus()
+    app.processEvents()
+    assert input_group.property("focused")
+    group_image = input_group.grab().toImage()
+    pixel_ratio = group_image.devicePixelRatio()
+    input_left = int(input_group.input.x() * pixel_ratio)
+    group_center_y = group_image.height() // 2
+    assert group_image.pixelColor(input_left, group_center_y) == group_image.pixelColor(
+        input_left + max(6, int(6 * pixel_ratio)), group_center_y
+    )
 
     field = Field(label="Email", description="Work address")
     field.setControl(Input())
@@ -123,6 +184,7 @@ def test_data_command_and_conversation(runtime):
 def test_overlay_and_theme_styles(runtime):
     app, _ = runtime
     from shadcn_qt import AlertDialog, Sheet, Sonner, apply_theme
+    from shadcn_qt._qt import QtCore
 
     dialog = AlertDialog()
     assert dialog.title == "Are you sure?"
@@ -131,6 +193,11 @@ def test_overlay_and_theme_styles(runtime):
     sonner = Sonner()
     toast = sonner.toast("Saved", "Changes persisted", duration=0)
     assert toast.isVisible() or not sonner.isVisible()
+    close_center = QtCore.QRectF(toast.closeButton.rect()).center()
+    icon_center = toast.closeButton._icon_path().boundingRect().center()
+    assert icon_center == close_center
+    assert toast.closeButton.accessibleName() == "Close"
+    assert not toast.closeButton.grab().isNull()
 
     apply_theme(app, "dark")
     stylesheet = app.styleSheet()

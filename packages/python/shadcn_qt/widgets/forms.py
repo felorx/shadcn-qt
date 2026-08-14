@@ -10,12 +10,19 @@ from shadcn_qt.widgets._helpers import (
     refresh_style,
     set_choice_property,
 )
-from shadcn_qt.widgets._style import clear_graphics_effect, install_shadow
+from shadcn_qt.widgets._style import (
+    clear_graphics_effect,
+    enable_antialiasing,
+    install_shadow,
+    semantic_color,
+    style_combo_popup,
+    with_alpha,
+)
 from shadcn_qt.widgets.button import Button
 from shadcn_qt.widgets.controls import Label, RadioButton
 from shadcn_qt.widgets.input import Input
 
-QtCore, _, QtWidgets = _qt.qt_modules()
+QtCore, QtGui, QtWidgets = _qt.qt_modules()
 
 
 def _align_center() -> Any:
@@ -229,6 +236,7 @@ class InputOTP(QtWidgets.QFrame):
         self.layout_ = QtWidgets.QHBoxLayout(self)
         self.layout_.setContentsMargins(0, 0, 0, 0)
         self.layout_.setSpacing(0)
+        self.layout_.addStretch(1)
         self.set_code_length(length)
 
     def code_length(self) -> int:
@@ -259,11 +267,12 @@ class InputOTP(QtWidgets.QFrame):
                 if index == length - 1
                 else "middle",
             )
+            refresh_style(edit)
             edit.textChanged.connect(
                 lambda text, position=index: self._slot_changed(position, text)
             )
             self._edits.append(edit)
-            self.layout_.addWidget(edit)
+            self.layout_.insertWidget(self.layout_.count() - 1, edit)
 
     def text(self) -> str:
         return "".join(edit.text() for edit in self._edits)
@@ -430,6 +439,10 @@ class Combobox(QtWidgets.QComboBox):
         self.setFixedHeight(36)
         install_shadow(self, "xs")
 
+    def showPopup(self) -> None:
+        style_combo_popup(self)
+        super().showPopup()
+
     def setOptions(self, options: Iterable[str]) -> None:
         self.clear()
         self.addItems(list(options))
@@ -442,15 +455,74 @@ class NativeSelect(QtWidgets.QComboBox):
         self.setFixedHeight(36)
         install_shadow(self, "xs")
 
+    def showPopup(self) -> None:
+        style_combo_popup(self)
+        super().showPopup()
+
 
 class DatePicker(QtWidgets.QDateEdit):
     def __init__(self, parent: Optional[Any] = None) -> None:
         super().__init__(parent)
         initialize_component(self, "date-picker")
+        self._drop_down_hovered = False
         self.setCalendarPopup(True)
         self.setDate(QtCore.QDate.currentDate())
         self.setFixedHeight(36)
+        self.setMouseTracking(True)
         install_shadow(self, "xs")
+
+    def _set_drop_down_hovered(self, hovered: bool) -> None:
+        hovered = bool(hovered)
+        if hovered != self._drop_down_hovered:
+            self._drop_down_hovered = hovered
+            self.update()
+
+    def mouseMoveEvent(self, event: Any) -> None:
+        position = getattr(event, "position", None)
+        point = position() if callable(position) else event.pos()
+        self._set_drop_down_hovered(point.x() >= self.width() - 32)
+        super().mouseMoveEvent(event)
+
+    def leaveEvent(self, event: Any) -> None:
+        self._set_drop_down_hovered(False)
+        super().leaveEvent(event)
+
+    def paintEvent(self, event: Any) -> None:
+        super().paintEvent(event)
+        painter = QtGui.QPainter(self)
+        enable_antialiasing(painter)
+        hover_active = self._drop_down_hovered and self.isEnabled()
+        if hover_active:
+            no_pen = getattr(QtCore.Qt, "NoPen", None)
+            if no_pen is None:
+                no_pen = QtCore.Qt.PenStyle.NoPen
+            painter.setPen(no_pen)
+            painter.setBrush(semantic_color(self, "accent"))
+            painter.drawRoundedRect(
+                QtCore.QRectF(self.width() - 30.0, 4.0, 26.0, self.height() - 8.0),
+                4.0,
+                4.0,
+            )
+        color_name = "accentForeground" if hover_active else "mutedForeground"
+        color = semantic_color(self, color_name)
+        if not self.isEnabled():
+            color = with_alpha(color, 128)
+        pen = QtGui.QPen(color, 1.5)
+        cap = getattr(QtCore.Qt, "RoundCap", None)
+        join = getattr(QtCore.Qt, "RoundJoin", None)
+        if cap is None:
+            cap = QtCore.Qt.PenCapStyle.RoundCap
+            join = QtCore.Qt.PenJoinStyle.RoundJoin
+        pen.setCapStyle(cap)
+        pen.setJoinStyle(join)
+        painter.setPen(pen)
+        center_x = self.width() - 16.0
+        center_y = self.height() / 2.0
+        path = QtGui.QPainterPath()
+        path.moveTo(center_x - 4.0, center_y - 2.0)
+        path.lineTo(center_x, center_y + 2.0)
+        path.lineTo(center_x + 4.0, center_y - 2.0)
+        painter.drawPath(path)
 
 
 __all__ = [

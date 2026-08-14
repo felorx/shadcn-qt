@@ -15,11 +15,14 @@ from shadcn_qt.widgets._style import (
     enable_antialiasing,
     install_shadow,
     semantic_color,
+    style_combo_popup,
     text_width,
     with_alpha,
 )
 
 QtCore, QtGui, QtWidgets = _qt.qt_modules()
+
+_CHOICE_EDGE_INSET = 3
 
 
 def _alignment_flag(name: str) -> Any:
@@ -40,7 +43,10 @@ def _choice_size_hint(widget: Any, indicator_width: int) -> Any:
     metrics = widget.fontMetrics()
     label_width = text_width(metrics, widget.text())
     gap = 8 if widget.text() else 0
-    return QtCore.QSize(indicator_width + gap + label_width, max(20, metrics.height()))
+    return QtCore.QSize(
+        _CHOICE_EDGE_INSET + indicator_width + gap + label_width,
+        max(24, metrics.height()),
+    )
 
 
 def _choice_geometry(widget: Any, indicator_size: int) -> tuple[Any, Any]:
@@ -50,15 +56,19 @@ def _choice_geometry(widget: Any, indicator_size: int) -> tuple[Any, Any]:
         "RightToLeft",
         getattr(getattr(QtCore.Qt, "LayoutDirection", object), "RightToLeft", None),
     )
-    x = widget.width() - indicator_size if rtl else 0
+    x = (
+        widget.width() - indicator_size - _CHOICE_EDGE_INSET
+        if rtl
+        else _CHOICE_EDGE_INSET
+    )
     indicator = QtCore.QRectF(x, y, indicator_size, indicator_size)
     if rtl:
         text_rect = QtCore.QRectF(0, 0, max(0, x - 8), widget.height())
     else:
         text_rect = QtCore.QRectF(
-            indicator_size + 8,
+            x + indicator_size + 8,
             0,
-            max(0, widget.width() - indicator_size - 8),
+            max(0, widget.width() - x - indicator_size - 8),
             widget.height(),
         )
     return indicator, text_rect
@@ -151,7 +161,9 @@ class Checkbox(QtWidgets.QCheckBox):
         if self.hasFocus():
             painter.setBrush(_qt_enum("NoBrush", "BrushStyle"))
             painter.setPen(QtGui.QPen(semantic_color(self, "ring"), 1))
-            painter.drawRoundedRect(indicator.adjusted(-2, -2, 2, 2), 5, 5)
+            painter.drawRoundedRect(
+                indicator.adjusted(-1.5, -1.5, 1.5, 1.5), 5, 5
+            )
         painter.setPen(QtGui.QPen(border, 1))
         painter.setBrush(with_alpha(QtGui.QColor(0, 0, 0), 24))
         painter.drawRoundedRect(indicator.translated(0, 1), 3, 3)
@@ -196,7 +208,7 @@ class RadioButton(QtWidgets.QRadioButton):
         if self.hasFocus():
             painter.setBrush(_qt_enum("NoBrush", "BrushStyle"))
             painter.setPen(QtGui.QPen(semantic_color(self, "ring"), 1))
-            painter.drawEllipse(indicator.adjusted(-2, -2, 2, 2))
+            painter.drawEllipse(indicator.adjusted(-1.5, -1.5, 1.5, 1.5))
         painter.setPen(QtGui.QPen(border, 1))
         painter.setBrush(with_alpha(QtGui.QColor(0, 0, 0), 24))
         painter.drawEllipse(indicator.translated(0, 1))
@@ -256,7 +268,9 @@ class Switch(QtWidgets.QCheckBox):
         if self.hasFocus():
             painter.setBrush(_qt_enum("NoBrush", "BrushStyle"))
             painter.setPen(QtGui.QPen(semantic_color(self, "ring"), 2))
-            painter.drawRoundedRect(track.adjusted(-2, -2, 2, 2), 12, 12)
+            painter.drawRoundedRect(
+                track.adjusted(-1.5, -1.5, 1.5, 1.5), 12, 12
+            )
         painter.setPen(_qt_enum("NoPen", "PenStyle"))
         painter.setBrush(with_alpha(QtGui.QColor(0, 0, 0), 30))
         painter.drawRoundedRect(track.translated(0, 1), 10, 10)
@@ -277,6 +291,10 @@ class Select(QtWidgets.QComboBox):
         initialize_component(self, "select")
         self.setFixedHeight(36)
         install_shadow(self, "xs")
+
+    def showPopup(self) -> None:
+        style_combo_popup(self)
+        super().showPopup()
 
 
 class Slider(QtWidgets.QSlider):

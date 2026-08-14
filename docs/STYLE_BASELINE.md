@@ -20,12 +20,18 @@ The baseline was audited on 2026-08-14 against the official registry at:
 |---|---|---|
 | Button | 36px; small 32px; large 40px; icon 36px | Fixed control heights and matching horizontal padding |
 | Input/select | 36px, 6px radius, 12px horizontal padding | Native editor APIs with new-york metrics |
+| Input OTP | Contiguous 36px slots, shared dividers | Only outer corners are rounded; focused slots restore a complete ring |
 | Textarea | 60px minimum, 6px radius | Native multiline editor with matching minimum height |
 | Card | 12px radius, border, elevation | QFrame plus a subtle drop-shadow effect |
-| Checkbox/radio | 16px indicator | Antialiased Qt painting for the check and radio glyphs |
+| Checkbox/radio | 16px indicator in a 24px row | 3px edge inset keeps borders and focus rings inside the paint clip |
 | Switch | 36x20px track, 16px thumb | Animated custom-painted thumb with checked translation |
 | Progress | 8px track | Native progress model with new-york track geometry |
 | Dialog | 24px content inset, 8px radius, dark overlay | Frameless modal QDialog, parent overlay, shadow, and fade |
+
+Qt exposes only one graphics-effect shadow per widget, whereas the browser
+presets compose multiple low-opacity layers. The Qt approximation therefore
+uses deliberately short blur radii and 5–9% opacity so borders stay crisp and
+surfaces do not acquire a heavy grey halo.
 
 ## Color contract
 

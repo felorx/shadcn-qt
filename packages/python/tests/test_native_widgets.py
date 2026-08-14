@@ -49,6 +49,10 @@ def test_adopt_native_widgets_preserves_explicit_choices(runtime):
     assert not checkbox.grab().isNull()
     assert checkbox._shadcn_qt_native_enhancements.get("event_filter") is not None
     assert len(combo._shadcn_qt_native_enhancements.get("glyphs", ())) == 1
+    assert line_edit.graphicsEffect().blurRadius() == 2.0
+    assert line_edit.graphicsEffect().color().alpha() == 13
+    assert button.graphicsEffect().blurRadius() == 4.0
+    assert button.graphicsEffect().color().alpha() == 16
 
     # Clear markers added by the scoped operation before the global test.
     from shadcn_qt import disable_native_widget_styling
@@ -230,6 +234,13 @@ def test_native_widget_runtime_enhancements_are_reversible(runtime):
     assert view.verticalHeader().defaultSectionSize() == 36
     assert not checkbox.grab().isNull()
     assert not radio.grab().isNull()
+    checkbox_image = checkbox.grab().toImage()
+    radio_image = radio.grab().toImage()
+    center_y = checkbox_image.height() // 2
+    assert checkbox_image.pixelColor(0, center_y) != checkbox_image.pixelColor(
+        3, center_y
+    )
+    assert radio_image.pixelColor(0, center_y) != radio_image.pixelColor(3, center_y)
 
     save = buttons.button(_standard_button(QtWidgets, "Save"))
     cancel = buttons.button(_standard_button(QtWidgets, "Cancel"))
@@ -258,6 +269,15 @@ def test_native_stylesheet_has_dedicated_family_rules(runtime):
         'QDialog[shadcn_qt_component="native-dialog"]',
     ):
         assert selector in qss
+    assert 'QAbstractItemView[shadcn_qt_native_adopted="true"]::item:selected' in qss
+    assert 'QAbstractItemView[shadcn_qt_native_adopted="true"]::item:selected:hover' in qss
+    assert "QTableView::item:hover:!selected" in qss
+    selected_rule = qss.split(
+        'QAbstractItemView[shadcn_qt_native_adopted="true"]::item:selected:hover',
+        1,
+    )[1].split("}", 1)[0]
+    assert "background: #f4f4f5" in selected_rule
+    assert "color: #18181b" in selected_rule
 
 
 def _standard_button(QtWidgets, name):

@@ -264,10 +264,15 @@ QComboBox[shadcn_qt_component]:focus,
 QDateTimeEdit[shadcn_qt_component="date-picker"]:focus,
 QAbstractSpinBox[shadcn_qt_component="spin-box"]:focus {{ border-color: {c["ring"]}; }}
 QComboBox[shadcn_qt_component]::drop-down {{ subcontrol-origin: padding; subcontrol-position: top right; width: 28px; border: none; }}
+QDateTimeEdit[shadcn_qt_component="date-picker"]::drop-down {{
+  subcontrol-origin: border; subcontrol-position: top right; width: 32px;
+  border: none; background: transparent;
+}}
+QDateTimeEdit[shadcn_qt_component="date-picker"]::down-arrow {{ image: none; width: 0; height: 0; }}
 QComboBox[shadcn_qt_component] QLineEdit {{ background: transparent; border: none; padding: 0; }}
 QComboBox[shadcn_qt_component] QAbstractItemView {{
-  background: {c["popover"]}; color: {c["popoverForeground"]}; border: 1px solid {c["border"]};
-  border-radius: {r_md}; padding: 4px; outline: 0;
+  background: transparent; color: {c["popoverForeground"]}; border: none;
+  border-radius: 0; padding: 4px; outline: 0;
   selection-background-color: {c["accent"]}; selection-color: {c["accentForeground"]};
 }}
 
@@ -316,13 +321,18 @@ QFrame[shadcn_qt_component="input-group"] {{
   background: {c["background"]}; border: 1px solid {c["input"]}; border-radius: {r_md};
 }}
 QFrame[shadcn_qt_component="input-group"][focused="true"] {{ border-color: {c["ring"]}; }}
-QFrame[shadcn_qt_component="input-group"] QLineEdit {{
+QFrame[shadcn_qt_component="input-group"] QLineEdit,
+QFrame[shadcn_qt_component="input-group"] QLineEdit:focus {{
   border: none; border-radius: 0; background: transparent; padding: 0; min-height: 0;
 }}
-QFrame[shadcn_qt_component="input-otp"] QLineEdit {{ border-radius: 0; border-left: none; }}
+QFrame[shadcn_qt_component="input-otp"] QLineEdit {{
+  border-radius: 0; border-left: none; padding: 0;
+  min-height: 34px; max-height: 34px;
+}}
 QFrame[shadcn_qt_component="input-otp"] QLineEdit[otpPosition="first"] {{ border-left: 1px solid {c["input"]}; border-top-left-radius: {r_md}; border-bottom-left-radius: {r_md}; }}
 QFrame[shadcn_qt_component="input-otp"] QLineEdit[otpPosition="last"] {{ border-top-right-radius: {r_md}; border-bottom-right-radius: {r_md}; }}
 QFrame[shadcn_qt_component="input-otp"] QLineEdit[otpPosition="only"] {{ border-left: 1px solid {c["input"]}; border-radius: {r_md}; }}
+QFrame[shadcn_qt_component="input-otp"] QLineEdit:focus {{ border: 1px solid {c["ring"]}; }}
 
 QToolButton[shadcn_qt_component="toggle"] {{
   background: transparent; color: {c["foreground"]}; border: 1px solid transparent;
@@ -351,6 +361,9 @@ QLabel[shadcn_qt_component="kbd"] {{ background: {c["muted"]}; color: {c["mutedF
 QFrame[shadcn_qt_component="empty"] {{ background: transparent; border: 1px dashed {c["border"]}; border-radius: {r_lg}; }}
 QFrame[shadcn_qt_component="item"] {{ background: transparent; border: 1px solid transparent; border-radius: {r_md}; }}
 QFrame[shadcn_qt_component="item"]:hover {{ background: {accent_soft}; }}
+QFrame[shadcn_qt_component="item"] QWidget#shadcnQtItemContent,
+QFrame[shadcn_qt_component="item"] QWidget#shadcnQtItemAction,
+QFrame[shadcn_qt_component="item"] QLabel {{ background: transparent; }}
 QFrame[shadcn_qt_component="attachment"] {{ background: {muted_soft}; border: 1px solid {c["border"]}; border-radius: {r_md}; }}
 QFrame[shadcn_qt_component="chart"] {{ background: {c["card"]}; border: 1px solid {c["border"]}; border-radius: {r_xl}; }}
 
@@ -361,7 +374,8 @@ QCalendarWidget[shadcn_qt_component="calendar"] {{
   gridline-color: {c["border"]}; outline: 0;
 }}
 QTableView::item, QTableWidget::item {{ padding: 8px; border-bottom: 1px solid {c["border"]}; }}
-QTableView::item:hover, QTableWidget::item:hover {{ background: {muted_soft}; }}
+QTableView::item:hover:!selected,
+QTableWidget::item:hover:!selected {{ background: {muted_soft}; }}
 QHeaderView::section {{ background: transparent; color: {c["mutedForeground"]}; border: none; border-bottom: 1px solid {c["border"]}; padding: 10px 8px; font-weight: 500; }}
 QListView[shadcn_qt_component], QTreeView[shadcn_qt_component], QColumnView[shadcn_qt_component] {{
   background: {c["background"]}; alternate-background-color: {c["muted"]}; color: {c["foreground"]};
@@ -370,10 +384,13 @@ QListView[shadcn_qt_component], QTreeView[shadcn_qt_component], QColumnView[shad
 }}
 QListView[shadcn_qt_component]::item, QTreeView[shadcn_qt_component]::item,
 QColumnView[shadcn_qt_component]::item {{ padding: 6px 8px; border: none; border-radius: {r_sm}; }}
-QListView[shadcn_qt_component]::item:hover, QTreeView[shadcn_qt_component]::item:hover,
-QColumnView[shadcn_qt_component]::item:hover {{ background: {c["accent"]}; color: {c["accentForeground"]}; }}
+QListView[shadcn_qt_component]::item:hover:!selected,
+QTreeView[shadcn_qt_component]::item:hover:!selected,
+QColumnView[shadcn_qt_component]::item:hover:!selected {{ background: {c["accent"]}; color: {c["accentForeground"]}; }}
 QCalendarWidget[shadcn_qt_component="calendar"] QToolButton {{ background: transparent; border: none; border-radius: {r_md}; padding: 6px; }}
 QCalendarWidget[shadcn_qt_component="calendar"] QToolButton:hover {{ background: {c["accent"]}; }}
+QCalendarWidget[shadcn_qt_component="calendar"] QToolButton#qt_calendar_monthbutton {{ padding: 6px 22px 6px 8px; }}
+QCalendarWidget[shadcn_qt_component="calendar"] QToolButton#qt_calendar_monthbutton::menu-indicator {{ image: none; width: 0; height: 0; }}
 QCalendarWidget[shadcn_qt_component="calendar"] QWidget#qt_calendar_navigationbar {{ background: {c["background"]}; }}
 QCalendarWidget[shadcn_qt_component="calendar"] QTableView {{
   background: {c["background"]}; color: {c["foreground"]}; border: none; outline: 0;
@@ -465,7 +482,7 @@ QDialogButtonBox[shadcn_qt_component="dialog-button-box"] {{
 
 QCheckBox[shadcn_qt_native_adopted="true"],
 QRadioButton[shadcn_qt_native_adopted="true"] {{
-  background: transparent; spacing: 8px; min-height: 20px;
+  background: transparent; spacing: 8px; min-height: 24px;
 }}
 QCheckBox[shadcn_qt_native_adopted="true"]::indicator,
 QRadioButton[shadcn_qt_native_adopted="true"]::indicator {{ width: 16px; height: 16px; }}
@@ -536,9 +553,14 @@ QAbstractScrollArea[shadcn_qt_native_adopted="true"] {{
   border-radius: {r_md}; outline: 0;
 }}
 QAbstractScrollArea[shadcn_qt_native_adopted="true"] QWidget#qt_scrollarea_viewport {{ background: {c["background"]}; }}
+QAbstractItemView[shadcn_qt_native_adopted="true"],
 QAbstractItemView[shadcn_qt_component="item-view"] {{
   background: {c["background"]}; alternate-background-color: {c["muted"]};
   selection-background-color: {c["accent"]}; selection-color: {c["accentForeground"]};
+}}
+QAbstractItemView[shadcn_qt_native_adopted="true"]::item:selected,
+QAbstractItemView[shadcn_qt_native_adopted="true"]::item:selected:hover {{
+  background: {c["accent"]}; color: {c["accentForeground"]};
 }}
 QTableView[shadcn_qt_native_adopted="true"], QTableWidget[shadcn_qt_native_adopted="true"] {{
   border: 1px solid {c["border"]}; border-radius: {r_md};

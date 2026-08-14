@@ -47,13 +47,16 @@ def enable_antialiasing(painter: Any) -> None:
 
 
 def install_shadow(widget: Any, level: str = "sm") -> None:
-    """Install a Qt approximation of the new-york elevation presets."""
+    """Install a restrained single-layer approximation of new-york shadows."""
 
     presets = {
-        "xs": (4.0, 0.0, 1.0, 36),
-        "sm": (8.0, 0.0, 2.0, 42),
-        "md": (16.0, 0.0, 5.0, 52),
-        "lg": (28.0, 0.0, 10.0, 64),
+        # Qt has one drop-shadow layer per widget, while the web presets use
+        # multiple low-opacity layers. Keep the approximation short and light
+        # so borders remain crisp instead of acquiring a grey halo.
+        "xs": (2.0, 0.0, 1.0, 13),
+        "sm": (4.0, 0.0, 1.0, 16),
+        "md": (10.0, 0.0, 3.0, 20),
+        "lg": (20.0, 0.0, 6.0, 24),
     }
     blur, x_offset, y_offset, alpha = presets[level]
     effect = QtWidgets.QGraphicsDropShadowEffect(widget)
@@ -69,6 +72,21 @@ def clear_graphics_effect(widget: Any) -> None:
     if effect is not None:
         widget.setGraphicsEffect(None)
     widget._shadcn_qt_shadow = None
+
+
+def style_combo_popup(widget: Any) -> Any:
+    """Give Qt's private combo popup one themed outer border."""
+
+    popup = widget.view().window()
+    popup.setObjectName("shadcnQtComboPopup")
+    background = semantic_color(widget, "popover").name()
+    border = semantic_color(widget, "border").name()
+    popup.setStyleSheet(
+        "#shadcnQtComboPopup { "
+        f"background: {background}; border: 1px solid {border}; "
+        "border-radius: 6px; }"
+    )
+    return popup
 
 
 def animate_window_opacity(
@@ -107,6 +125,7 @@ __all__ = [
     "enable_antialiasing",
     "install_shadow",
     "semantic_color",
+    "style_combo_popup",
     "text_width",
     "with_alpha",
 ]

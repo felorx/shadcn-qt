@@ -6,16 +6,53 @@ from typing import Any, Optional, Union
 
 from shadcn_qt import _qt
 from shadcn_qt.widgets._helpers import initialize_component, refresh_style
-from shadcn_qt.widgets._style import animate_window_opacity, install_shadow
+from shadcn_qt.widgets._style import (
+    animate_window_opacity,
+    enable_antialiasing,
+    install_shadow,
+    semantic_color,
+    with_alpha,
+)
 from shadcn_qt.widgets.button import Button
 from shadcn_qt.widgets.controls import Label
 
-QtCore, _, QtWidgets = _qt.qt_modules()
+QtCore, QtGui, QtWidgets = _qt.qt_modules()
 
 
 def _window_flag(name: str) -> Any:
     value = getattr(QtCore.Qt, name, None)
     return value if value is not None else getattr(QtCore.Qt.WindowType, name)
+
+
+class _CloseButton(Button):
+    def __init__(self, parent: Any, *, size: int) -> None:
+        super().__init__("", parent, variant="ghost", size="icon")
+        self.setFixedSize(size, size)
+        self.setAccessibleName("Close")
+
+    def _icon_path(self) -> Any:
+        center = QtCore.QRectF(self.rect()).center()
+        path = QtGui.QPainterPath()
+        path.moveTo(center.x() - 3.5, center.y() - 3.5)
+        path.lineTo(center.x() + 3.5, center.y() + 3.5)
+        path.moveTo(center.x() + 3.5, center.y() - 3.5)
+        path.lineTo(center.x() - 3.5, center.y() + 3.5)
+        return path
+
+    def paintEvent(self, event: Any) -> None:
+        super().paintEvent(event)
+        painter = QtGui.QPainter(self)
+        enable_antialiasing(painter)
+        color = semantic_color(self, "foreground")
+        if not self.isEnabled():
+            color = with_alpha(color, 128)
+        pen = QtGui.QPen(color, 1.5)
+        cap = getattr(QtCore.Qt, "RoundCap", None)
+        if cap is None:
+            cap = QtCore.Qt.PenCapStyle.RoundCap
+        pen.setCapStyle(cap)
+        painter.setPen(pen)
+        painter.drawPath(self._icon_path())
 
 
 class _DialogOverlay(QtWidgets.QWidget):
@@ -70,9 +107,8 @@ class Dialog(QtWidgets.QDialog):
         self.layout_.addWidget(self.descriptionLabel)
         self.layout_.addWidget(self.content, 1)
         self.layout_.addWidget(self.footer)
-        self.closeButton = Button("×", self, variant="ghost", size="icon")
+        self.closeButton = _CloseButton(self, size=32)
         self.closeButton.setProperty("dialogRole", "close")
-        self.closeButton.setFixedSize(32, 32)
         self.closeButton.clicked.connect(self.reject)
         install_shadow(self, "lg")
 
@@ -357,7 +393,7 @@ class Toast(QtWidgets.QFrame):
         self.descriptionLabel = Label(description, content, variant="muted")
         content_layout.addWidget(self.titleLabel)
         content_layout.addWidget(self.descriptionLabel)
-        self.closeButton = Button("×", self, variant="ghost", size="icon")
+        self.closeButton = _CloseButton(self, size=36)
         self.closeButton.clicked.connect(self.closeToast)
         layout.addWidget(content, 1)
         layout.addWidget(self.closeButton)

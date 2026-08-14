@@ -31,8 +31,16 @@ def test_profile_identity_and_zinc_tokens(runtime):
 
 
 def test_new_york_control_geometry(runtime):
-    from shadcn_qt import Button, Combobox, DatePicker, Input, NativeSelect, Select
-    from shadcn_qt import TextArea, Toggle
+    from shadcn_qt import (
+        Button,
+        Combobox,
+        DatePicker,
+        Input,
+        NativeSelect,
+        Select,
+        TextArea,
+        Toggle,
+    )
 
     assert Button("Default").height() == 36
     assert Button("Small", size="sm").height() == 32
@@ -48,6 +56,69 @@ def test_new_york_control_geometry(runtime):
     assert all(control.height() == 36 for control in controls)
 
 
+def test_date_picker_uses_one_outer_border_and_custom_chevron(runtime):
+    from shadcn_qt import DatePicker, apply_theme, theme_stylesheet
+
+    app, _, _ = runtime
+    apply_theme(app, "light")
+    picker = DatePicker()
+    picker.resize(260, 36)
+    picker.show()
+    picker.setFocus()
+    app.processEvents()
+    assert not picker.grab().isNull()
+    assert picker.hasMouseTracking()
+    normal_image = picker.grab().toImage()
+    picker._set_drop_down_hovered(True)
+    app.processEvents()
+    hovered_image = picker.grab().toImage()
+    ratio = hovered_image.devicePixelRatio()
+    hover_sample_x = int((picker.width() - 28) * ratio)
+    hover_sample_y = int((picker.height() / 2) * ratio)
+    assert normal_image.pixelColor(
+        hover_sample_x, hover_sample_y
+    ) != hovered_image.pixelColor(hover_sample_x, hover_sample_y)
+
+    qss = theme_stylesheet("light")
+    selector = 'QDateTimeEdit[shadcn_qt_component="date-picker"]::drop-down'
+    assert selector in qss
+    rule = qss.split(selector, 1)[1].split("}", 1)[0]
+    assert "border: none" in rule
+    assert "background: transparent" in rule
+    assert 'QDateTimeEdit[shadcn_qt_component="date-picker"]::down-arrow' in qss
+
+
+def test_combo_family_popups_use_one_outer_border(runtime):
+    from shadcn_qt import Combobox, NativeSelect, Select, apply_theme, theme_stylesheet
+
+    app, _, _ = runtime
+    apply_theme(app, "light")
+    for control_type in (Select, Combobox, NativeSelect):
+        control = control_type()
+        control.addItems(["Apple", "Banana", "Cherry"])
+        control.resize(260, 36)
+        control.show()
+        control.showPopup()
+        app.processEvents()
+        popup = control.view().window()
+        assert popup.objectName() == "shadcnQtComboPopup"
+        assert "border: 1px solid #e4e4e7" in popup.styleSheet()
+        image = popup.grab().toImage()
+        center_x = image.width() // 2
+        assert image.pixelColor(center_x, 0) != image.pixelColor(center_x, 2)
+        assert image.pixelColor(center_x, image.height() - 1) != image.pixelColor(
+            center_x, image.height() - 3
+        )
+        control.hidePopup()
+        control.close()
+
+    qss = theme_stylesheet("light")
+    selector = "QComboBox[shadcn_qt_component] QAbstractItemView"
+    rule = qss.split(selector, 1)[1].split("}", 1)[0]
+    assert "background: transparent" in rule
+    assert "border: none" in rule
+
+
 def test_new_york_elevation_and_variant_contract(runtime):
     from shadcn_qt import Badge, Button, Card, Input
 
@@ -58,6 +129,18 @@ def test_new_york_elevation_and_variant_contract(runtime):
     assert Button("Ghost", variant="ghost").graphicsEffect() is None
     assert Badge("New").graphicsEffect() is not None
     assert Badge("Outline", variant="outline").graphicsEffect() is None
+
+
+def test_new_york_shadows_remain_short_and_low_opacity(runtime):
+    from shadcn_qt import Button, Card, Dialog, Input
+
+    controls = (Input(), Button("Save"), Card(), Dialog())
+    expected = ((2.0, 13), (4.0, 16), (4.0, 16), (20.0, 24))
+    for widget, (blur, alpha) in zip(controls, expected):
+        effect = widget.graphicsEffect()
+        assert effect.blurRadius() == blur
+        assert effect.yOffset() <= 6.0
+        assert effect.color().alpha() == alpha
 
 
 def test_custom_selection_controls_render_and_switch_animates(runtime):
@@ -78,6 +161,20 @@ def test_custom_selection_controls_render_and_switch_animates(runtime):
     host.show()
     app.processEvents()
     assert all(not widget.grab().isNull() for widget in (checkbox, radio, switch))
+    from shadcn_qt.widgets.controls import _choice_geometry
+
+    assert _choice_geometry(checkbox, 16)[0].left() == 3
+    assert _choice_geometry(radio, 16)[0].left() == 3
+    for widget, indicator_size in ((checkbox, 16), (radio, 16), (switch, 36)):
+        indicator = _choice_geometry(widget, indicator_size)[0]
+        if widget is switch:
+            indicator.setHeight(20)
+            indicator.moveTop((widget.height() - 20) / 2)
+        bounds = indicator.adjusted(-1.5, -1.5, 1.5, 1.5)
+        assert bounds.left() >= 0.5
+        assert bounds.top() >= 0.5
+        assert bounds.right() <= widget.width() - 0.5
+        assert bounds.bottom() <= widget.height() - 0.5
     switch.setChecked(True)
     switch._animation.setCurrentTime(switch._animation.duration())
     app.processEvents()
@@ -86,9 +183,9 @@ def test_custom_selection_controls_render_and_switch_animates(runtime):
 
 
 def test_calendar_uses_compact_day_buttons_without_native_week_colors(runtime):
-    from shadcn_qt import Calendar, apply_theme
+    from shadcn_qt import Calendar, apply_theme, theme_stylesheet
 
-    app, _, QtWidgets = runtime
+    app, QtCore, QtWidgets = runtime
     apply_theme(app, "light")
     calendar = Calendar()
     calendar.show()
@@ -96,8 +193,56 @@ def test_calendar_uses_compact_day_buttons_without_native_week_colors(runtime):
     view = calendar.findChild(QtWidgets.QTableView, "qt_calendar_calendarview")
     assert view.verticalHeader().defaultSectionSize() == 36
     assert type(view.itemDelegate()).__name__ == "_CalendarDelegate"
+    month_button = calendar.findChild(
+        QtWidgets.QToolButton, "qt_calendar_monthbutton"
+    )
+    assert month_button.icon().isNull()
+    indicator = calendar._month_indicator
+    assert indicator.parent() is month_button
+    assert indicator.geometry().top() == 0
+    assert indicator.geometry().bottom() == month_button.rect().bottom()
+    icon_bounds = indicator._icon_path().boundingRect()
+    assert (icon_bounds.width(), icon_bounds.height()) == (8.0, 4.0)
+    assert icon_bounds.center() == QtCore.QRectF(indicator.rect()).center()
+    qss = theme_stylesheet("light")
+    assert (
+        'QToolButton#qt_calendar_monthbutton::menu-indicator { image: none; '
+        "width: 0; height: 0; }"
+    ) in qss
     assert not calendar.grab().isNull()
     calendar.close()
+
+
+def test_item_hover_surface_and_action_icon_stay_visually_aligned(runtime):
+    from shadcn_qt import Item, apply_theme, theme_stylesheet
+
+    app, QtCore, _ = runtime
+    apply_theme(app, "light")
+    item = Item(title="Documentation", description="Installation and themes")
+    item.resize(520, item.sizeHint().height())
+    item.show()
+    app.processEvents()
+    assert item.content.objectName() == "shadcnQtItemContent"
+    assert not item.content.autoFillBackground()
+    assert not item.actionContainer.autoFillBackground()
+    icon_bounds = item.action._icon_path().boundingRect()
+    assert (icon_bounds.width(), icon_bounds.height()) == (4.0, 8.0)
+    assert icon_bounds.center() == QtCore.QRectF(item.action.rect()).center()
+    assert (item.action.width(), item.action.height()) == (36, 36)
+    assert item.action.geometry() == item.actionContainer.rect()
+    assert (
+        QtCore.QRectF(item.actionContainer.geometry()).center().y()
+        == QtCore.QRectF(item.rect()).center().y()
+    )
+    assert item.action.accessibleName() == "Open item"
+    assert not item.grab().isNull()
+    qss = theme_stylesheet("light")
+    assert (
+        'QFrame[shadcn_qt_component="item"] QWidget#shadcnQtItemContent'
+        in qss
+    )
+    assert 'QFrame[shadcn_qt_component="item"] QLabel { background: transparent; }' in qss
+    item.close()
 
 
 def test_dialog_uses_frameless_modal_surface(runtime):

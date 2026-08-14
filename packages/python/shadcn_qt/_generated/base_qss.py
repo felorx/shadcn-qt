@@ -185,10 +185,15 @@ QComboBox[shadcn_qt_component]:focus,
 QDateTimeEdit[shadcn_qt_component="date-picker"]:focus,
 QAbstractSpinBox[shadcn_qt_component="spin-box"]:focus { border-color: #18181b; }
 QComboBox[shadcn_qt_component]::drop-down { subcontrol-origin: padding; subcontrol-position: top right; width: 28px; border: none; }
+QDateTimeEdit[shadcn_qt_component="date-picker"]::drop-down {
+  subcontrol-origin: border; subcontrol-position: top right; width: 32px;
+  border: none; background: transparent;
+}
+QDateTimeEdit[shadcn_qt_component="date-picker"]::down-arrow { image: none; width: 0; height: 0; }
 QComboBox[shadcn_qt_component] QLineEdit { background: transparent; border: none; padding: 0; }
 QComboBox[shadcn_qt_component] QAbstractItemView {
-  background: #ffffff; color: #09090b; border: 1px solid #e4e4e7;
-  border-radius: 6px; padding: 4px; outline: 0;
+  background: transparent; color: #09090b; border: none;
+  border-radius: 0; padding: 4px; outline: 0;
   selection-background-color: #f4f4f5; selection-color: #18181b;
 }
 
@@ -237,13 +242,18 @@ QFrame[shadcn_qt_component="input-group"] {
   background: #ffffff; border: 1px solid #e4e4e7; border-radius: 6px;
 }
 QFrame[shadcn_qt_component="input-group"][focused="true"] { border-color: #18181b; }
-QFrame[shadcn_qt_component="input-group"] QLineEdit {
+QFrame[shadcn_qt_component="input-group"] QLineEdit,
+QFrame[shadcn_qt_component="input-group"] QLineEdit:focus {
   border: none; border-radius: 0; background: transparent; padding: 0; min-height: 0;
 }
-QFrame[shadcn_qt_component="input-otp"] QLineEdit { border-radius: 0; border-left: none; }
+QFrame[shadcn_qt_component="input-otp"] QLineEdit {
+  border-radius: 0; border-left: none; padding: 0;
+  min-height: 34px; max-height: 34px;
+}
 QFrame[shadcn_qt_component="input-otp"] QLineEdit[otpPosition="first"] { border-left: 1px solid #e4e4e7; border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
 QFrame[shadcn_qt_component="input-otp"] QLineEdit[otpPosition="last"] { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
 QFrame[shadcn_qt_component="input-otp"] QLineEdit[otpPosition="only"] { border-left: 1px solid #e4e4e7; border-radius: 6px; }
+QFrame[shadcn_qt_component="input-otp"] QLineEdit:focus { border: 1px solid #18181b; }
 
 QToolButton[shadcn_qt_component="toggle"] {
   background: transparent; color: #09090b; border: 1px solid transparent;
@@ -272,6 +282,9 @@ QLabel[shadcn_qt_component="kbd"] { background: #f4f4f5; color: #71717a; border:
 QFrame[shadcn_qt_component="empty"] { background: transparent; border: 1px dashed #e4e4e7; border-radius: 8px; }
 QFrame[shadcn_qt_component="item"] { background: transparent; border: 1px solid transparent; border-radius: 6px; }
 QFrame[shadcn_qt_component="item"]:hover { background: #f7f7f8; }
+QFrame[shadcn_qt_component="item"] QWidget#shadcnQtItemContent,
+QFrame[shadcn_qt_component="item"] QWidget#shadcnQtItemAction,
+QFrame[shadcn_qt_component="item"] QLabel { background: transparent; }
 QFrame[shadcn_qt_component="attachment"] { background: #fafafa; border: 1px solid #e4e4e7; border-radius: 6px; }
 QFrame[shadcn_qt_component="chart"] { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 12px; }
 
@@ -282,7 +295,8 @@ QCalendarWidget[shadcn_qt_component="calendar"] {
   gridline-color: #e4e4e7; outline: 0;
 }
 QTableView::item, QTableWidget::item { padding: 8px; border-bottom: 1px solid #e4e4e7; }
-QTableView::item:hover, QTableWidget::item:hover { background: #fafafa; }
+QTableView::item:hover:!selected,
+QTableWidget::item:hover:!selected { background: #fafafa; }
 QHeaderView::section { background: transparent; color: #71717a; border: none; border-bottom: 1px solid #e4e4e7; padding: 10px 8px; font-weight: 500; }
 QListView[shadcn_qt_component], QTreeView[shadcn_qt_component], QColumnView[shadcn_qt_component] {
   background: #ffffff; alternate-background-color: #f4f4f5; color: #09090b;
@@ -291,10 +305,13 @@ QListView[shadcn_qt_component], QTreeView[shadcn_qt_component], QColumnView[shad
 }
 QListView[shadcn_qt_component]::item, QTreeView[shadcn_qt_component]::item,
 QColumnView[shadcn_qt_component]::item { padding: 6px 8px; border: none; border-radius: 4px; }
-QListView[shadcn_qt_component]::item:hover, QTreeView[shadcn_qt_component]::item:hover,
-QColumnView[shadcn_qt_component]::item:hover { background: #f4f4f5; color: #18181b; }
+QListView[shadcn_qt_component]::item:hover:!selected,
+QTreeView[shadcn_qt_component]::item:hover:!selected,
+QColumnView[shadcn_qt_component]::item:hover:!selected { background: #f4f4f5; color: #18181b; }
 QCalendarWidget[shadcn_qt_component="calendar"] QToolButton { background: transparent; border: none; border-radius: 6px; padding: 6px; }
 QCalendarWidget[shadcn_qt_component="calendar"] QToolButton:hover { background: #f4f4f5; }
+QCalendarWidget[shadcn_qt_component="calendar"] QToolButton#qt_calendar_monthbutton { padding: 6px 22px 6px 8px; }
+QCalendarWidget[shadcn_qt_component="calendar"] QToolButton#qt_calendar_monthbutton::menu-indicator { image: none; width: 0; height: 0; }
 QCalendarWidget[shadcn_qt_component="calendar"] QWidget#qt_calendar_navigationbar { background: #ffffff; }
 QCalendarWidget[shadcn_qt_component="calendar"] QTableView {
   background: #ffffff; color: #09090b; border: none; outline: 0;
@@ -386,7 +403,7 @@ QDialogButtonBox[shadcn_qt_component="dialog-button-box"] {
 
 QCheckBox[shadcn_qt_native_adopted="true"],
 QRadioButton[shadcn_qt_native_adopted="true"] {
-  background: transparent; spacing: 8px; min-height: 20px;
+  background: transparent; spacing: 8px; min-height: 24px;
 }
 QCheckBox[shadcn_qt_native_adopted="true"]::indicator,
 QRadioButton[shadcn_qt_native_adopted="true"]::indicator { width: 16px; height: 16px; }
@@ -457,9 +474,14 @@ QAbstractScrollArea[shadcn_qt_native_adopted="true"] {
   border-radius: 6px; outline: 0;
 }
 QAbstractScrollArea[shadcn_qt_native_adopted="true"] QWidget#qt_scrollarea_viewport { background: #ffffff; }
+QAbstractItemView[shadcn_qt_native_adopted="true"],
 QAbstractItemView[shadcn_qt_component="item-view"] {
   background: #ffffff; alternate-background-color: #f4f4f5;
   selection-background-color: #f4f4f5; selection-color: #18181b;
+}
+QAbstractItemView[shadcn_qt_native_adopted="true"]::item:selected,
+QAbstractItemView[shadcn_qt_native_adopted="true"]::item:selected:hover {
+  background: #f4f4f5; color: #18181b;
 }
 QTableView[shadcn_qt_native_adopted="true"], QTableWidget[shadcn_qt_native_adopted="true"] {
   border: 1px solid #e4e4e7; border-radius: 6px;
@@ -687,10 +709,15 @@ QComboBox[shadcn_qt_component]:focus,
 QDateTimeEdit[shadcn_qt_component="date-picker"]:focus,
 QAbstractSpinBox[shadcn_qt_component="spin-box"]:focus { border-color: #d4d4d8; }
 QComboBox[shadcn_qt_component]::drop-down { subcontrol-origin: padding; subcontrol-position: top right; width: 28px; border: none; }
+QDateTimeEdit[shadcn_qt_component="date-picker"]::drop-down {
+  subcontrol-origin: border; subcontrol-position: top right; width: 32px;
+  border: none; background: transparent;
+}
+QDateTimeEdit[shadcn_qt_component="date-picker"]::down-arrow { image: none; width: 0; height: 0; }
 QComboBox[shadcn_qt_component] QLineEdit { background: transparent; border: none; padding: 0; }
 QComboBox[shadcn_qt_component] QAbstractItemView {
-  background: #09090b; color: #fafafa; border: 1px solid #27272a;
-  border-radius: 6px; padding: 4px; outline: 0;
+  background: transparent; color: #fafafa; border: none;
+  border-radius: 0; padding: 4px; outline: 0;
   selection-background-color: #27272a; selection-color: #fafafa;
 }
 
@@ -739,13 +766,18 @@ QFrame[shadcn_qt_component="input-group"] {
   background: #09090b; border: 1px solid #27272a; border-radius: 6px;
 }
 QFrame[shadcn_qt_component="input-group"][focused="true"] { border-color: #d4d4d8; }
-QFrame[shadcn_qt_component="input-group"] QLineEdit {
+QFrame[shadcn_qt_component="input-group"] QLineEdit,
+QFrame[shadcn_qt_component="input-group"] QLineEdit:focus {
   border: none; border-radius: 0; background: transparent; padding: 0; min-height: 0;
 }
-QFrame[shadcn_qt_component="input-otp"] QLineEdit { border-radius: 0; border-left: none; }
+QFrame[shadcn_qt_component="input-otp"] QLineEdit {
+  border-radius: 0; border-left: none; padding: 0;
+  min-height: 34px; max-height: 34px;
+}
 QFrame[shadcn_qt_component="input-otp"] QLineEdit[otpPosition="first"] { border-left: 1px solid #27272a; border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
 QFrame[shadcn_qt_component="input-otp"] QLineEdit[otpPosition="last"] { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
 QFrame[shadcn_qt_component="input-otp"] QLineEdit[otpPosition="only"] { border-left: 1px solid #27272a; border-radius: 6px; }
+QFrame[shadcn_qt_component="input-otp"] QLineEdit:focus { border: 1px solid #d4d4d8; }
 
 QToolButton[shadcn_qt_component="toggle"] {
   background: transparent; color: #fafafa; border: 1px solid transparent;
@@ -774,6 +806,9 @@ QLabel[shadcn_qt_component="kbd"] { background: #27272a; color: #a1a1aa; border:
 QFrame[shadcn_qt_component="empty"] { background: transparent; border: 1px dashed #27272a; border-radius: 8px; }
 QFrame[shadcn_qt_component="item"] { background: transparent; border: 1px solid transparent; border-radius: 6px; }
 QFrame[shadcn_qt_component="item"]:hover { background: #1f1f21; }
+QFrame[shadcn_qt_component="item"] QWidget#shadcnQtItemContent,
+QFrame[shadcn_qt_component="item"] QWidget#shadcnQtItemAction,
+QFrame[shadcn_qt_component="item"] QLabel { background: transparent; }
 QFrame[shadcn_qt_component="attachment"] { background: #18181a; border: 1px solid #27272a; border-radius: 6px; }
 QFrame[shadcn_qt_component="chart"] { background: #09090b; border: 1px solid #27272a; border-radius: 12px; }
 
@@ -784,7 +819,8 @@ QCalendarWidget[shadcn_qt_component="calendar"] {
   gridline-color: #27272a; outline: 0;
 }
 QTableView::item, QTableWidget::item { padding: 8px; border-bottom: 1px solid #27272a; }
-QTableView::item:hover, QTableWidget::item:hover { background: #18181a; }
+QTableView::item:hover:!selected,
+QTableWidget::item:hover:!selected { background: #18181a; }
 QHeaderView::section { background: transparent; color: #a1a1aa; border: none; border-bottom: 1px solid #27272a; padding: 10px 8px; font-weight: 500; }
 QListView[shadcn_qt_component], QTreeView[shadcn_qt_component], QColumnView[shadcn_qt_component] {
   background: #09090b; alternate-background-color: #27272a; color: #fafafa;
@@ -793,10 +829,13 @@ QListView[shadcn_qt_component], QTreeView[shadcn_qt_component], QColumnView[shad
 }
 QListView[shadcn_qt_component]::item, QTreeView[shadcn_qt_component]::item,
 QColumnView[shadcn_qt_component]::item { padding: 6px 8px; border: none; border-radius: 4px; }
-QListView[shadcn_qt_component]::item:hover, QTreeView[shadcn_qt_component]::item:hover,
-QColumnView[shadcn_qt_component]::item:hover { background: #27272a; color: #fafafa; }
+QListView[shadcn_qt_component]::item:hover:!selected,
+QTreeView[shadcn_qt_component]::item:hover:!selected,
+QColumnView[shadcn_qt_component]::item:hover:!selected { background: #27272a; color: #fafafa; }
 QCalendarWidget[shadcn_qt_component="calendar"] QToolButton { background: transparent; border: none; border-radius: 6px; padding: 6px; }
 QCalendarWidget[shadcn_qt_component="calendar"] QToolButton:hover { background: #27272a; }
+QCalendarWidget[shadcn_qt_component="calendar"] QToolButton#qt_calendar_monthbutton { padding: 6px 22px 6px 8px; }
+QCalendarWidget[shadcn_qt_component="calendar"] QToolButton#qt_calendar_monthbutton::menu-indicator { image: none; width: 0; height: 0; }
 QCalendarWidget[shadcn_qt_component="calendar"] QWidget#qt_calendar_navigationbar { background: #09090b; }
 QCalendarWidget[shadcn_qt_component="calendar"] QTableView {
   background: #09090b; color: #fafafa; border: none; outline: 0;
@@ -888,7 +927,7 @@ QDialogButtonBox[shadcn_qt_component="dialog-button-box"] {
 
 QCheckBox[shadcn_qt_native_adopted="true"],
 QRadioButton[shadcn_qt_native_adopted="true"] {
-  background: transparent; spacing: 8px; min-height: 20px;
+  background: transparent; spacing: 8px; min-height: 24px;
 }
 QCheckBox[shadcn_qt_native_adopted="true"]::indicator,
 QRadioButton[shadcn_qt_native_adopted="true"]::indicator { width: 16px; height: 16px; }
@@ -959,9 +998,14 @@ QAbstractScrollArea[shadcn_qt_native_adopted="true"] {
   border-radius: 6px; outline: 0;
 }
 QAbstractScrollArea[shadcn_qt_native_adopted="true"] QWidget#qt_scrollarea_viewport { background: #09090b; }
+QAbstractItemView[shadcn_qt_native_adopted="true"],
 QAbstractItemView[shadcn_qt_component="item-view"] {
   background: #09090b; alternate-background-color: #27272a;
   selection-background-color: #27272a; selection-color: #fafafa;
+}
+QAbstractItemView[shadcn_qt_native_adopted="true"]::item:selected,
+QAbstractItemView[shadcn_qt_native_adopted="true"]::item:selected:hover {
+  background: #27272a; color: #fafafa;
 }
 QTableView[shadcn_qt_native_adopted="true"], QTableWidget[shadcn_qt_native_adopted="true"] {
   border: 1px solid #27272a; border-radius: 6px;
