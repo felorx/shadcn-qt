@@ -126,7 +126,7 @@ created later are adopted through its application event filter.
 ## Installation Guidance
 
 The public distribution name is `shadcn-qt`; the import name is `shadcn_qt`.
-The current published baseline is 0.1.0.
+The current published baseline is 0.2.0.
 
 ```bash
 # New environment: choose exactly one binding extra.
@@ -167,9 +167,10 @@ python tools/check_versions.py
 QT_QPA_PLATFORM=offscreen PYTHONPATH=packages/python \
   python -m pytest packages/python/tests -q
 
-# Lint package code and the Gallery explicitly.
-python -m ruff check packages/python/shadcn_qt packages/python/tests \
-  examples/python_gallery/run.py tools
+# Lint from the Python package directory so its checked-in Ruff configuration
+# and per-file ignores are used instead of machine-wide defaults.
+(cd packages/python && python -m ruff check shadcn_qt tests \
+  ../../examples/python_gallery/run.py ../../tools)
 
 # Build the documentation site.
 (cd apps/docs && npm ci && npm run build)

@@ -48,7 +48,7 @@ See [Core and Pro architecture](docs/PRO.md) and [license tiers](docs/TIERS.md).
 
 ## Install the free Core package (Python)
 
-shadcn-qt Core 0.1.0 is available from
+shadcn-qt Core 0.2.0 is available from
 [PyPI](https://pypi.org/project/shadcn-qt/). It is publicly downloadable at no
 cost for GPL-3.0-compatible use; proprietary applications require a commercial
 Core license. Pro is a separate private package.
@@ -167,15 +167,16 @@ cmake --build build
 ```
 
 Use Qt 5.15 by pointing `CMAKE_PREFIX_PATH` at a Qt5 kit; the same `CMakeLists.txt` selects Qt5 or Qt6 automatically.
-Installed packages expose version `0.1.0`, so downstream projects can require
-`find_package(ShadcnQt 0.1 CONFIG REQUIRED)`.
+Installed packages expose version `0.2.0`, so downstream projects can require
+`find_package(ShadcnQt 0.2 CONFIG REQUIRED)`.
 
 ## Docs
 
 See `apps/docs` (VitePress), the [migration guide](apps/docs/guide/migration.md),
 [licensing guide](docs/COMMERCIAL.md), [PyPI release runbook](docs/PYPI_RELEASE.md),
 [Core and Pro architecture](docs/PRO.md), [docs/STATUS.md](docs/STATUS.md), and
-[docs/TIERS.md](docs/TIERS.md). AI agents can use the repository development
+[docs/TIERS.md](docs/TIERS.md). Release changes are recorded in
+[CHANGELOG.md](CHANGELOG.md). AI agents can use the repository development
 skill by following the [AI skill installation guide](docs/AI_SKILL_INSTALL.md).
 
 ## License

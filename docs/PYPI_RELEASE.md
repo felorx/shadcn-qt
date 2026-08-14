@@ -22,6 +22,11 @@ publish a second distribution name for the same release. The project metadata
 and documentation must continue to state that this is an independent Qt
 implementation and is not affiliated with the upstream shadcn project.
 
+Version 0.2.0 adds the complete component and native QtWidgets galleries,
+classic `new-york` + Zinc visual alignment, reversible native-widget adoption,
+visual screenshot regression, font-independent vector glyphs, and the
+Chrome-style `TabPane`. See `CHANGELOG.md` for the release notes.
+
 Initial release files:
 
 | File | SHA-256 |
@@ -100,14 +105,14 @@ environment without pulling Qt dependencies from TestPyPI:
 ```bash
 python -m pip install PySide6
 python -m pip install --index-url https://test.pypi.org/simple \
-  --no-deps shadcn-qt==0.1.0
+  --no-deps shadcn-qt==0.2.0
 ```
 
 After verification, create and push the exact version tag:
 
 ```bash
-git tag -s v0.1.0 -m "shadcn-qt 0.1.0"
-git push origin v0.1.0
+git tag -s v0.2.0 -m "shadcn-qt 0.2.0"
+git push origin v0.2.0
 ```
 
 The `release.yml` workflow verifies that the tag equals `v<package-version>`,
