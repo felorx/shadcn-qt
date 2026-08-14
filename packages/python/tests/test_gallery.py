@@ -71,6 +71,13 @@ def test_gallery_sidebar_uses_a_single_flat_separator(gallery_runtime):
 
 def test_gallery_navigation_shows_expansion_state(gallery_runtime):
     app, gallery = gallery_runtime
+    from shadcn_qt._qt import import_qt_module
+
+    QtCore = gallery.QtCore
+    QtTest = import_qt_module("QtTest")
+    left_button = getattr(QtCore.Qt, "LeftButton", None)
+    if left_button is None:
+        left_button = QtCore.Qt.MouseButton.LeftButton
     window = gallery.GalleryWindow()
     window.show()
     app.processEvents()
@@ -79,15 +86,63 @@ def test_gallery_navigation_shows_expansion_state(gallery_runtime):
     index = window.navigation.indexFromItem(category)
     assert category.isExpanded()
     assert window.navigation.branch_icon_name(index) == "chevron-down"
+    assert not window.navigation.expandsOnDoubleClick()
+    assert window.group_expansion_mode() == "single-click"
+    assert window.expansion_mode_select.currentText() == "Single click"
 
-    category.setExpanded(False)
+    category_rect = window.navigation.visualItemRect(category)
+    click_position = QtCore.QPoint(
+        category_rect.left() + 50,
+        category_rect.center().y(),
+    )
+    QtTest.QTest.mouseClick(
+        window.navigation.viewport(),
+        left_button,
+        pos=click_position,
+    )
     app.processEvents()
     assert not category.isExpanded()
     assert window.navigation.branch_icon_name(index) == "chevron-right"
 
-    category.setExpanded(True)
+    QtTest.QTest.mouseClick(
+        window.navigation.viewport(),
+        left_button,
+        pos=click_position,
+    )
     app.processEvents()
+    assert category.isExpanded()
     assert window.navigation.branch_icon_name(index) == "chevron-down"
+
+    window.expansion_mode_select.setCurrentText("Double click")
+    app.processEvents()
+    assert window.group_expansion_mode() == "double-click"
+    QtTest.QTest.mouseClick(
+        window.navigation.viewport(),
+        left_button,
+        pos=click_position,
+    )
+    app.processEvents()
+    assert category.isExpanded()
+    QtTest.QTest.mouseDClick(
+        window.navigation.viewport(),
+        left_button,
+        pos=click_position,
+    )
+    app.processEvents()
+    assert not category.isExpanded()
+    assert window.navigation.branch_icon_name(index) == "chevron-right"
+
+    window.set_group_expansion_mode("single-click")
+    assert window.expansion_mode_select.currentText() == "Single click"
+    QtTest.QTest.mouseClick(
+        window.navigation.viewport(),
+        left_button,
+        pos=click_position,
+    )
+    app.processEvents()
+    assert category.isExpanded()
+    with pytest.raises(ValueError):
+        window.set_group_expansion_mode("hover")
     window.close()
 
 

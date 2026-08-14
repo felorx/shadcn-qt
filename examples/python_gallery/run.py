@@ -147,6 +147,45 @@ QLabel[nativePreviewHeading="true"] { font-size: 14px; font-weight: 600; }
 class _GalleryNavigationTree(QtWidgets.QTreeWidget):
     """Tree with theme-aware vector disclosure indicators for category rows."""
 
+    EXPANSION_MODES = ("single-click", "double-click")
+
+    def __init__(self, parent: Optional[Any] = None) -> None:
+        super().__init__(parent)
+        self._expansion_mode = "single-click"
+        # Category expansion is handled for the whole row below, including the
+        # disclosure indicator, so the platform default must stay disabled.
+        self.setExpandsOnDoubleClick(False)
+
+    def get_expansion_mode(self) -> str:
+        return self._expansion_mode
+
+    def set_expansion_mode(self, mode: str) -> None:
+        if mode not in self.EXPANSION_MODES:
+            raise ValueError(
+                f"expansion mode must be one of {self.EXPANSION_MODES}, got {mode!r}"
+            )
+        self._expansion_mode = mode
+
+    getExpansionMode = get_expansion_mode
+    setExpansionMode = set_expansion_mode
+
+    def _item_at_event(self, event: Any) -> Any:
+        position = getattr(event, "position", None)
+        point = position() if callable(position) else event.pos()
+        to_point = getattr(point, "toPoint", None)
+        return self.itemAt(to_point() if callable(to_point) else point)
+
+    @staticmethod
+    def _is_category(item: Any) -> bool:
+        return item is not None and item.parent() is None and item.childCount() > 0
+
+    @staticmethod
+    def _is_left_click(event: Any) -> bool:
+        left_button = getattr(QtCore.Qt, "LeftButton", None)
+        if left_button is None:
+            left_button = QtCore.Qt.MouseButton.LeftButton
+        return event.button() == left_button
+
     def branch_icon_name(self, index: Any) -> str:
         return "chevron-down" if self.isExpanded(index) else "chevron-right"
 
@@ -169,6 +208,25 @@ class _GalleryNavigationTree(QtWidgets.QTreeWidget):
             color_name="mutedForeground",
         )
         painter.restore()
+
+    def mousePressEvent(self, event: Any) -> None:
+        item = self._item_at_event(event)
+        if self._is_left_click(event) and self._is_category(item):
+            self.setCurrentItem(item)
+            if self._expansion_mode == "single-click":
+                item.setExpanded(not item.isExpanded())
+            event.accept()
+            return
+        super().mousePressEvent(event)
+
+    def mouseDoubleClickEvent(self, event: Any) -> None:
+        item = self._item_at_event(event)
+        if self._is_left_click(event) and self._is_category(item):
+            if self._expansion_mode == "double-click":
+                item.setExpanded(not item.isExpanded())
+            event.accept()
+            return
+        super().mouseDoubleClickEvent(event)
 
 
 def component_names() -> Tuple[str, ...]:
@@ -1321,7 +1379,13 @@ def build_native_preview(name: str, parent: Any = None) -> Any:
 class GalleryWindow(QtWidgets.QMainWindow):
     """Searchable interactive window for the complete public component catalog."""
 
-    def __init__(self, *, theme: str = "light", component: str = "Button") -> None:
+    def __init__(
+        self,
+        *,
+        theme: str = "light",
+        component: str = "Button",
+        group_expansion_mode: str = "single-click",
+    ) -> None:
         super().__init__()
         app = QtWidgets.QApplication.instance()
         if app is None:
@@ -1363,7 +1427,25 @@ class GalleryWindow(QtWidgets.QMainWindow):
         self.navigation.setObjectName("galleryNavigation")
         self.navigation.setHeaderHidden(True)
         self.navigation.setIndentation(14)
+        self.navigation.set_expansion_mode(group_expansion_mode)
         sidebar_layout.addWidget(self.navigation, 1)
+        expansion_settings = QtWidgets.QWidget(self.sidebar)
+        expansion_settings_layout = QtWidgets.QHBoxLayout(expansion_settings)
+        expansion_settings_layout.setContentsMargins(0, 0, 0, 0)
+        expansion_settings_layout.setSpacing(8)
+        expansion_settings_layout.addWidget(
+            ui.Label("Group mode", expansion_settings, variant="muted"),
+            1,
+        )
+        self.expansion_mode_select = ui.Select(expansion_settings)
+        self.expansion_mode_select.setAccessibleName("Group expansion mode")
+        self.expansion_mode_select.addItems(["Single click", "Double click"])
+        self.expansion_mode_select.setFixedWidth(160)
+        self.expansion_mode_select.setCurrentText(
+            "Double click" if group_expansion_mode == "double-click" else "Single click"
+        )
+        expansion_settings_layout.addWidget(self.expansion_mode_select)
+        sidebar_layout.addWidget(expansion_settings)
         sidebar_layout.addWidget(
             ui.Label(
                 f"Core {__version__} · {STYLE_PROFILE} + {BASE_COLOR.title()}",
@@ -1416,6 +1498,11 @@ class GalleryWindow(QtWidgets.QMainWindow):
         self._populate_navigation()
         self.search.textChanged.connect(self.filter_components)
         self.navigation.currentItemChanged.connect(self._navigation_changed)
+        self.expansion_mode_select.currentTextChanged.connect(
+            lambda label: self.set_group_expansion_mode(
+                label.casefold().replace(" ", "-")
+            )
+        )
         self.theme_select.currentTextChanged.connect(
             lambda selected: self.set_theme(selected.lower())
         )
@@ -1425,6 +1512,15 @@ class GalleryWindow(QtWidgets.QMainWindow):
     @property
     def current_component(self) -> str:
         return self._current_component
+
+    def group_expansion_mode(self) -> str:
+        return self.navigation.get_expansion_mode()
+
+    def set_group_expansion_mode(self, mode: str) -> None:
+        self.navigation.set_expansion_mode(mode)
+        label = "Double click" if mode == "double-click" else "Single click"
+        if self.expansion_mode_select.currentText() != label:
+            self.expansion_mode_select.setCurrentText(label)
 
     def _populate_navigation(self) -> None:
         for category, components in COMPONENT_CATEGORIES + NATIVE_WIDGET_CATEGORIES:
