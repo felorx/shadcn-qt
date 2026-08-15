@@ -5,6 +5,19 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import pytest
 
 
+def _assert_color_close(actual, expected, tolerance=6):
+    actual_channels = tuple(
+        int(actual[index : index + 2], 16) for index in (1, 3, 5)
+    )
+    expected_channels = tuple(
+        int(expected[index : index + 2], 16) for index in (1, 3, 5)
+    )
+    assert max(
+        abs(left - right)
+        for left, right in zip(actual_channels, expected_channels)
+    ) <= tolerance
+
+
 @pytest.fixture(scope="module")
 def runtime():
     try:
@@ -389,6 +402,13 @@ def test_native_tab_widget_keeps_behavior_and_owns_its_chrome_bar(runtime):
     assert pane.findChild(QtWidgets.QStackedWidget).property(
         "shadcn_qt_native_adopted"
     ) is None
+    frame_overlay = pane.findChild(
+        QtWidgets.QWidget,
+        "shadcnQtTabPaneFrameOverlay",
+    )
+    assert frame_overlay is not None
+    assert frame_overlay.geometry() == pane.rect()
+    assert frame_overlay.property("shadcn_qt_native_styling") is False
     if mac_focus_rect is not None:
         assert not pane.tabBar().testAttribute(mac_focus_rect)
     close_buttons = [
@@ -401,6 +421,8 @@ def test_native_tab_widget_keeps_behavior_and_owns_its_chrome_bar(runtime):
     disable_native_widget_styling(app, clear=True)
     app.processEvents()
     assert pane.property("shadcn_qt_component") is None
+    assert getattr(pane, "_shadcn_qt_tab_pane_frame_overlay", None) is None
+    assert frame_overlay.isHidden()
     assert pane.isMovable()
     assert pane.tabsClosable()
     assert pane.tabBar().elideMode() == original_elide_mode
@@ -463,11 +485,14 @@ def test_explicit_native_tab_pane_mapping_gets_shared_painter(runtime):
 
 
 @pytest.mark.parametrize(
-    ("theme_name", "surface_color"),
-    (("light", "#fafafa"), ("dark", "#18181a")),
+    ("theme_name", "surface_color", "border_color"),
+    (
+        ("light", "#fafafa", "#e4e4e7"),
+        ("dark", "#18181a", "#27272a"),
+    ),
 )
 def test_native_tab_widget_initial_page_matches_active_tab_surface(
-    runtime, theme_name, surface_color
+    runtime, theme_name, surface_color, border_color
 ):
     app, QtWidgets = runtime
     from shadcn_qt import (
@@ -493,11 +518,48 @@ def test_native_tab_widget_initial_page_matches_active_tab_surface(
     def pixel_color(x, y):
         return image.pixelColor(round(x * ratio), round(y * ratio)).name()
 
+    def assert_no_transparent_seam(y):
+        assert all(
+            image.pixelColor(round(x * ratio), round(y * ratio)).alpha() > 0
+            for x in range(pane.width())
+        )
+
     tab_rect = pane.tabBar().tabRect(0)
     title_color = pixel_color(tab_rect.left() + 20, tab_rect.center().y())
     page_color = pixel_color(pane.width() // 2, pane.height() // 2)
     assert title_color == surface_color
     assert page_color == title_color
+    stack = pane.findChild(
+        QtWidgets.QStackedWidget,
+        "qt_tabwidget_stackedwidget",
+    )
+    frame_top = stack.geometry().top() - 1
+    assert_no_transparent_seam(frame_top)
+    _assert_color_close(
+        pixel_color(pane.width() - 20, frame_top),
+        border_color,
+    )
+    assert pixel_color(tab_rect.center().x(), frame_top) == surface_color
+    _assert_color_close(pixel_color(0, pane.height() // 2), border_color)
+    _assert_color_close(
+        pixel_color(pane.width() // 2, pane.height() - 1),
+        border_color,
+    )
+
+    pane.setCurrentIndex(1)
+    app.processEvents()
+    image = pane.grab().toImage()
+    frame_top = stack.geometry().top() - 1
+    assert_no_transparent_seam(frame_top)
+    second_tab_rect = pane.tabBar().tabRect(1)
+    _assert_color_close(
+        pixel_color(tab_rect.center().x(), frame_top),
+        border_color,
+    )
+    assert (
+        pixel_color(second_tab_rect.center().x(), frame_top)
+        == surface_color
+    )
 
     pane.close()
     disable_native_widget_styling(app, clear=True)

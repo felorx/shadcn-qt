@@ -61,10 +61,12 @@ new-york geometry.
   appearance. The selected tab is joined directly to its page by outward
   curved lower shoulders rather than a boxed lower border. The surrounding
   strip stays transparent, while the active tab/page surface remains distinct
-  from its host window. Keyboard focus colors that same outer silhouette and
-  never draws an inner title pill around text or icons. Movable, closable,
-  current-index, page ownership, and signals remain the native QTabWidget
-  implementation.
+  from its host window. The page body keeps its semantic border around both
+  sides, the bottom, and the exposed top segments; only the active tab's
+  shoulder-to-shoulder connection omits the top divider. Keyboard focus colors
+  that same outer silhouette and never draws an inner title pill around text
+  or icons. Movable, closable, current-index, page ownership, and signals
+  remain the native QTabWidget implementation.
 - Rendering can vary slightly with platform font rasterization and display
   scaling, but control geometry, semantic states, and visual hierarchy are
   tested as library contracts.

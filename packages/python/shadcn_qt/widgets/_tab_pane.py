@@ -91,6 +91,234 @@ def _active_tab_paths(body_rect: Any, bar_rect: Any) -> tuple[Any, Any]:
     return fill, outline
 
 
+def _cubic_value(
+    start: float,
+    control_one: float,
+    control_two: float,
+    end: float,
+    progress: float,
+) -> float:
+    inverse = 1.0 - progress
+    return (
+        inverse**3 * start
+        + 3.0 * inverse**2 * progress * control_one
+        + 3.0 * inverse * progress**2 * control_two
+        + progress**3 * end
+    )
+
+
+def _active_tab_connection_span(
+    bar: Any,
+    index: int,
+    connection_y: float,
+) -> tuple[float, float]:
+    """Return where both shoulders intersect the page's top border."""
+
+    shoulder = 10.0
+    body_rect = _tab_body_rect(bar, index)
+    bar_rect = QtCore.QRectF(bar.rect())
+    left = max(body_rect.left(), bar_rect.left() + shoulder + 0.5)
+    right = min(body_rect.right(), bar_rect.right() - shoulder - 0.5)
+    bottom = bar_rect.bottom() + 1.0
+    target_y = max(bottom - shoulder, min(bottom, connection_y))
+
+    # The active outline uses a cubic shoulder whose theoretical endpoint is
+    # below the QTabBar clip.  Find its intersection with the actual page-top
+    # row instead of leaving a gap all the way to that invisible endpoint.
+    lower = 0.0
+    upper = 1.0
+    for _ in range(16):
+        progress = (lower + upper) / 2.0
+        curve_y = _cubic_value(
+            bottom,
+            bottom,
+            bottom - shoulder * 0.45,
+            bottom - shoulder,
+            progress,
+        )
+        if curve_y > target_y:
+            lower = progress
+        else:
+            upper = progress
+    progress = (lower + upper) / 2.0
+    left_intersection = _cubic_value(
+        left - shoulder,
+        left - shoulder * 0.45,
+        left,
+        left,
+        progress,
+    )
+    outward_distance = left - left_intersection
+    return left_intersection, right + outward_distance
+
+
+def paint_tab_pane_frame(tab_widget: Any, paint_device: Any = None) -> None:
+    """Paint the page frame while leaving the active-tab connection open."""
+
+    stack = tab_widget.findChild(
+        QtWidgets.QStackedWidget,
+        "qt_tabwidget_stackedwidget",
+    )
+    if stack is None or stack.geometry().isEmpty():
+        return
+
+    frame = QtCore.QRectF(tab_widget.rect()).adjusted(
+        0.5,
+        stack.geometry().top() - 0.5,
+        -0.5,
+        -0.5,
+    )
+    if frame.width() <= 0 or frame.height() <= 0:
+        return
+
+    painter = QtGui.QPainter(paint_device or tab_widget)
+    enable_antialiasing(painter)
+
+    gap_left = frame.left()
+    gap_right = frame.left()
+    bar = tab_widget.tabBar()
+    selected_index = bar.currentIndex()
+    if selected_index >= 0:
+        connection_left, connection_right = _active_tab_connection_span(
+            bar,
+            selected_index,
+            frame.top() - float(bar.geometry().top()),
+        )
+        bar_left = float(bar.geometry().left())
+        gap_left = max(
+            frame.left(),
+            min(frame.right(), bar_left + connection_left),
+        )
+        gap_right = max(
+            gap_left,
+            min(frame.right(), bar_left + connection_right),
+        )
+
+    radius = min(8.0, frame.height() / 2.0)
+    outline = QtGui.QPainterPath()
+    outline.moveTo(gap_right, frame.top())
+    outline.lineTo(frame.right(), frame.top())
+    outline.lineTo(frame.right(), frame.bottom() - radius)
+    outline.quadTo(
+        frame.right(),
+        frame.bottom(),
+        frame.right() - radius,
+        frame.bottom(),
+    )
+    outline.lineTo(frame.left() + radius, frame.bottom())
+    outline.quadTo(
+        frame.left(),
+        frame.bottom(),
+        frame.left(),
+        frame.bottom() - radius,
+    )
+    outline.lineTo(frame.left(), frame.top())
+    outline.lineTo(gap_left, frame.top())
+
+    painter.setBrush(_qt_enum("NoBrush", "BrushStyle"))
+    painter.setPen(QtGui.QPen(semantic_color(tab_widget, "border"), 1))
+    painter.drawPath(outline)
+
+
+class TabPaneFrameOverlay(QtWidgets.QWidget):
+    """Mouse-transparent frame shared by custom and adopted tab widgets."""
+
+    def __init__(self, tab_widget: Any) -> None:
+        super().__init__(tab_widget)
+        self._bar = None
+        self.setObjectName("shadcnQtTabPaneFrameOverlay")
+        self.setProperty("shadcn_qt_native_styling", False)
+        transparent_mouse = getattr(
+            QtCore.Qt,
+            "WA_TransparentForMouseEvents",
+            None,
+        )
+        no_background = getattr(QtCore.Qt, "WA_NoSystemBackground", None)
+        if transparent_mouse is None:
+            transparent_mouse = (
+                QtCore.Qt.WidgetAttribute.WA_TransparentForMouseEvents
+            )
+            no_background = QtCore.Qt.WidgetAttribute.WA_NoSystemBackground
+        self.setAttribute(transparent_mouse, True)
+        self.setAttribute(no_background, True)
+        self.setAutoFillBackground(False)
+        tab_widget.installEventFilter(self)
+        self._sync_geometry()
+        self.show()
+
+    def _sync_bar(self) -> None:
+        tab_widget = self.parentWidget()
+        if tab_widget is None:
+            return
+        bar = tab_widget.tabBar()
+        if bar is self._bar:
+            return
+        if self._bar is not None:
+            try:
+                self._bar.currentChanged.disconnect(self._tab_state_changed)
+                self._bar.tabMoved.disconnect(self._tab_state_changed)
+            except (RuntimeError, TypeError):
+                pass
+        self._bar = bar
+        bar.currentChanged.connect(self._tab_state_changed)
+        bar.tabMoved.connect(self._tab_state_changed)
+
+    def _tab_state_changed(self, *args: Any) -> None:
+        del args
+        # QStackedWidget may raise the newly selected page while processing the
+        # same signal.  Re-raise the transparent frame both now and on the next
+        # event-loop turn so the connection gap moves with the active tab.
+        self._sync_geometry()
+        QtCore.QTimer.singleShot(0, self._sync_geometry)
+
+    def _sync_geometry(self) -> None:
+        tab_widget = self.parentWidget()
+        if tab_widget is None:
+            return
+        self._sync_bar()
+        self.setGeometry(tab_widget.rect())
+        self.raise_()
+        self.update()
+
+    def eventFilter(self, watched: Any, event: Any) -> bool:
+        tab_widget = self.parentWidget()
+        if watched is not tab_widget:
+            return False
+        event_type = event.type()
+        resize = getattr(QtCore.QEvent, "Resize", None)
+        show = getattr(QtCore.QEvent, "Show", None)
+        layout_request = getattr(QtCore.QEvent, "LayoutRequest", None)
+        child_added = getattr(QtCore.QEvent, "ChildAdded", None)
+        if resize is None:
+            resize = QtCore.QEvent.Type.Resize
+            show = QtCore.QEvent.Type.Show
+            layout_request = QtCore.QEvent.Type.LayoutRequest
+            child_added = QtCore.QEvent.Type.ChildAdded
+        if event_type in {resize, show, layout_request}:
+            self._sync_geometry()
+        elif event_type == child_added:
+            QtCore.QTimer.singleShot(0, self._sync_geometry)
+        return False
+
+    def paintEvent(self, event: Any) -> None:
+        del event
+        tab_widget = self.parentWidget()
+        if tab_widget is not None:
+            paint_tab_pane_frame(tab_widget, self)
+
+
+def ensure_tab_pane_frame_overlay(tab_widget: Any) -> Any:
+    """Return the single shared page-frame overlay for ``tab_widget``."""
+
+    existing = getattr(tab_widget, "_shadcn_qt_tab_pane_frame_overlay", None)
+    if isinstance(existing, TabPaneFrameOverlay):
+        existing._sync_geometry()
+        return existing
+    overlay = TabPaneFrameOverlay(tab_widget)
+    tab_widget._shadcn_qt_tab_pane_frame_overlay = overlay
+    return overlay
+
+
 class TabPaneCloseButton(QtWidgets.QAbstractButton):
     """Small vector close button that is stable across Qt platform styles."""
 
@@ -261,7 +489,7 @@ class TabPaneBar(QtWidgets.QTabBar):
         paint_tab_bar(self)
 
 
-def prepare_tab_pane(tab_widget: Any) -> None:
+def prepare_tab_pane(tab_widget: Any) -> Any:
     """Suppress platform tab-strip details so shared painting stays authoritative."""
 
     bar = tab_widget.tabBar()
@@ -285,6 +513,7 @@ def prepare_tab_pane(tab_widget: Any) -> None:
     bar.setMouseTracking(True)
     bar.setElideMode(_qt_enum("ElideRight", "TextElideMode"))
     bar.setUsesScrollButtons(True)
+    return ensure_tab_pane_frame_overlay(tab_widget)
 
 
 def sync_tab_close_buttons(tab_widget: Any) -> None:
@@ -322,7 +551,10 @@ def sync_tab_close_buttons(tab_widget: Any) -> None:
 __all__ = [
     "TabPaneBar",
     "TabPaneCloseButton",
+    "TabPaneFrameOverlay",
+    "ensure_tab_pane_frame_overlay",
     "paint_tab_bar",
+    "paint_tab_pane_frame",
     "prepare_tab_pane",
     "sync_tab_close_buttons",
 ]

@@ -796,7 +796,8 @@ def _enhance_native_tab_pane(widget: Any, state: Dict[str, Any]) -> None:
         "mac_focus_rect_attribute": mac_focus_rect,
         "uses_scroll_buttons": bar.usesScrollButtons(),
     }
-    prepare_tab_pane(widget)
+    frame_overlay = prepare_tab_pane(widget)
+    state["tab_pane"]["frame_overlay"] = frame_overlay
     widget.installEventFilter(event_filter)
     bar.installEventFilter(event_filter)
     sync_tab_close_buttons(widget)
@@ -991,9 +992,23 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
         try:
             bar = tab_pane["bar"]
             event_filter = tab_pane["event_filter"]
+            frame_overlay = tab_pane.get("frame_overlay")
             widget.removeEventFilter(event_filter)
             bar.removeEventFilter(event_filter)
             event_filter.deleteLater()
+            if frame_overlay is not None:
+                widget.removeEventFilter(frame_overlay)
+                frame_overlay.hide()
+                frame_overlay.deleteLater()
+                if (
+                    getattr(
+                        widget,
+                        "_shadcn_qt_tab_pane_frame_overlay",
+                        None,
+                    )
+                    is frame_overlay
+                ):
+                    delattr(widget, "_shadcn_qt_tab_pane_frame_overlay")
             bar.setDrawBase(tab_pane["draw_base"])
             bar.setElideMode(tab_pane["elide_mode"])
             bar.setMouseTracking(tab_pane["mouse_tracking"])

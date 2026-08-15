@@ -5,16 +5,16 @@ This repository publishes as `shadcn-qt`, while Python uses
 public names. The runtime requires Python 3.9 or newer; the CI matrix covers
 Python 3.9, 3.11, and 3.13.
 
-Version 0.2.3 is published at
+Version 0.2.4 is published at
 [PyPI](https://pypi.org/project/shadcn-qt/). Its initial project registration
 for version 0.1.0 used an authorized local API token after the complete release
 checks and an isolated installation test. Version 0.2.0 was likewise published
 with `uv publish` and the existing scoped token after the full release workflow
 validated its tests and artifacts; clean PySide6 and PyQt6 installs were then
-verified from the production index. Versions 0.2.1 through 0.2.3 follow the
-same direct, maintainer-approved `uv publish` fallback. Version 0.2.3 removes
-the remaining focus-dependent native tab-title frame and makes explicit
-`tab-pane` mappings use the shared painter.
+verified from the production index. Versions 0.2.1 through 0.2.4 follow the
+same direct, maintainer-approved `uv publish` fallback. Version 0.2.4 adds the
+semantic page-body frame and joins its exposed top border directly to the
+active tab's lower shoulder curves without blank seams.
 
 Future releases use PyPI Trusted Publishing rather than a stored API token:
 

@@ -2,7 +2,7 @@
 
 ## Python
 
-shadcn-qt Core 0.2.3 is published on
+shadcn-qt Core 0.2.4 is published on
 [PyPI](https://pypi.org/project/shadcn-qt/). The distribution name is
 `shadcn-qt`; Python normalizes it to the import identifier `shadcn_qt`. Python
 3.9 or newer is required.
@@ -39,7 +39,7 @@ selection and incremental adoption.
 python -c "from importlib.metadata import version; print(version('shadcn-qt'))"
 ```
 
-The command should print `0.2.3`. Then verify that the
+The command should print `0.2.4`. Then verify that the
 selected binding and package import together:
 
 ```bash
@@ -132,7 +132,7 @@ cmake --build build
 ```
 
 The static library `ShadcnQt` embeds generated QSS via Qt resources (`:/shadcn_qt/base_light.qss`).
-Its installed CMake package exposes version `0.2.3`; downstream projects may
+Its installed CMake package exposes version `0.2.4`; downstream projects may
 use `find_package(ShadcnQt 0.2 CONFIG REQUIRED)`.
 
 ## Regenerate styles

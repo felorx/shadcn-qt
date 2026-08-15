@@ -3,6 +3,22 @@
 All notable changes to shadcn-qt Core are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## 0.2.4 - 2026-08-15
+
+### Changed
+
+- Added a semantic page-body border to `TabPane` and adopted native
+  `QTabWidget` instances while keeping the active title-to-page connection
+  open and visually continuous.
+
+### Fixed
+
+- Removed blank pixel seams where the active tab's outward lower shoulders
+  meet the exposed horizontal page border by aligning the frame to the
+  Bézier curves' actual intersections with the page top edge.
+- Kept the shared page-frame overlay synchronized across current-tab changes,
+  page stacking, resizing, native adoption, and reversible cleanup.
+
 ## 0.2.3 - 2026-08-15
 
 ### Fixed

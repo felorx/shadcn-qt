@@ -43,6 +43,12 @@ remaining focus-dependent native tab-title frame, routes explicit `tab-pane`
 mappings through the shared painter, and preserves keyboard navigation plus
 reversible native adoption. See `CHANGELOG.md` for the complete release notes.
 
+Version 0.2.4 was published on 2026-08-15 (Asia/Shanghai). It adds the semantic
+page-body border for `TabPane` and adopted native `QTabWidget` instances, keeps
+the active title-to-page connection open, and removes blank seams where the
+lower shoulder curves join the exposed top border. See `CHANGELOG.md` for the
+complete release notes.
+
 Release files:
 
 | File | SHA-256 |
@@ -57,6 +63,8 @@ Release files:
 | `shadcn_qt-0.2.2.tar.gz` | `1f1d2667554341bf006a64117734d460013d29c6f85283d71091988ea055dc09` |
 | `shadcn_qt-0.2.3-py3-none-any.whl` | `1607db661ebcb62f5025a670df3cefe05af6806819e87bd0bcf873cce4ef8c62` |
 | `shadcn_qt-0.2.3.tar.gz` | `e2ca65b29924ba7172a248e95f05ec058399f59661e122d83802df1c4cf0863c` |
+| `shadcn_qt-0.2.4-py3-none-any.whl` | `8ef820ce6162961c7b13091ece3ba24494f563bcc154919ccbbaa80434b2a587` |
+| `shadcn_qt-0.2.4.tar.gz` | `605300823eb4ecccbaa73d1c00f6c193d324e68f2f827e46d3a513a3ee46bc41` |
 
 ## One-time publisher setup
 
@@ -118,7 +126,7 @@ already uploaded to PyPI; PyPI release files are immutable.
 
 ## TestPyPI and production
 
-Versions 0.1.0 through 0.2.3 used a scoped local PyPI API token
+Versions 0.1.0 through 0.2.4 used a scoped local PyPI API token
 after all release checks and isolated wheel smoke tests. Version 0.2.0 was uploaded with
 `uv publish` after the tag workflow passed its tests, build, metadata, license,
 and distribution-content jobs but could not exchange OIDC because the PyPI
