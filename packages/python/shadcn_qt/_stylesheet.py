@@ -608,10 +608,10 @@ QFrame[shadcn_qt_component="native-separator"][nativeKind="hline"] {{ min-height
 QFrame[shadcn_qt_component="native-separator"][nativeKind="vline"] {{ min-width: 1px; max-width: 1px; }}
 QGroupBox[shadcn_qt_component="group-box"] {{
   background: {c["card"]}; color: {c["foreground"]}; border: 1px solid {c["border"]};
-  border-radius: {r_lg}; margin-top: 10px; padding: 14px 12px 12px 12px; font-weight: 500;
+  border-radius: {r_lg}; margin-top: 10px; padding: 0; font-weight: 500;
 }}
 QGroupBox[shadcn_qt_component="group-box"]::title {{
-  subcontrol-origin: margin; subcontrol-position: top left; left: 10px; padding: 0 4px;
+  subcontrol-origin: margin; subcontrol-position: top left; left: 8px; padding: 0 4px;
   background: {c["card"]}; color: {c["foreground"]};
 }}
 QSplitter[shadcn_qt_native_adopted="true"]::handle:hover {{ background: {c["ring"]}; }}

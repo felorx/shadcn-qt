@@ -163,7 +163,6 @@ def paint_tab_bar(bar: Any) -> None:
 
     cursor_position = bar.mapFromGlobal(QtGui.QCursor.pos())
     hovered_index = bar.tabAt(cursor_position) if bar.underMouse() else -1
-    no_brush = _qt_enum("NoBrush", "BrushStyle")
     align_center = _qt_enum("AlignCenter", "AlignmentFlag")
     align_vcenter = _qt_enum("AlignVCenter", "AlignmentFlag")
     align_left = _qt_enum("AlignLeft", "AlignmentFlag")
@@ -209,7 +208,8 @@ def paint_tab_bar(bar: Any) -> None:
         painter.setPen(_qt_enum("NoPen", "PenStyle"))
         painter.setBrush(page_surface)
         painter.drawPath(active_path)
-        painter.setPen(QtGui.QPen(input_border, 1))
+        active_outline_color = ring if bar.hasFocus() else input_border
+        painter.setPen(QtGui.QPen(active_outline_color, 1))
         painter.setBrush(_qt_enum("NoBrush", "BrushStyle"))
         painter.drawPath(active_outline)
 
@@ -246,12 +246,6 @@ def paint_tab_bar(bar: Any) -> None:
             max(0, round(text_rect.width())),
         )
         painter.drawText(text_rect, int(alignment), text)
-
-        if selected and bar.hasFocus():
-            painter.setPen(QtGui.QPen(ring, 1))
-            painter.setBrush(no_brush)
-            focus_rect = tab_rect.adjusted(3, 3, -3, -3)
-            painter.drawRoundedRect(focus_rect, 7, 7)
 
 
 class TabPaneBar(QtWidgets.QTabBar):

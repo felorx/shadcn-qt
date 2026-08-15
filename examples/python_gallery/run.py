@@ -18,7 +18,227 @@ from shadcn_qt import (
 )
 from shadcn_qt import widgets as ui
 from shadcn_qt._qt import QtCore, QtGui, QtWidgets
+from shadcn_qt.theme import resolve_theme
 from shadcn_qt.widgets._icons import _paint_vector_icon
+
+COLOR_THEME_PRESETS: Dict[str, Dict[str, Any]] = {
+    "zinc": {
+        "label": "Zinc",
+        "swatch": "#18181b",
+        "light": {},
+        "dark": {},
+    },
+    "blue": {
+        "label": "Blue",
+        "swatch": "#2563eb",
+        "light": {
+            "background": "#f8fbff",
+            "foreground": "#0f172a",
+            "card": "#fbfdff",
+            "cardForeground": "#0f172a",
+            "popover": "#ffffff",
+            "popoverForeground": "#0f172a",
+            "primary": "#2563eb",
+            "primaryForeground": "#ffffff",
+            "secondary": "#eff6ff",
+            "secondaryForeground": "#1e3a8a",
+            "muted": "#eff6ff",
+            "mutedForeground": "#64748b",
+            "ring": "#3b82f6",
+            "accent": "#dbeafe",
+            "accentForeground": "#1e3a8a",
+            "border": "#dbeafe",
+            "input": "#bfdbfe",
+        },
+        "dark": {
+            "background": "#0a0f18",
+            "foreground": "#eff6ff",
+            "card": "#0e1622",
+            "cardForeground": "#eff6ff",
+            "popover": "#0e1622",
+            "popoverForeground": "#eff6ff",
+            "primary": "#3b82f6",
+            "primaryForeground": "#eff6ff",
+            "secondary": "#172235",
+            "secondaryForeground": "#dbeafe",
+            "muted": "#17202e",
+            "mutedForeground": "#94a3b8",
+            "ring": "#60a5fa",
+            "accent": "#172a46",
+            "accentForeground": "#dbeafe",
+            "border": "#273b55",
+            "input": "#304967",
+        },
+    },
+    "violet": {
+        "label": "Violet",
+        "swatch": "#7c3aed",
+        "light": {
+            "background": "#fbfaff",
+            "foreground": "#21183a",
+            "card": "#fefcff",
+            "cardForeground": "#21183a",
+            "popover": "#fefcff",
+            "popoverForeground": "#21183a",
+            "primary": "#7c3aed",
+            "primaryForeground": "#ffffff",
+            "secondary": "#f5f3ff",
+            "secondaryForeground": "#4c1d95",
+            "muted": "#f5f3ff",
+            "mutedForeground": "#746b86",
+            "ring": "#8b5cf6",
+            "accent": "#ede9fe",
+            "accentForeground": "#4c1d95",
+            "border": "#ddd6fe",
+            "input": "#d8ceff",
+        },
+        "dark": {
+            "background": "#100d16",
+            "foreground": "#f5f3ff",
+            "card": "#17121f",
+            "cardForeground": "#f5f3ff",
+            "popover": "#17121f",
+            "popoverForeground": "#f5f3ff",
+            "primary": "#8b5cf6",
+            "primaryForeground": "#f5f3ff",
+            "secondary": "#251936",
+            "secondaryForeground": "#ede9fe",
+            "muted": "#21192b",
+            "mutedForeground": "#aa9fba",
+            "ring": "#a78bfa",
+            "accent": "#2b1842",
+            "accentForeground": "#ddd6fe",
+            "border": "#3d2b52",
+            "input": "#4a3263",
+        },
+    },
+    "emerald": {
+        "label": "Emerald",
+        "swatch": "#059669",
+        "light": {
+            "background": "#f7fdfb",
+            "foreground": "#052e2b",
+            "card": "#fbfffd",
+            "cardForeground": "#052e2b",
+            "popover": "#fbfffd",
+            "popoverForeground": "#052e2b",
+            "primary": "#059669",
+            "primaryForeground": "#ffffff",
+            "secondary": "#ecfdf5",
+            "secondaryForeground": "#064e3b",
+            "muted": "#ecfdf5",
+            "mutedForeground": "#5f766f",
+            "ring": "#10b981",
+            "accent": "#d1fae5",
+            "accentForeground": "#064e3b",
+            "border": "#c7f3df",
+            "input": "#a7f3d0",
+        },
+        "dark": {
+            "background": "#08120f",
+            "foreground": "#ecfdf5",
+            "card": "#0c1814",
+            "cardForeground": "#ecfdf5",
+            "popover": "#0c1814",
+            "popoverForeground": "#ecfdf5",
+            "primary": "#10b981",
+            "primaryForeground": "#022c22",
+            "secondary": "#102a21",
+            "secondaryForeground": "#d1fae5",
+            "muted": "#12231d",
+            "mutedForeground": "#8faea3",
+            "ring": "#34d399",
+            "accent": "#123126",
+            "accentForeground": "#a7f3d0",
+            "border": "#244a3c",
+            "input": "#2b5a48",
+        },
+    },
+    "orange": {
+        "label": "Orange",
+        "swatch": "#ea580c",
+        "light": {
+            "background": "#fffaf5",
+            "foreground": "#431407",
+            "card": "#fffdfb",
+            "cardForeground": "#431407",
+            "popover": "#fffdfb",
+            "popoverForeground": "#431407",
+            "primary": "#ea580c",
+            "primaryForeground": "#ffffff",
+            "secondary": "#fff7ed",
+            "secondaryForeground": "#7c2d12",
+            "muted": "#fff3e6",
+            "mutedForeground": "#806f63",
+            "ring": "#f97316",
+            "accent": "#ffedd5",
+            "accentForeground": "#7c2d12",
+            "border": "#fed7aa",
+            "input": "#fed7aa",
+        },
+        "dark": {
+            "background": "#140e0b",
+            "foreground": "#fff7ed",
+            "card": "#1c1410",
+            "cardForeground": "#fff7ed",
+            "popover": "#1c1410",
+            "popoverForeground": "#fff7ed",
+            "primary": "#f97316",
+            "primaryForeground": "#431407",
+            "secondary": "#2d1d13",
+            "secondaryForeground": "#ffedd5",
+            "muted": "#261a14",
+            "mutedForeground": "#b8a092",
+            "ring": "#fb923c",
+            "accent": "#3a1f10",
+            "accentForeground": "#fed7aa",
+            "border": "#4a2b1b",
+            "input": "#5a321e",
+        },
+    },
+    "rose": {
+        "label": "Rose",
+        "swatch": "#e11d48",
+        "light": {
+            "background": "#fff8fa",
+            "foreground": "#4c0519",
+            "card": "#fffcfd",
+            "cardForeground": "#4c0519",
+            "popover": "#fffcfd",
+            "popoverForeground": "#4c0519",
+            "primary": "#e11d48",
+            "primaryForeground": "#ffffff",
+            "secondary": "#fff1f2",
+            "secondaryForeground": "#881337",
+            "muted": "#fff1f2",
+            "mutedForeground": "#806871",
+            "ring": "#f43f5e",
+            "accent": "#ffe4e6",
+            "accentForeground": "#881337",
+            "border": "#fecdd3",
+            "input": "#fecdd3",
+        },
+        "dark": {
+            "background": "#140d0f",
+            "foreground": "#fff1f2",
+            "card": "#1b1114",
+            "cardForeground": "#fff1f2",
+            "popover": "#1b1114",
+            "popoverForeground": "#fff1f2",
+            "primary": "#f43f5e",
+            "primaryForeground": "#fff1f2",
+            "secondary": "#2a171d",
+            "secondaryForeground": "#ffe4e6",
+            "muted": "#24171b",
+            "mutedForeground": "#b49aa3",
+            "ring": "#fb7185",
+            "accent": "#35141f",
+            "accentForeground": "#fecdd3",
+            "border": "#44202c",
+            "input": "#542333",
+        },
+    },
+}
 
 COMPONENT_CATEGORIES: Tuple[Tuple[str, Tuple[str, ...]], ...] = (
     (
@@ -386,6 +606,23 @@ def _user_role() -> Any:
 def _align_center() -> Any:
     value = getattr(QtCore.Qt, "AlignCenter", None)
     return value if value is not None else QtCore.Qt.AlignmentFlag.AlignCenter
+
+
+def _color_theme_icon(color: str) -> Any:
+    pixmap = QtGui.QPixmap(16, 16)
+    pixmap.fill(QtGui.QColor(0, 0, 0, 0))
+    painter = QtGui.QPainter(pixmap)
+    try:
+        antialiasing = getattr(QtGui.QPainter, "Antialiasing", None)
+        if antialiasing is None:
+            antialiasing = QtGui.QPainter.RenderHint.Antialiasing
+        painter.setRenderHint(antialiasing, True)
+        painter.setPen(QtGui.QPen(QtGui.QColor(color), 1))
+        painter.setBrush(QtGui.QColor(color))
+        painter.drawEllipse(QtCore.QRectF(2.0, 2.0, 12.0, 12.0))
+    finally:
+        painter.end()
+    return QtGui.QIcon(pixmap)
 
 
 def _clear_layout(layout: Any) -> None:
@@ -1168,7 +1405,7 @@ def build_component_preview(name: str, parent: Any = None) -> Any:
 def _native_group(title: str, parent: Any) -> Tuple[Any, Any]:
     group = QtWidgets.QGroupBox(title, parent)
     layout = QtWidgets.QVBoxLayout(group)
-    layout.setContentsMargins(14, 18, 14, 14)
+    layout.setContentsMargins(11, 14, 11, 11)
     layout.setSpacing(10)
     return group, layout
 
@@ -2140,16 +2377,26 @@ class GalleryWindow(QtWidgets.QMainWindow):
         self,
         *,
         theme: str = "light",
+        color_theme: str = "zinc",
         component: str = "Button",
         group_expansion_mode: str = "single-click",
     ) -> None:
         super().__init__()
+        if theme not in {"light", "dark"}:
+            raise ValueError("theme must be 'light' or 'dark'")
+        if color_theme not in COLOR_THEME_PRESETS:
+            raise ValueError(
+                "color_theme must be one of "
+                + ", ".join(COLOR_THEME_PRESETS)
+            )
         app = QtWidgets.QApplication.instance()
         if app is None:
             raise RuntimeError("Create QApplication before GalleryWindow")
         enable_native_widget_styling(app)
         self._role = _user_role()
         self._current_component = ""
+        self._theme = theme
+        self._color_theme = color_theme
         self._navigation_items: Dict[str, Any] = {}
         self.setWindowTitle(
             f"shadcn-qt {__version__} · {STYLE_PROFILE} + {BASE_COLOR.title()}"
@@ -2235,7 +2482,22 @@ class GalleryWindow(QtWidgets.QMainWindow):
         header_layout.addWidget(titles, 1)
         self.category_badge = ui.Badge("", header, variant="secondary")
         header_layout.addWidget(self.category_badge)
+        self.color_theme_select = ui.Select(header)
+        self.color_theme_select.setAccessibleName("Theme color")
+        self.color_theme_select.setToolTip("Choose a coordinated theme color")
+        self.color_theme_select.setMinimumWidth(132)
+        for preset_name, preset in COLOR_THEME_PRESETS.items():
+            self.color_theme_select.addItem(
+                _color_theme_icon(str(preset["swatch"])),
+                str(preset["label"]),
+                preset_name,
+            )
+        self.color_theme_select.setCurrentText(
+            str(COLOR_THEME_PRESETS[color_theme]["label"])
+        )
+        header_layout.addWidget(self.color_theme_select)
         self.theme_select = ui.Select(header)
+        self.theme_select.setAccessibleName("Light or dark theme")
         self.theme_select.addItems(["Light", "Dark"])
         header_layout.addWidget(self.theme_select)
         content_layout.addWidget(header)
@@ -2263,12 +2525,19 @@ class GalleryWindow(QtWidgets.QMainWindow):
         self.theme_select.currentTextChanged.connect(
             lambda selected: self.set_theme(selected.lower())
         )
+        self.color_theme_select.currentIndexChanged.connect(
+            self._color_theme_changed
+        )
         self.set_theme(theme)
         self.select_component(component if component in gallery_names() else "Button")
 
     @property
     def current_component(self) -> str:
         return self._current_component
+
+    @property
+    def color_theme(self) -> str:
+        return self._color_theme
 
     def group_expansion_mode(self) -> str:
         return self.navigation.get_expansion_mode()
@@ -2364,19 +2633,54 @@ class GalleryWindow(QtWidgets.QMainWindow):
             if not item.isHidden() and not item.parent().isHidden()
         ]
 
-    def set_theme(self, theme: str) -> None:
-        if theme not in {"light", "dark"}:
-            raise ValueError("theme must be 'light' or 'dark'")
+    def _color_theme_changed(self, index: int) -> None:
+        color_theme = self.color_theme_select.itemData(index)
+        if color_theme is not None:
+            self.set_color_theme(str(color_theme))
+
+    def _apply_gallery_theme(self) -> None:
         app = QtWidgets.QApplication.instance()
         if app is None:
             raise RuntimeError("Create QApplication before GalleryWindow")
-        apply_theme(app, theme, extra_qss=GALLERY_QSS)
+        preset = COLOR_THEME_PRESETS[self._color_theme]
+        colors = {
+            **resolve_theme(self._theme).colors,
+            **preset[self._theme],
+        }
+        apply_theme(app, self._theme, colors=colors, extra_qss=GALLERY_QSS)
+        app.setProperty("shadcn_qt_gallery_theme", self._theme)
+        app.setProperty("shadcn_qt_gallery_color_theme", self._color_theme)
+        color_label = str(preset["label"])
+        suffix = "" if self._color_theme == "zinc" else f" · {color_label} theme"
+        self.setWindowTitle(
+            f"shadcn-qt {__version__} · {STYLE_PROFILE} + "
+            f"{BASE_COLOR.title()}{suffix}"
+        )
+
+    def set_theme(self, theme: str) -> None:
+        if theme not in {"light", "dark"}:
+            raise ValueError("theme must be 'light' or 'dark'")
+        self._theme = theme
+        self._apply_gallery_theme()
         label = theme.title()
         if self.theme_select.currentText() != label:
             previous = self.theme_select.blockSignals(True)
             self.theme_select.setCurrentText(label)
             self.theme_select.blockSignals(previous)
-        app.setProperty("shadcn_qt_gallery_theme", theme)
+
+    def set_color_theme(self, color_theme: str) -> None:
+        if color_theme not in COLOR_THEME_PRESETS:
+            raise ValueError(
+                "color_theme must be one of "
+                + ", ".join(COLOR_THEME_PRESETS)
+            )
+        self._color_theme = color_theme
+        self._apply_gallery_theme()
+        label = str(COLOR_THEME_PRESETS[color_theme]["label"])
+        if self.color_theme_select.currentText() != label:
+            previous = self.color_theme_select.blockSignals(True)
+            self.color_theme_select.setCurrentText(label)
+            self.color_theme_select.blockSignals(previous)
 
     def save_screenshot(self, path: Path) -> bool:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -2386,6 +2690,12 @@ class GalleryWindow(QtWidgets.QMainWindow):
 def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--theme", choices=("light", "dark"), default="light")
+    parser.add_argument(
+        "--color-theme",
+        choices=tuple(COLOR_THEME_PRESETS),
+        default="zinc",
+        help="Apply a coordinated semantic color preset",
+    )
     parser.add_argument("--component", choices=gallery_names(), default="Button")
     parser.add_argument(
         "--screenshot", type=Path, help="Save the shown gallery window and exit"
@@ -2398,7 +2708,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if QtWidgets.QApplication.instance() is None:
         configure_high_dpi()
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    window = GalleryWindow(theme=args.theme, component=args.component)
+    window = GalleryWindow(
+        theme=args.theme,
+        color_theme=args.color_theme,
+        component=args.component,
+    )
     window.show()
     if args.screenshot is not None:
 

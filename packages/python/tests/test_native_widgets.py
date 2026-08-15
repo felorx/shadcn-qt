@@ -542,6 +542,46 @@ def test_native_stylesheet_has_dedicated_family_rules(runtime):
     assert "color: #18181b" in selected_rule
 
 
+def test_native_group_box_title_and_default_content_are_left_aligned(runtime):
+    app, QtWidgets = runtime
+    from shadcn_qt import (
+        apply_theme,
+        disable_native_widget_styling,
+        enable_native_widget_styling,
+    )
+
+    disable_native_widget_styling(app, clear=True)
+    apply_theme(app, "light")
+    enable_native_widget_styling(app)
+    group = QtWidgets.QGroupBox("Account settings")
+    layout = QtWidgets.QVBoxLayout(group)
+    editor = QtWidgets.QLineEdit(group)
+    layout.addWidget(editor)
+    group.resize(420, 120)
+    group.show()
+    app.processEvents()
+
+    option = QtWidgets.QStyleOptionGroupBox()
+    group.initStyleOption(option)
+    style = QtWidgets.QStyle
+    complex_control = getattr(style, "CC_GroupBox", None)
+    label_control = getattr(style, "SC_GroupBoxLabel", None)
+    if complex_control is None:
+        complex_control = style.ComplexControl.CC_GroupBox
+        label_control = style.SubControl.SC_GroupBoxLabel
+    title_rect = group.style().subControlRect(
+        complex_control,
+        option,
+        label_control,
+        group,
+    )
+    assert group.contentsRect().left() <= 2
+    assert editor.geometry().left() == title_rect.left()
+
+    group.close()
+    disable_native_widget_styling(app, clear=True)
+
+
 def _standard_button(QtWidgets, name):
     value = getattr(QtWidgets.QDialogButtonBox, name, None)
     if value is not None:

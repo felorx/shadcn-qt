@@ -43,6 +43,10 @@
 - Keep the four overview names stable: `Native Forms`, `Native Data Views`,
   `Native Containers`, and `Native Window Chrome`. Forms should normally place
   one control per row even on overview pages.
+- The Gallery header provides Zinc, Blue, Violet, Emerald, Orange, and Rose
+  color presets. Each preset switches coordinated light/dark action colors,
+  window backgrounds, component surfaces, borders, and inputs in one action;
+  Zinc remains the default visual baseline.
 
 ## Component and Qt API Rules
 
@@ -83,6 +87,8 @@ switching while fixing an individual component.
 - Verify focused editors still expose a useful content rectangle; selected OTP
   digits, placeholder text, and table selection text must not be clipped or
   disappear on hover.
+- Do not stack QGroupBox QSS padding on top of its child layout margins. The
+  default content edge and title text must share one compact left baseline.
 - Keep geometry and QSS `px` values in device-independent pixels. Call
   `configure_high_dpi()` before `QApplication` in runnable examples so Qt 5
   enables high-DPI rendering and all bindings preserve fractional Windows
@@ -100,6 +106,8 @@ subclass for Chrome-style document tabs. Do not merge their visual contracts.
   lower dividing border.
 - Both lower corners grow outward curved shoulders into the page.
 - Inactive hover uses the same full silhouette as the selected state.
+- Keyboard focus colors the outer connected-tab silhouette and must not draw a
+  second rounded title pill around the selected tab's text or icon.
 - The first title and every close button retain uniform left/right padding.
 - Close icons are vector-painted and vertically centered.
 - Movable, closable, current-index, page ownership, and inherited signals and
@@ -130,7 +138,7 @@ created later are adopted through its application event filter.
 ## Installation Guidance
 
 The public distribution name is `shadcn-qt`; the import name is `shadcn_qt`.
-The current published baseline is 0.2.1.
+The current published baseline is 0.2.2.
 
 ```bash
 # New environment: choose exactly one binding extra.

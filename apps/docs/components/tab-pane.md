@@ -7,7 +7,9 @@ the page. The strip outside the tabs is transparent, while the connected page
 surface is deliberately distinct from the window background. Inactive tabs
 remain quiet with separators and reuse the complete connected-tab silhouette
 on hover, including its outward lower shoulders. Focus, close-button,
-disabled, light, and dark states use the shared semantic tokens.
+disabled, light, and dark states use the shared semantic tokens. Keyboard
+focus colors the selected tab's outer Chrome silhouette; it never adds a
+second rounded rectangle around the title text and icon.
 
 ```python
 from shadcn_qt import TabPane

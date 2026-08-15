@@ -27,6 +27,7 @@ The baseline was audited on 2026-08-14 against the official registry at:
 | Switch | 36x20px track, 16px thumb | Animated custom-painted thumb with checked translation |
 | Progress | 8px track | Native progress model with new-york track geometry |
 | TabPane / adopted QTabWidget | Chrome-style connected document tabs | Transparent strip, distinct connected page surface, uniform title/close padding, and the same outward-shoulder silhouette for selection and inactive hover |
+| Adopted QGroupBox | Compact bordered fieldset | The default layout margin supplies the content inset; title text and default child content share one left baseline |
 | Dialog | 24px content inset, 8px radius, dark overlay | Frameless modal QDialog, parent overlay, shadow, and fade |
 
 Qt exposes only one graphics-effect shadow per widget, whereas the browser
@@ -60,8 +61,10 @@ new-york geometry.
   appearance. The selected tab is joined directly to its page by outward
   curved lower shoulders rather than a boxed lower border. The surrounding
   strip stays transparent, while the active tab/page surface remains distinct
-  from its host window. Movable, closable, current-index, page ownership, and
-  signals remain the native QTabWidget implementation.
+  from its host window. Keyboard focus colors that same outer silhouette and
+  never draws an inner title pill around text or icons. Movable, closable,
+  current-index, page ownership, and signals remain the native QTabWidget
+  implementation.
 - Rendering can vary slightly with platform font rasterization and display
   scaling, but control geometry, semantic states, and visual hierarchy are
   tested as library contracts.

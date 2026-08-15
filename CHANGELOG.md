@@ -3,6 +3,29 @@
 All notable changes to shadcn-qt Core are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## 0.2.2 - 2026-08-15
+
+### Added
+
+- Added one-click Zinc, Blue, Violet, Emerald, Orange, and Rose color presets
+  to the Gallery, with coordinated light/dark window, component-surface,
+  action, input, border, and focus colors.
+- Added the Gallery `--color-theme` option for launching directly into a
+  color preset.
+
+### Changed
+
+- Tightened adopted `QGroupBox` spacing so its title and content share the
+  same left alignment while retaining a compact frame inset.
+- Updated the Gallery, theming documentation, native screenshot baselines,
+  and the `developing-shadcn-qt` AI skill for the new visual contracts.
+
+### Fixed
+
+- Removed the inner rounded focus rectangle around selected `TabPane` and
+  adopted `QTabWidget` titles; keyboard focus now follows the outer Chrome-style
+  tab silhouette.
+
 ## 0.2.1 - 2026-08-15
 
 ### Added

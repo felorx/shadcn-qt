@@ -488,3 +488,56 @@ def test_tab_pane_active_title_and_page_share_surface(
         "QStackedWidget#qt_tabwidget_stackedwidget > QWidget"
     ) in theme_stylesheet(theme_name)
     pane.close()
+
+
+@pytest.mark.parametrize("native", (False, True))
+def test_tab_pane_focus_uses_outer_outline_without_title_pill(runtime, native):
+    from shadcn_qt import (
+        TabPane,
+        adopt_native_widgets,
+        apply_theme,
+        disable_native_widget_styling,
+    )
+    from shadcn_qt.widgets._tab_pane import _tab_body_rect
+
+    app, QtCore, QtWidgets = runtime
+    disable_native_widget_styling(app, clear=True)
+    apply_theme(app, "light")
+    pane = QtWidgets.QTabWidget() if native else TabPane()
+    file_icon = getattr(QtWidgets.QStyle, "SP_FileIcon", None)
+    if file_icon is None:
+        file_icon = QtWidgets.QStyle.StandardPixmap.SP_FileIcon
+    icon = app.style().standardIcon(file_icon)
+    pane.addTab(QtWidgets.QWidget(pane), icon, "Overview")
+    pane.addTab(QtWidgets.QWidget(pane), icon, "Settings")
+    if native:
+        adopt_native_widgets(pane)
+    pane.resize(500, 200)
+    pane.show()
+    focus_reason = getattr(QtCore.Qt, "TabFocusReason", None)
+    if focus_reason is None:
+        focus_reason = QtCore.Qt.FocusReason.TabFocusReason
+    pane.tabBar().setFocus(focus_reason)
+    app.processEvents()
+
+    assert pane.tabBar().hasFocus()
+    image = pane.grab().toImage()
+    ratio = image.devicePixelRatio()
+    title_rect = _tab_body_rect(pane.tabBar(), 0).adjusted(0, 2, 0, 0)
+    former_focus_rect = title_rect.adjusted(3, 3, -3, -3)
+
+    def pixel_color(x, y):
+        return image.pixelColor(round(x * ratio), round(y * ratio)).name()
+
+    inner_edge_color = pixel_color(
+        former_focus_rect.left(),
+        former_focus_rect.center().y(),
+    )
+    nearby_surface_color = pixel_color(
+        former_focus_rect.left() + 5,
+        former_focus_rect.center().y(),
+    )
+    assert inner_edge_color == nearby_surface_color
+
+    pane.close()
+    disable_native_widget_styling(app, clear=True)

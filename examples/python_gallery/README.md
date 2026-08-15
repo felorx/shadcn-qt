@@ -1,8 +1,9 @@
 # Python component gallery
 
 This interactive application covers every public shadcn-qt Core component. It
-provides category navigation, component search, light/dark theme switching, and
-real interactions for dialogs, menus, popovers, tooltips, and notifications.
+provides category navigation, component search, light/dark theme switching,
+one-click coordinated color themes, and real interactions for dialogs, menus,
+popovers, tooltips, and notifications.
 Every preview uses the classic `new-york` component profile with the Zinc
 light/dark palette. The **Native QtWidgets** section adds four full-family
 pages made exclusively from stock Qt classes, demonstrating the reversible
@@ -20,7 +21,15 @@ Open a particular component or theme directly:
 ```bash
 python examples/python_gallery/run.py --component DataTable --theme dark
 python examples/python_gallery/run.py --component "Native Forms" --theme dark
+python examples/python_gallery/run.py --component Button --color-theme violet
 ```
+
+The header color selector includes Zinc, Blue, Violet, Emerald, Orange, and
+Rose. Selecting one immediately applies matching action colors as well as
+low-saturation window, card, popover, secondary, muted, border, and input
+surfaces. Each preset has coordinated light and dark values, so changing the
+mode keeps the chosen color family while preserving readable contrast. Zinc
+remains the default classic `new-york` baseline.
 
 Generate a screenshot without keeping the window open:
 

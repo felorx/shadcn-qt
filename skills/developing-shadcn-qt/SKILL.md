@@ -72,6 +72,9 @@ Designer, Gallery, and documentation.
 
 - Keep one public component or one concrete native QtWidget per detail page.
   Retain the four native family overview pages for screenshot regression.
+- Preserve the one-selection Gallery color presets and their coordinated light
+  and dark action, window, component-surface, border, and input overrides while
+  keeping Zinc as the default baseline.
 - Preserve the flat sidebar/content separator, visible branch indicators, and
   configurable single-click or double-click group expansion.
 - Inspect affected previews interactively or by targeted screenshot. Update

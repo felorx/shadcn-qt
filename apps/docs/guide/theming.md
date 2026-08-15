@@ -65,6 +65,23 @@ configure(
 apply_theme()
 ```
 
+## Preview coordinated colors in the Gallery
+
+The Gallery header can switch among Zinc, Blue, Violet, Emerald, Orange, and
+Rose with one selection. Each preset changes the related `primary`,
+`primaryForeground`, `ring`, `accent`, and `accentForeground` tokens together
+and supplies matching low-saturation `background`, `card`, `popover`,
+`secondary`, `muted`, `border`, and `input` surfaces. Separate light and dark
+values keep windows, components, buttons, focused inputs, checked controls,
+selections, and hover states in the same color family while preserving readable
+contrast.
+
+Launch a preset directly when comparing components or capturing a screenshot:
+
+```bash
+python examples/python_gallery/run.py --theme dark --color-theme emerald
+```
+
 ## Reusable custom themes
 
 ```python

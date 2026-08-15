@@ -46,6 +46,35 @@ def test_gallery_constructs_every_interactive_preview(gallery_runtime):
 def test_gallery_search_and_theme_controls(gallery_runtime):
     app, gallery = gallery_runtime
     window = gallery.GalleryWindow(theme="light", component="Chart")
+    assert tuple(gallery.COLOR_THEME_PRESETS) == (
+        "zinc",
+        "blue",
+        "violet",
+        "emerald",
+        "orange",
+        "rose",
+    )
+    surface_tokens = {
+        "background",
+        "foreground",
+        "card",
+        "cardForeground",
+        "popover",
+        "popoverForeground",
+        "secondary",
+        "secondaryForeground",
+        "muted",
+        "mutedForeground",
+        "border",
+        "input",
+    }
+    for preset_name, preset in gallery.COLOR_THEME_PRESETS.items():
+        if preset_name == "zinc":
+            continue
+        assert surface_tokens <= set(preset["light"])
+        assert surface_tokens <= set(preset["dark"])
+    assert window.color_theme == "zinc"
+    assert window.color_theme_select.currentText() == "Zinc"
     window.filter_components("message")
     assert window.visible_component_names() == [
         "Message",
@@ -54,10 +83,50 @@ def test_gallery_search_and_theme_controls(gallery_runtime):
         "QErrorMessage",
     ]
 
+    window.set_color_theme("violet")
+    assert window.color_theme == "violet"
+    assert window.color_theme_select.currentText() == "Violet"
+    assert app.property("shadcn_qt_gallery_color_theme") == "violet"
+    assert app.property("shadcn_qt_color_primary") == "#7c3aed"
+    assert app.property("shadcn_qt_color_ring") == "#8b5cf6"
+    assert app.property("shadcn_qt_color_background") == "#fbfaff"
+    assert app.property("shadcn_qt_color_card") == "#fefcff"
+    assert app.property("shadcn_qt_color_border") == "#ddd6fe"
+
     window.set_theme("dark")
     assert app.property("shadcn_qt_gallery_theme") == "dark"
     assert window.theme_select.currentText() == "Dark"
+    assert app.property("shadcn_qt_color_primary") == "#8b5cf6"
+    assert app.property("shadcn_qt_color_accent") == "#2b1842"
+    assert app.property("shadcn_qt_color_background") == "#100d16"
+    assert app.property("shadcn_qt_color_card") == "#17121f"
+    palette_type = gallery.QtGui.QPalette
+    window_role = getattr(palette_type, "Window", None)
+    if window_role is None:
+        window_role = palette_type.ColorRole.Window
+    assert app.palette().color(window_role).name() == "#100d16"
+
+    window.color_theme_select.setCurrentText("Emerald")
+    app.processEvents()
+    assert window.color_theme == "emerald"
+    assert app.property("shadcn_qt_color_primary") == "#10b981"
+    assert app.property("shadcn_qt_color_ring") == "#34d399"
+    assert app.property("shadcn_qt_color_background") == "#08120f"
+    assert app.property("shadcn_qt_color_card") == "#0c1814"
+    assert app.property("shadcn_qt_color_input") == "#2b5a48"
+    with pytest.raises(ValueError):
+        window.set_color_theme("unknown")
     window.close()
+
+
+def test_gallery_color_theme_cli_option(gallery_runtime):
+    _, gallery = gallery_runtime
+    args = gallery._parse_args(
+        ["--theme", "dark", "--color-theme", "rose", "--component", "Button"]
+    )
+    assert args.theme == "dark"
+    assert args.color_theme == "rose"
+    assert args.component == "Button"
 
 
 def test_gallery_sidebar_uses_a_single_flat_separator(gallery_runtime):

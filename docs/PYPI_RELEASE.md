@@ -33,6 +33,11 @@ fractional Windows display scales through the public pre-`QApplication`
 `configure_high_dpi()` initializer and keeps the active tab title and page on
 one connected surface. See `CHANGELOG.md` for the complete release notes.
 
+Version 0.2.2 was published on 2026-08-15 (Asia/Shanghai). It adds coordinated
+Gallery color presets, removes the inner selected-tab focus rectangle, and
+aligns adopted `QGroupBox` titles and content with compact spacing. See
+`CHANGELOG.md` for the complete release notes.
+
 Release files:
 
 | File | SHA-256 |
@@ -43,6 +48,8 @@ Release files:
 | `shadcn_qt-0.2.0.tar.gz` | `6413576a76382918834e01fe3eede0ba6da8b5df43ea9e26bad2fbfa93c172a5` |
 | `shadcn_qt-0.2.1-py3-none-any.whl` | `3496077e852a2fcd86178a973cf85b8e25c9f3249d076925a2143b534adebe38` |
 | `shadcn_qt-0.2.1.tar.gz` | `ace372cb4e21bc9389e55cbae2f41110a8fd400b12e240d3176d2ba777fc9ff6` |
+| `shadcn_qt-0.2.2-py3-none-any.whl` | `499b50f7f946c5092d58fa5fa0a7f6d2158563e220dde49891087c7cd685349b` |
+| `shadcn_qt-0.2.2.tar.gz` | `1f1d2667554341bf006a64117734d460013d29c6f85283d71091988ea055dc09` |
 
 ## One-time publisher setup
 
@@ -104,8 +111,8 @@ already uploaded to PyPI; PyPI release files are immutable.
 
 ## TestPyPI and production
 
-Versions 0.1.0, 0.2.0, and 0.2.1 used a scoped local PyPI API token after all release
-checks and isolated wheel smoke tests. Version 0.2.0 was uploaded with
+Versions 0.1.0, 0.2.0, 0.2.1, and 0.2.2 used a scoped local PyPI API token
+after all release checks and isolated wheel smoke tests. Version 0.2.0 was uploaded with
 `uv publish` after the tag workflow passed its tests, build, metadata, license,
 and distribution-content jobs but could not exchange OIDC because the PyPI
 Trusted Publisher was not yet registered. Configure Trusted Publishing before
