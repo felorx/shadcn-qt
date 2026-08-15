@@ -3,6 +3,20 @@
 All notable changes to shadcn-qt Core are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## 0.2.3 - 2026-08-15
+
+### Fixed
+
+- Removed the remaining focus-only QSS border that could intermittently wrap
+  the selected `QTabWidget` title instead of following the outer Chrome-style
+  connected-tab silhouette.
+- Ensured explicitly mapped native `QTabWidget` instances using
+  `shadcn_qt_component="tab-pane"` still install the shared deterministic tab
+  painter while preserving the user-provided component property.
+- Suppressed platform-added title focus rectangles without disabling keyboard
+  focus or tab navigation, and restored the original platform attribute when
+  native styling is disabled.
+
 ## 0.2.2 - 2026-08-15
 
 ### Added

@@ -351,12 +351,25 @@ def test_native_qt_widget_families_are_covered(runtime):
 def test_native_tab_widget_keeps_behavior_and_owns_its_chrome_bar(runtime):
     app, QtWidgets = runtime
     from shadcn_qt import adopt_native_widgets, disable_native_widget_styling
+    from shadcn_qt._qt import QtCore
 
     disable_native_widget_styling(app, clear=True)
     pane = QtWidgets.QTabWidget()
     pane.setMovable(True)
     pane.setTabsClosable(True)
     original_elide_mode = pane.tabBar().elideMode()
+    mac_focus_rect = getattr(QtCore.Qt, "WA_MacShowFocusRect", None)
+    if mac_focus_rect is None:
+        mac_focus_rect = getattr(
+            QtCore.Qt.WidgetAttribute,
+            "WA_MacShowFocusRect",
+            None,
+        )
+    original_mac_focus_rect = (
+        pane.tabBar().testAttribute(mac_focus_rect)
+        if mac_focus_rect is not None
+        else None
+    )
     pane.tabBar().setMouseTracking(False)
     pane.tabBar().setUsesScrollButtons(False)
     pane.addTab(QtWidgets.QWidget(pane), "First")
@@ -376,6 +389,8 @@ def test_native_tab_widget_keeps_behavior_and_owns_its_chrome_bar(runtime):
     assert pane.findChild(QtWidgets.QStackedWidget).property(
         "shadcn_qt_native_adopted"
     ) is None
+    if mac_focus_rect is not None:
+        assert not pane.tabBar().testAttribute(mac_focus_rect)
     close_buttons = [
         button
         for button in pane.tabBar().findChildren(QtWidgets.QAbstractButton)
@@ -391,6 +406,11 @@ def test_native_tab_widget_keeps_behavior_and_owns_its_chrome_bar(runtime):
     assert pane.tabBar().elideMode() == original_elide_mode
     assert not pane.tabBar().hasMouseTracking()
     assert not pane.tabBar().usesScrollButtons()
+    if mac_focus_rect is not None:
+        assert (
+            pane.tabBar().testAttribute(mac_focus_rect)
+            == original_mac_focus_rect
+        )
     right = getattr(QtWidgets.QTabBar, "RightSide", None)
     left = getattr(QtWidgets.QTabBar, "LeftSide", None)
     if right is None:
@@ -405,6 +425,40 @@ def test_native_tab_widget_keeps_behavior_and_owns_its_chrome_bar(runtime):
         button is not None and button.property("tabPaneCloseButton") is True
         for button in active_buttons
     )
+    pane.close()
+
+
+def test_explicit_native_tab_pane_mapping_gets_shared_painter(runtime):
+    app, QtWidgets = runtime
+    from shadcn_qt import adopt_native_widgets, disable_native_widget_styling
+    from shadcn_qt._qt import QtCore
+
+    disable_native_widget_styling(app, clear=True)
+    pane = QtWidgets.QTabWidget()
+    pane.setProperty("shadcn_qt_component", "tab-pane")
+    pane.addTab(QtWidgets.QWidget(pane), "Account")
+    pane.addTab(QtWidgets.QWidget(pane), "Security")
+
+    assert adopt_native_widgets(pane) == 1
+    assert pane.property("shadcn_qt_native_adopted") is True
+    assert pane.property("shadcn_qt_component") == "tab-pane"
+    state = pane.property("shadcn_qt_native_enhancements")
+    assert isinstance(state, dict)
+    assert "tab_pane" in state
+
+    pane.resize(420, 180)
+    pane.show()
+    focus_reason = getattr(QtCore.Qt, "TabFocusReason", None)
+    if focus_reason is None:
+        focus_reason = QtCore.Qt.FocusReason.TabFocusReason
+    pane.tabBar().setFocus(focus_reason)
+    app.processEvents()
+    assert pane.tabBar().hasFocus()
+
+    disable_native_widget_styling(app, clear=True)
+    app.processEvents()
+    assert pane.property("shadcn_qt_native_adopted") is None
+    assert pane.property("shadcn_qt_component") == "tab-pane"
     pane.close()
 
 

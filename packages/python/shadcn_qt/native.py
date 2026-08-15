@@ -772,6 +772,13 @@ def _enhance_native_tab_pane(widget: Any, state: Dict[str, Any]) -> None:
     styled_background = getattr(core.Qt, "WA_StyledBackground", None)
     if styled_background is None:
         styled_background = core.Qt.WidgetAttribute.WA_StyledBackground
+    mac_focus_rect = getattr(core.Qt, "WA_MacShowFocusRect", None)
+    if mac_focus_rect is None:
+        mac_focus_rect = getattr(
+            core.Qt.WidgetAttribute,
+            "WA_MacShowFocusRect",
+            None,
+        )
     event_filter = _tab_pane_filter_type()(widget)
     state["tab_pane"] = {
         "bar": bar,
@@ -781,6 +788,12 @@ def _enhance_native_tab_pane(widget: Any, state: Dict[str, Any]) -> None:
         "mouse_tracking": bar.hasMouseTracking(),
         "styled_background": bar.testAttribute(styled_background),
         "styled_background_attribute": styled_background,
+        "mac_focus_rect": (
+            bar.testAttribute(mac_focus_rect)
+            if mac_focus_rect is not None
+            else None
+        ),
+        "mac_focus_rect_attribute": mac_focus_rect,
         "uses_scroll_buttons": bar.usesScrollButtons(),
     }
     prepare_tab_pane(widget)
@@ -989,6 +1002,12 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
                 tab_pane["styled_background_attribute"],
                 tab_pane["styled_background"],
             )
+            mac_focus_rect = tab_pane.get("mac_focus_rect_attribute")
+            if mac_focus_rect is not None:
+                bar.setAttribute(
+                    mac_focus_rect,
+                    tab_pane["mac_focus_rect"],
+                )
             if widget.tabsClosable():
                 widget.setTabsClosable(False)
                 widget.setTabsClosable(True)
@@ -1024,7 +1043,11 @@ def _adopt_widget(widget: Any, widgets: Any, *, refresh: bool) -> bool:
     preference = _preference(widget)
     if preference is False:
         return False
-    if widget.property("shadcn_qt_component") not in (None, ""):
+    component = widget.property("shadcn_qt_component")
+    explicit_tab_pane = (
+        isinstance(widget, widgets.QTabWidget) and component == "tab-pane"
+    )
+    if component not in (None, "") and not explicit_tab_pane:
         return False
     if preference is not True and _is_internal_widget(widget, widgets):
         return False
@@ -1037,7 +1060,7 @@ def _adopt_widget(widget: Any, widgets: Any, *, refresh: bool) -> bool:
         if widget.property(name) is None:
             widget.setProperty(name, value)
             added.append(name)
-    if not added:
+    if not added and not explicit_tab_pane:
         return False
 
     widget.setProperty(_ADOPTED_PROPERTY, True)

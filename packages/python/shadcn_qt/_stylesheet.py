@@ -87,7 +87,6 @@ def render_stylesheet(
     tab_pane_tab_first = tab_pane_selectors("::tab:first")
     tab_pane_tab_selected = tab_pane_selectors("::tab:selected")
     tab_pane_tab_hover = tab_pane_selectors("::tab:hover:!selected")
-    tab_pane_tab_focus = tab_pane_selectors("::tab:focus")
     tab_pane_tab_disabled = tab_pane_selectors("::tab:disabled")
     tab_pane_close_button = tab_pane_selectors("::close-button")
     tab_pane_close_hover = tab_pane_selectors("::close-button:hover")
@@ -360,7 +359,6 @@ QTabWidget[shadcn_qt_component="tabs"]::pane {{ border: none; top: 8px; }}
   border-color: {c["input"]}; border-bottom-color: {c["accent"]};
   margin-bottom: -1px;
 }}
-{tab_pane_tab_focus} {{ border-color: {c["ring"]}; }}
 {tab_pane_tab_disabled} {{ color: {disabled_foreground}; }}
 {tab_pane_close_button} {{
   subcontrol-position: right; width: 24px; height: 20px;

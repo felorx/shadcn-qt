@@ -122,6 +122,9 @@ created later are adopted through its application event filter.
 
 - Apply `shadcn_qt_component` and `nativeKind` only when the user did not set an
   explicit component mapping. Preserve user-set variants and other properties.
+- Treat an explicit `shadcn_qt_component="tab-pane"` mapping on a native
+  `QTabWidget` as adoptable: preserve the mapping and install the shared
+  painter instead of leaving a focus-dependent QSS title frame.
 - Honor `shadcn_qt_native_styling=False`. Do not adopt existing shadcn-qt
   subclasses a second time.
 - Let complex controls own their internals. In particular, do not independently
@@ -138,7 +141,7 @@ created later are adopted through its application event filter.
 ## Installation Guidance
 
 The public distribution name is `shadcn-qt`; the import name is `shadcn_qt`.
-The current published baseline is 0.2.2.
+The current published baseline is 0.2.3.
 
 ```bash
 # New environment: choose exactly one binding extra.

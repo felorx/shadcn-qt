@@ -265,8 +265,6 @@ QTabBar[shadcn_qt_component="tab-pane-bar"]::tab:hover:!selected {
   border-color: #e4e4e7; border-bottom-color: #f4f4f5;
   margin-bottom: -1px;
 }
-QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::tab:focus,
-QTabBar[shadcn_qt_component="tab-pane-bar"]::tab:focus { border-color: #18181b; }
 QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::tab:disabled,
 QTabBar[shadcn_qt_component="tab-pane-bar"]::tab:disabled { color: rgba(113, 113, 122, 128); }
 QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::close-button,
@@ -849,8 +847,6 @@ QTabBar[shadcn_qt_component="tab-pane-bar"]::tab:hover:!selected {
   border-color: #27272a; border-bottom-color: #27272a;
   margin-bottom: -1px;
 }
-QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::tab:focus,
-QTabBar[shadcn_qt_component="tab-pane-bar"]::tab:focus { border-color: #d4d4d8; }
 QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::tab:disabled,
 QTabBar[shadcn_qt_component="tab-pane-bar"]::tab:disabled { color: rgba(161, 161, 170, 128); }
 QTabWidget[shadcn_qt_component="tab-pane"] QTabBar::close-button,

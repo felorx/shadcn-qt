@@ -447,6 +447,14 @@ def test_tab_pane_uses_scoped_chrome_style(runtime):
     assert "background: #fafafa; border: 1px" in qss
     assert "background: #18181a; border: 1px" in dark_qss
     assert "background: transparent; border: none; padding: 3px" in qss
+    assert (
+        'QTabWidget[shadcn_qt_component="tab-pane"] '
+        "QTabBar::tab:focus"
+    ) not in qss
+    assert (
+        'QTabBar[shadcn_qt_component="tab-pane-bar"]::tab:focus'
+        not in qss
+    )
     assert "\nQTabBar {" not in qss
 
 

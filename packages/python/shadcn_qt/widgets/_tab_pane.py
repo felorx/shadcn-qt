@@ -262,7 +262,7 @@ class TabPaneBar(QtWidgets.QTabBar):
 
 
 def prepare_tab_pane(tab_widget: Any) -> None:
-    """Suppress platform tab-strip painting so the shared QSS stays authoritative."""
+    """Suppress platform tab-strip details so shared painting stays authoritative."""
 
     bar = tab_widget.tabBar()
     bar.setDrawBase(False)
@@ -270,6 +270,18 @@ def prepare_tab_pane(tab_widget: Any) -> None:
     if styled_background is None:
         styled_background = QtCore.Qt.WidgetAttribute.WA_StyledBackground
     bar.setAttribute(styled_background, True)
+    mac_focus_rect = getattr(QtCore.Qt, "WA_MacShowFocusRect", None)
+    if mac_focus_rect is None:
+        mac_focus_rect = getattr(
+            QtCore.Qt.WidgetAttribute,
+            "WA_MacShowFocusRect",
+            None,
+        )
+    if mac_focus_rect is not None:
+        # The shared painter renders keyboard focus on the outer connected-tab
+        # silhouette.  Prevent the platform style from adding a second focus
+        # rectangle around the title when focus moves between tabs.
+        bar.setAttribute(mac_focus_rect, False)
     bar.setMouseTracking(True)
     bar.setElideMode(_qt_enum("ElideRight", "TextElideMode"))
     bar.setUsesScrollButtons(True)

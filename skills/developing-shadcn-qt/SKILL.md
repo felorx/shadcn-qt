@@ -62,6 +62,9 @@ Designer, Gallery, and documentation.
   `shadcn_qt_native_styling=False` opt-out. Do not independently adopt Qt-owned
   embedded editors, combo views, tab bars, page stacks, or tab buttons when
   their owning complex control supplies the complete frame.
+- Preserve an explicit `shadcn_qt_component="tab-pane"` mapping on a native
+  `QTabWidget`, but still install the shared deterministic tab painter so focus
+  never falls back to a platform or QSS title rectangle.
 - Restore delegates, event filters, glyph overlays, shadows, popup styling,
   geometry settings, and unchanged adapter-added properties during cleanup.
 - Position combo and calendar popups left-aligned immediately below their

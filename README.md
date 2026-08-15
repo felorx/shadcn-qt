@@ -48,7 +48,7 @@ See [Core and Pro architecture](docs/PRO.md) and [license tiers](docs/TIERS.md).
 
 ## Install the free Core package (Python)
 
-shadcn-qt Core 0.2.2 is available from
+shadcn-qt Core 0.2.3 is available from
 [PyPI](https://pypi.org/project/shadcn-qt/). It is publicly downloadable at no
 cost for GPL-3.0-compatible use; proprietary applications require a commercial
 Core license. Pro is a separate private package.
@@ -174,7 +174,7 @@ cmake --build build
 ```
 
 Use Qt 5.15 by pointing `CMAKE_PREFIX_PATH` at a Qt5 kit; the same `CMakeLists.txt` selects Qt5 or Qt6 automatically.
-Installed packages expose version `0.2.2`, so downstream projects can require
+Installed packages expose version `0.2.3`, so downstream projects can require
 `find_package(ShadcnQt 0.2 CONFIG REQUIRED)`.
 
 ## Docs
