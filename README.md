@@ -1,5 +1,11 @@
 # shadcn-qt
 
+[![CI](https://github.com/felorx/shadcn-qt/actions/workflows/ci.yml/badge.svg)](https://github.com/felorx/shadcn-qt/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/pypi/pyversions/shadcn-qt.svg?logo=python&logoColor=white)](https://pypi.org/project/shadcn-qt/)
+[![Qt](https://img.shields.io/badge/Qt-5.15%2B%20%7C%206.x-41CD52?logo=qt&logoColor=white)](https://felorx.github.io/shadcn-qt/guide/install)
+[![PyPI](https://img.shields.io/pypi/v/shadcn-qt.svg)](https://pypi.org/project/shadcn-qt/)
+[![License](https://img.shields.io/badge/license-GPL--3.0--only%20OR%20Commercial-blue.svg)](LICENSE)
+
 Qt / PyQt / PySide component and style primitives aligned with [shadcn/ui](https://ui.shadcn.com/) semantics: semantic design tokens, variants, composable widgets, global themes, and Qt Designer drag-and-drop integration.
 
 shadcn-qt is an independent Qt implementation. It is not affiliated with or
@@ -179,7 +185,9 @@ Installed packages expose version `0.2.4`, so downstream projects can require
 
 ## Docs
 
-See `apps/docs` (VitePress), the [migration guide](apps/docs/guide/migration.md),
+Browse the [VitePress documentation](https://felorx.github.io/shadcn-qt/),
+or see its source in `apps/docs`. The repository also includes the
+[migration guide](apps/docs/guide/migration.md),
 [licensing guide](docs/COMMERCIAL.md), [PyPI release runbook](docs/PYPI_RELEASE.md),
 [Core and Pro architecture](docs/PRO.md), [docs/STATUS.md](docs/STATUS.md), and
 [docs/TIERS.md](docs/TIERS.md). Release changes are recorded in

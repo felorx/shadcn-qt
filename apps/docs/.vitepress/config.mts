@@ -1,6 +1,7 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
+  base: "/shadcn-qt/",
   title: "shadcn-qt",
   description: "shadcn-aligned Qt widgets for PySide, PyQt, and C++",
   themeConfig: {

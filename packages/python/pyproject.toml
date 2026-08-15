@@ -38,7 +38,7 @@ shadcn-qt-designer = "shadcn_qt.designer.launcher:main"
 Homepage = "https://felorx.com"
 Source = "https://github.com/felorx/shadcn-qt"
 Issues = "https://github.com/felorx/shadcn-qt/issues"
-Documentation = "https://github.com/felorx/shadcn-qt/tree/main/apps/docs"
+Documentation = "https://felorx.github.io/shadcn-qt/"
 Commercial = "https://felorx.com"
 
 [tool.setuptools.packages.find]
