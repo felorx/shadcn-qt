@@ -450,7 +450,9 @@ CATEGORY_DESCRIPTIONS: Dict[str, str] = {
     "Native Data Views": "One Qt model/view control per preview page.",
     "Native Containers": "One Qt container family per preview page.",
     "Native Windows": "One native window surface per preview page.",
-    "Native Dialogs": "One embedded stock Qt dialog per preview page.",
+    "Native Dialogs": (
+        "Embedded stock Qt dialogs, including an interactive QMessageBox launcher."
+    ),
 }
 
 GALLERY_QSS = """
@@ -1945,13 +1947,48 @@ def _set_embedded_dialog(widget: Any) -> Any:
     return widget
 
 
+def _configure_native_message_box(widget: Any) -> Any:
+    widget.setWindowTitle("Confirm workspace")
+    widget.setText("Create the new workspace?")
+    widget.setInformativeText("Existing files will remain unchanged.")
+    widget.setStandardButtons(_native_message_buttons("Cancel", "Ok"))
+    return widget
+
+
+def _native_message_box_specimen(parent: Any) -> Any:
+    wrapper = QtWidgets.QWidget(parent)
+    content = QtWidgets.QVBoxLayout(wrapper)
+    content.setContentsMargins(0, 0, 0, 0)
+    content.setSpacing(12)
+
+    trigger = QtWidgets.QPushButton("Show QMessageBox", wrapper)
+    trigger.setObjectName("nativeGalleryQMessageBoxTrigger")
+    content.addWidget(trigger)
+
+    embedded = _configure_native_message_box(QtWidgets.QMessageBox(wrapper))
+    content.addWidget(_set_embedded_dialog(embedded), 1)
+    wrapper._native_gallery_target = embedded
+    wrapper._native_gallery_popup = None
+
+    def show_message_box(checked: bool = False) -> None:
+        del checked
+        popup = wrapper._native_gallery_popup
+        if popup is None:
+            popup = _configure_native_message_box(
+                QtWidgets.QMessageBox(wrapper.window())
+            )
+            popup.setObjectName("nativeGalleryQMessageBoxPopup")
+            popup.setProperty("gallery_native_popup", True)
+            wrapper._native_gallery_popup = popup
+        popup.open()
+
+    trigger.clicked.connect(show_message_box)
+    return wrapper
+
+
 def _native_dialog_specimen(name: str, parent: Any) -> Any:
     if name == "QMessageBox":
-        widget = QtWidgets.QMessageBox(parent)
-        widget.setWindowTitle("Confirm workspace")
-        widget.setText("Create the new workspace?")
-        widget.setInformativeText("Existing files will remain unchanged.")
-        widget.setStandardButtons(_native_message_buttons("Cancel", "Ok"))
+        return _native_message_box_specimen(parent)
     elif name == "QFileDialog":
         widget = QtWidgets.QFileDialog(parent, "Choose a project folder")
         widget.setOption(
@@ -2378,6 +2415,7 @@ class GalleryWindow(QtWidgets.QMainWindow):
         *,
         theme: str = "light",
         color_theme: str = "zinc",
+        radius_base: int = 6,
         component: str = "Button",
         group_expansion_mode: str = "single-click",
     ) -> None:
@@ -2389,6 +2427,8 @@ class GalleryWindow(QtWidgets.QMainWindow):
                 "color_theme must be one of "
                 + ", ".join(COLOR_THEME_PRESETS)
             )
+        if not 0 <= radius_base <= 24:
+            raise ValueError("radius_base must be between 0 and 24")
         app = QtWidgets.QApplication.instance()
         if app is None:
             raise RuntimeError("Create QApplication before GalleryWindow")
@@ -2397,6 +2437,7 @@ class GalleryWindow(QtWidgets.QMainWindow):
         self._current_component = ""
         self._theme = theme
         self._color_theme = color_theme
+        self._radius_base = int(radius_base)
         self._navigation_items: Dict[str, Any] = {}
         self.setWindowTitle(
             f"shadcn-qt {__version__} · {STYLE_PROFILE} + {BASE_COLOR.title()}"
@@ -2482,6 +2523,16 @@ class GalleryWindow(QtWidgets.QMainWindow):
         header_layout.addWidget(titles, 1)
         self.category_badge = ui.Badge("", header, variant="secondary")
         header_layout.addWidget(self.category_badge)
+        self.radius_spin = QtWidgets.QSpinBox(header)
+        self.radius_spin.setAccessibleName("Base corner radius")
+        self.radius_spin.setToolTip(
+            "Adjust the base radius for every semantic component corner"
+        )
+        self.radius_spin.setRange(0, 24)
+        self.radius_spin.setPrefix("Radius ")
+        self.radius_spin.setValue(self._radius_base)
+        self.radius_spin.setFixedWidth(112)
+        header_layout.addWidget(self.radius_spin)
         self.color_theme_select = ui.Select(header)
         self.color_theme_select.setAccessibleName("Theme color")
         self.color_theme_select.setToolTip("Choose a coordinated theme color")
@@ -2528,6 +2579,7 @@ class GalleryWindow(QtWidgets.QMainWindow):
         self.color_theme_select.currentIndexChanged.connect(
             self._color_theme_changed
         )
+        self.radius_spin.valueChanged.connect(self.set_radius_base)
         self.set_theme(theme)
         self.select_component(component if component in gallery_names() else "Button")
 
@@ -2538,6 +2590,10 @@ class GalleryWindow(QtWidgets.QMainWindow):
     @property
     def color_theme(self) -> str:
         return self._color_theme
+
+    @property
+    def radius_base(self) -> int:
+        return self._radius_base
 
     def group_expansion_mode(self) -> str:
         return self.navigation.get_expansion_mode()
@@ -2647,9 +2703,16 @@ class GalleryWindow(QtWidgets.QMainWindow):
             **resolve_theme(self._theme).colors,
             **preset[self._theme],
         }
-        apply_theme(app, self._theme, colors=colors, extra_qss=GALLERY_QSS)
+        apply_theme(
+            app,
+            self._theme,
+            colors=colors,
+            radius_base=self._radius_base,
+            extra_qss=GALLERY_QSS,
+        )
         app.setProperty("shadcn_qt_gallery_theme", self._theme)
         app.setProperty("shadcn_qt_gallery_color_theme", self._color_theme)
+        app.setProperty("shadcn_qt_gallery_radius_base", self._radius_base)
         color_label = str(preset["label"])
         suffix = "" if self._color_theme == "zinc" else f" · {color_label} theme"
         self.setWindowTitle(
@@ -2682,6 +2745,16 @@ class GalleryWindow(QtWidgets.QMainWindow):
             self.color_theme_select.setCurrentText(label)
             self.color_theme_select.blockSignals(previous)
 
+    def set_radius_base(self, radius_base: int) -> None:
+        if not 0 <= radius_base <= 24:
+            raise ValueError("radius_base must be between 0 and 24")
+        self._radius_base = int(radius_base)
+        self._apply_gallery_theme()
+        if self.radius_spin.value() != self._radius_base:
+            previous = self.radius_spin.blockSignals(True)
+            self.radius_spin.setValue(self._radius_base)
+            self.radius_spin.blockSignals(previous)
+
     def save_screenshot(self, path: Path) -> bool:
         path.parent.mkdir(parents=True, exist_ok=True)
         return self.grab().save(str(path))
@@ -2698,6 +2771,14 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     )
     parser.add_argument("--component", choices=gallery_names(), default="Button")
     parser.add_argument(
+        "--radius-base",
+        type=int,
+        choices=range(25),
+        default=6,
+        metavar="PX",
+        help="Set the global semantic base corner radius (0-24 px)",
+    )
+    parser.add_argument(
         "--screenshot", type=Path, help="Save the shown gallery window and exit"
     )
     return parser.parse_args(argv)
@@ -2711,6 +2792,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     window = GalleryWindow(
         theme=args.theme,
         color_theme=args.color_theme,
+        radius_base=args.radius_base,
         component=args.component,
     )
     window.show()

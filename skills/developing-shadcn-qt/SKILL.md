@@ -42,6 +42,11 @@ Designer, Gallery, and documentation.
 - Use semantic tokens and state properties. Put selector-driven styling in
   `_stylesheet.py`; use shared Qt painting helpers for shapes QSS cannot render
   reliably.
+- Treat `radius_base` as the `md` semantic surface radius and derive
+  `sm/md/lg/xl` with `2/3 : 1 : 4/3 : 2`. Keep explicit `radius` entries as
+  per-tier overrides. Read the active application radius with
+  `semantic_radius` in custom painters; keep circles and pills derived from
+  their own geometry instead of scaling them as surfaces.
 - Paint chevrons, arrows, checks, close marks, and similar UI glyphs as
   antialiased vectors. Never use Unicode or font characters as UI icons.
 - Keep strokes and focus rings inside paint clips. Check first/last edges,
@@ -78,6 +83,9 @@ Designer, Gallery, and documentation.
 - Preserve the one-selection Gallery color presets and their coordinated light
   and dark action, window, component-surface, border, and input overrides while
   keeping Zinc as the default baseline.
+- Preserve the live Gallery base-radius control and `--radius-base` option so
+  QSS, custom-painted components, and adopted native widgets can be inspected
+  under the same proportional radius family.
 - Preserve the flat sidebar/content separator, visible branch indicators, and
   configurable single-click or double-click group expansion.
 - Inspect affected previews interactively or by targeted screenshot. Update

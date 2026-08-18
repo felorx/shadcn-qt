@@ -24,6 +24,7 @@ from shadcn_qt.widgets._style import (
     install_shadow,
     position_combo_popup,
     semantic_color,
+    semantic_radius,
     style_combo_popup,
     text_width,
     with_alpha,
@@ -103,6 +104,7 @@ def _draw_choice_shadow(
     *,
     radio: bool,
     enabled: bool,
+    corner_radius: float = 0.0,
 ) -> None:
     painter.save()
     painter.setPen(_qt_enum("NoPen", "PenStyle"))
@@ -121,8 +123,8 @@ def _draw_choice_shadow(
         else:
             painter.drawRoundedRect(
                 shadow_rect,
-                3.0 + expansion,
-                3.0 + expansion,
+                corner_radius + expansion,
+                corner_radius + expansion,
             )
     painter.restore()
 
@@ -200,23 +202,37 @@ class Checkbox(QtWidgets.QCheckBox):
         primary = semantic_color(self, "primary", fallback_role="Highlight")
         background = semantic_color(self, "background", fallback_role="Window")
         border = primary
+        # The 16px checkbox uses 75% of the small surface token so its
+        # historical 3px baseline scales with, but remains subtler than,
+        # buttons and menu items.
+        indicator_radius = min(
+            semantic_radius(self, "sm") * 0.75,
+            indicator.height() / 2,
+        )
         if not self.isEnabled():
             border = with_alpha(border, 128)
         if self.hasFocus():
             painter.setBrush(_qt_enum("NoBrush", "BrushStyle"))
             painter.setPen(QtGui.QPen(semantic_color(self, "ring"), 1))
+            focus_radius = min(
+                indicator_radius + 2.0,
+                (indicator.height() + 3.0) / 2,
+            )
             painter.drawRoundedRect(
-                indicator.adjusted(-1.5, -1.5, 1.5, 1.5), 5, 5
+                indicator.adjusted(-1.5, -1.5, 1.5, 1.5),
+                focus_radius,
+                focus_radius,
             )
         _draw_choice_shadow(
             painter,
             indicator,
             radio=False,
             enabled=self.isEnabled(),
+            corner_radius=indicator_radius,
         )
         painter.setPen(QtGui.QPen(border, 1))
         painter.setBrush(primary if self.isChecked() else background)
-        painter.drawRoundedRect(indicator, 3, 3)
+        painter.drawRoundedRect(indicator, indicator_radius, indicator_radius)
         if self.isChecked():
             foreground = semantic_color(
                 self, "primaryForeground", fallback_role="HighlightedText"

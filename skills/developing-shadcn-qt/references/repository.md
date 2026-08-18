@@ -7,7 +7,7 @@
 | Semantic colors, radius, font | `packages/design-tokens/tokens.json` | `tools/token-codegen/generate.py`, `packages/python/shadcn_qt/_generated/`, `packages/cpp/shadcn_qt/include/shadcn_qt/ThemeTokens.h` |
 | Python widgets | `packages/python/shadcn_qt/widgets/` | `packages/python/shadcn_qt/widgets/_helpers.py`, `packages/python/shadcn_qt/widgets/__init__.py`, `packages/python/shadcn_qt/__init__.py`, `packages/python/shadcn_qt/_stylesheet.py` |
 | Vector icons and paint helpers | `packages/python/shadcn_qt/widgets/_icons.py` | `packages/python/shadcn_qt/widgets/_style.py`, `packages/python/shadcn_qt/widgets/_tab_pane.py`, `packages/python/tests/test_composite_widgets.py`, `packages/python/tests/test_new_york_style.py` |
-| Themes | `packages/python/shadcn_qt/theme.py` | `packages/python/shadcn_qt/_stylesheet.py`, `packages/python/tests/test_theme.py` |
+| Themes | `packages/python/shadcn_qt/theme.py` | `packages/python/shadcn_qt/_radius.py`, `packages/python/shadcn_qt/_stylesheet.py`, `packages/python/tests/test_theme.py` |
 | Native Qt adoption | `packages/python/shadcn_qt/native.py` | `packages/python/tests/test_native_widgets.py`, `apps/docs/guide/native-widgets.md`, `apps/docs/guide/migration.md` |
 | Qt Designer | `packages/python/shadcn_qt/designer/` | `packages/python/shadcn_qt/designer/registry.py`, `packages/python/tests/test_designer.py`, `examples/python_designer/` |
 | Component tests | `packages/python/tests/test_widgets.py` | `packages/python/tests/test_composite_widgets.py`, `packages/python/tests/test_import_core.py`, `packages/python/tests/test_new_york_style.py` |
@@ -47,6 +47,9 @@
   color presets. Each preset switches coordinated light/dark action colors,
   window backgrounds, component surfaces, borders, and inputs in one action;
   Zinc remains the default visual baseline.
+- The Gallery header also exposes one live `radius_base` value and the CLI
+  mirrors it with `--radius-base`. Both must apply the same radius family to
+  Core QSS, custom painters, and adopted native widgets.
 
 ## Component and Qt API Rules
 
@@ -93,6 +96,12 @@ switching while fixing an individual component.
   `configure_high_dpi()` before `QApplication` in runnable examples so Qt 5
   enables high-DPI rendering and all bindings preserve fractional Windows
   scales such as 150%; never compensate by shrinking component tokens.
+- Use `radius_base` as the `md` surface radius. Derive `sm/md/lg/xl` as
+  `2/3 : 1 : 4/3 : 2`, then apply explicit per-tier `radius` overrides. Store
+  active values on `QApplication` for custom painting and read them through
+  `semantic_radius`; keep radio indicators, slider handles, switches,
+  progress tracks, scrollbars, and other circular or pill geometry based on
+  their dimensions.
 
 ### Tabs versus TabPane
 
@@ -141,7 +150,7 @@ created later are adopted through its application event filter.
 ## Installation Guidance
 
 The public distribution name is `shadcn-qt`; the import name is `shadcn_qt`.
-The current published baseline is 0.2.4.
+The current published baseline is 0.2.5.
 
 ```bash
 # New environment: choose exactly one binding extra.

@@ -58,17 +58,26 @@ from shadcn_qt import configure, apply_theme
 configure(
     theme="light",
     colors={"primary": "#7c3aed", "ring": "#8b5cf6"},
-    radius={"sm": "6px", "md": "10px"},
+    radius_base=9,
+    radius={"xl": "20px"},
     font={"sansFamily": "Inter, 'Segoe UI', sans-serif"},
     extra_qss="QWidget#sidebar { border-right: 1px solid #ddd; }",
 )
 apply_theme()
 ```
 
+`radius_base` is the `md` corner radius in pixels. It derives every semantic
+surface tier with the ratio `sm/md/lg/xl = 2/3 : 1 : 4/3 : 2`; a base of `9`
+therefore produces `6px / 9px / 12px / 18px`. Entries supplied through
+`radius` are applied afterward and can override an individual tier. Radio
+indicators, slider handles, switch tracks, and other circle or pill geometry
+continue to derive their radius from their own dimensions.
+
 ## Preview coordinated colors in the Gallery
 
 The Gallery header can switch among Zinc, Blue, Violet, Emerald, Orange, and
-Rose with one selection. Each preset changes the related `primary`,
+Rose with one selection, and its Radius control previews global semantic
+corner scaling live. Each color preset changes the related `primary`,
 `primaryForeground`, `ring`, `accent`, and `accentForeground` tokens together
 and supplies matching low-saturation `background`, `card`, `popover`,
 `secondary`, `muted`, `border`, and `input` surfaces. Separate light and dark
@@ -79,7 +88,7 @@ contrast.
 Launch a preset directly when comparing components or capturing a screenshot:
 
 ```bash
-python examples/python_gallery/run.py --theme dark --color-theme emerald
+python examples/python_gallery/run.py --theme dark --color-theme emerald --radius-base 12
 ```
 
 ## Reusable custom themes
@@ -112,7 +121,8 @@ apply_theme("ocean")
     "primary": "#7c3aed",
     "ring": "#8b5cf6"
   },
-  "radius": { "md": "10px" }
+  "radiusBase": 9,
+  "radius": { "xl": "20px" }
 }
 ```
 

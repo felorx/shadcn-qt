@@ -63,7 +63,7 @@ app = QApplication([])
 configure(
     theme="light",
     colors={"primary": "#2563eb", "ring": "#3b82f6"},
-    radius={"sm": "4px", "md": "8px"},
+    radius_base=8,
 )
 apply_theme(app)
 ```

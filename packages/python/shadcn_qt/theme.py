@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterable, Literal, Mapping, Optional, Union
 
 from shadcn_qt import _qt
 from shadcn_qt._generated.colors import FONT, RADIUS, THEMES
+from shadcn_qt._radius import RadiusBase, derive_radius
 from shadcn_qt._stylesheet import render_stylesheet
 
 ThemeLike = Union[str, "Theme", Mapping[str, Any]]
@@ -65,13 +66,18 @@ class Theme:
         *,
         name: Optional[str] = None,
         colors: Optional[Mapping[str, str]] = None,
+        radius_base: Optional[RadiusBase] = None,
         radius: Optional[Mapping[str, str]] = None,
         font: Optional[Mapping[str, str]] = None,
     ) -> "Theme":
         return Theme(
             name or self.name,
             {**self.colors, **(colors or {})},
-            {**self.radius, **(radius or {})},
+            {
+                **self.radius,
+                **(derive_radius(radius_base) if radius_base is not None else {}),
+                **(radius or {}),
+            },
             {**self.font, **(font or {})},
         )
 
@@ -95,6 +101,7 @@ class ThemeConfig:
 
     theme: ThemeLike = "light"
     colors: Dict[str, str] = field(default_factory=dict)
+    radius_base: Optional[RadiusBase] = None
     radius: Dict[str, str] = field(default_factory=dict)
     font: Dict[str, str] = field(default_factory=dict)
     extra_qss: str = ""
@@ -113,13 +120,18 @@ def create_theme(
     *,
     base: ThemeLike = "light",
     colors: Optional[Mapping[str, str]] = None,
+    radius_base: Optional[RadiusBase] = None,
     radius: Optional[Mapping[str, str]] = None,
     font: Optional[Mapping[str, str]] = None,
 ) -> Theme:
     """Create a complete theme by overriding semantic tokens from ``base``."""
 
     return resolve_theme(base).with_overrides(
-        name=name, colors=colors, radius=radius, font=font
+        name=name,
+        colors=colors,
+        radius_base=radius_base,
+        radius=radius,
+        font=font,
     )
 
 
@@ -151,6 +163,7 @@ def resolve_theme(theme: ThemeLike) -> Theme:
                 name,
                 base=base,
                 colors=selected,
+                radius_base=theme.get("radius_base", theme.get("radiusBase")),
                 radius=theme.get("radius"),
                 font=theme.get("font"),
             )
@@ -158,6 +171,7 @@ def resolve_theme(theme: ThemeLike) -> Theme:
             name,
             base=base,
             colors=theme.get("colors"),
+            radius_base=theme.get("radius_base", theme.get("radiusBase")),
             radius=theme.get("radius"),
             font=theme.get("font"),
         )
@@ -188,6 +202,7 @@ def configure(
     *,
     theme: Optional[ThemeLike] = None,
     colors: Optional[Mapping[str, str]] = None,
+    radius_base: Optional[RadiusBase] = None,
     radius: Optional[Mapping[str, str]] = None,
     font: Optional[Mapping[str, str]] = None,
     extra_qss: Optional[str] = None,
@@ -200,6 +215,10 @@ def configure(
         _CONFIG.theme = theme
     if colors is not None:
         _CONFIG.colors = dict(colors)
+    if radius_base is not None:
+        # Validate eagerly so configuration errors are raised at the call site.
+        derive_radius(radius_base)
+        _CONFIG.radius_base = radius_base
     if radius is not None:
         _CONFIG.radius = dict(radius)
     if font is not None:
@@ -215,12 +234,22 @@ def configure(
 
 def current_theme() -> Theme:
     return resolve_theme(_CONFIG.theme).with_overrides(
-        colors=_CONFIG.colors, radius=_CONFIG.radius, font=_CONFIG.font
+        colors=_CONFIG.colors,
+        radius_base=_CONFIG.radius_base,
+        radius=_CONFIG.radius,
+        font=_CONFIG.font,
     )
 
 
-def theme_stylesheet(theme: Optional[ThemeLike] = None, *, extra_qss: str = "") -> str:
+def theme_stylesheet(
+    theme: Optional[ThemeLike] = None,
+    *,
+    radius_base: Optional[RadiusBase] = None,
+    radius: Optional[Mapping[str, str]] = None,
+    extra_qss: str = "",
+) -> str:
     resolved = current_theme() if theme is None else resolve_theme(theme)
+    resolved = resolved.with_overrides(radius_base=radius_base, radius=radius)
     qss = render_stylesheet(resolved.colors, resolved.radius, resolved.font)
     additions = "\n".join(part for part in (_CONFIG.extra_qss, extra_qss) if part)
     return qss + ("\n/* User overrides */\n" + additions if additions else "")
@@ -232,6 +261,7 @@ def apply_theme(
     *,
     theme: Optional[ThemeLike] = None,
     colors: Optional[Mapping[str, str]] = None,
+    radius_base: Optional[RadiusBase] = None,
     radius: Optional[Mapping[str, str]] = None,
     font: Optional[Mapping[str, str]] = None,
     extra_qss: str = "",
@@ -250,9 +280,17 @@ def apply_theme(
         base = current_theme()
     else:
         base = resolve_theme(selected).with_overrides(
-            colors=_CONFIG.colors, radius=_CONFIG.radius, font=_CONFIG.font
+            colors=_CONFIG.colors,
+            radius_base=_CONFIG.radius_base,
+            radius=_CONFIG.radius,
+            font=_CONFIG.font,
         )
-    resolved = base.with_overrides(colors=colors, radius=radius, font=font)
+    resolved = base.with_overrides(
+        colors=colors,
+        radius_base=radius_base,
+        radius=radius,
+        font=font,
+    )
 
     _, _, widgets = _qt.qt_modules()
     if app is None:
@@ -266,6 +304,11 @@ def apply_theme(
     app.setProperty("shadcn_qt_base_color", BASE_COLOR)
     for color_name, color_value in resolved.colors.items():
         app.setProperty(f"shadcn_qt_color_{color_name}", color_value)
+    for radius_name, fallback in RADIUS.items():
+        app.setProperty(
+            f"shadcn_qt_radius_{radius_name}",
+            resolved.radius.get(radius_name, fallback),
+        )
 
     app.setStyleSheet(
         render_stylesheet(resolved.colors, resolved.radius, resolved.font)

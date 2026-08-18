@@ -64,6 +64,27 @@ def test_widget_catalog_and_designer_properties(qt):
         TextArea(),
     ]
     assert all(widget.property("shadcn_qt_component") for widget in instances)
-    applied = apply_theme(app, "dark", colors={"primary": "#7c3aed"})
+    applied = apply_theme(
+        app,
+        "dark",
+        colors={"primary": "#7c3aed"},
+        radius_base=9,
+    )
     assert applied.colors["primary"] == "#7c3aed"
+    assert applied.radius == {
+        "sm": "6px",
+        "md": "9px",
+        "lg": "12px",
+        "xl": "18px",
+    }
+    assert app.property("shadcn_qt_radius_sm") == "6px"
+    assert app.property("shadcn_qt_radius_md") == "9px"
+    assert app.property("shadcn_qt_radius_lg") == "12px"
+    assert app.property("shadcn_qt_radius_xl") == "18px"
+    from shadcn_qt.widgets._style import semantic_radius
+
+    assert semantic_radius(button, "sm") == 6.0
+    assert semantic_radius(button, "md") == 9.0
+    assert semantic_radius(button, "lg") == 12.0
+    assert semantic_radius(button, "xl") == 18.0
     assert "#7c3aed" in app.styleSheet()

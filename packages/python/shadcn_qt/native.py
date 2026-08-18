@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import Any, Dict, Iterable, Optional, Tuple
 
 from shadcn_qt import _qt
+from shadcn_qt._radius import format_radius, radius_pixels
 
 _ADAPTER_ATTRIBUTE = "_shadcn_qt_native_widget_styling_adapter"
 _ADOPTED_PROPERTY = "shadcn_qt_native_adopted"
@@ -242,6 +243,18 @@ def _semantic_color(widget: Any, gui: Any, name: str, fallback: str) -> Any:
     return widget.palette().color(_palette_role(gui, fallback))
 
 
+def _semantic_radius(widget: Any, name: str, fallback: float) -> float:
+    _, _, widgets = _qt.qt_modules()
+    app = widgets.QApplication.instance()
+    value = app.property(f"shadcn_qt_radius_{name}") if app is not None else None
+    if value is None:
+        return fallback
+    try:
+        return radius_pixels(str(value), name=f"radius[{name!r}]")
+    except (TypeError, ValueError):
+        return fallback
+
+
 def _with_alpha(gui: Any, color: Any, alpha: int) -> Any:
     result = gui.QColor(color)
     result.setAlpha(max(0, min(255, int(alpha))))
@@ -254,6 +267,7 @@ def _paint_native_choice_shadow(
     *,
     radio: bool,
     enabled: bool,
+    corner_radius: float,
     core: Any,
     gui: Any,
 ) -> None:
@@ -274,8 +288,8 @@ def _paint_native_choice_shadow(
         else:
             painter.drawRoundedRect(
                 shadow_rect,
-                3.0 + expansion,
-                3.0 + expansion,
+                corner_radius + expansion,
+                corner_radius + expansion,
             )
     painter.restore()
 
@@ -316,6 +330,10 @@ def _paint_native_choice(widget: Any, core: Any, gui: Any, widgets: Any) -> bool
     ring = _semantic_color(widget, gui, "ring", "Highlight")
     enabled = widget.isEnabled()
     checked = widget.isChecked()
+    indicator_radius = min(
+        _semantic_radius(widget, "sm", 4.0) * 0.75,
+        indicator.height() / 2.0,
+    )
     partial = False
     if isinstance(widget, widgets.QCheckBox) and widget.isTristate():
         partial = widget.checkState() == _qt_enum(
@@ -333,8 +351,14 @@ def _paint_native_choice(widget: Any, core: Any, gui: Any, widgets: Any) -> bool
         if component == "radio":
             painter.drawEllipse(indicator.adjusted(-1.5, -1.5, 1.5, 1.5))
         else:
+            focus_radius = min(
+                indicator_radius + 2.0,
+                (indicator.height() + 3.0) / 2.0,
+            )
             painter.drawRoundedRect(
-                indicator.adjusted(-1.5, -1.5, 1.5, 1.5), 5, 5
+                indicator.adjusted(-1.5, -1.5, 1.5, 1.5),
+                focus_radius,
+                focus_radius,
             )
 
     _paint_native_choice_shadow(
@@ -342,6 +366,7 @@ def _paint_native_choice(widget: Any, core: Any, gui: Any, widgets: Any) -> bool
         indicator,
         radio=component == "radio",
         enabled=enabled,
+        corner_radius=indicator_radius,
         core=core,
         gui=gui,
     )
@@ -357,7 +382,7 @@ def _paint_native_choice(widget: Any, core: Any, gui: Any, widgets: Any) -> bool
             painter.setBrush(background)
             painter.drawEllipse(indicator.adjusted(4.5, 4.5, -4.5, -4.5))
     else:
-        painter.drawRoundedRect(indicator, 3, 3)
+        painter.drawRoundedRect(indicator, indicator_radius, indicator_radius)
         if checked or partial:
             mark = _semantic_color(
                 widget, gui, "primaryForeground", "HighlightedText"
@@ -445,15 +470,19 @@ def _calendar_delegate_type() -> Any:
             )
             hovered = bool(option.state & style_state("State_MouseOver"))
             enabled = bool(option.state & style_state("State_Enabled"))
+            day_radius = min(
+                _semantic_radius(view, "md", 6.0),
+                day_rect.height() / 2.0,
+            )
             if selected:
                 painter.setPen(no_pen)
                 painter.setBrush(primary)
-                painter.drawRoundedRect(day_rect, 6, 6)
+                painter.drawRoundedRect(day_rect, day_radius, day_radius)
                 painter.setPen(primary_foreground)
             elif hovered:
                 painter.setPen(no_pen)
                 painter.setBrush(accent)
-                painter.drawRoundedRect(day_rect, 6, 6)
+                painter.drawRoundedRect(day_rect, day_radius, day_radius)
                 painter.setPen(foreground)
             else:
                 painter.setPen(foreground if enabled else muted_foreground)
@@ -584,14 +613,16 @@ def _style_native_combo_popup(widget: Any) -> None:
     accent_foreground = _semantic_color(
         widget, gui, "accentForeground", "Text"
     ).name()
+    popup_radius = format_radius(_semantic_radius(widget, "md", 6.0))
+    item_radius = format_radius(_semantic_radius(widget, "sm", 4.0))
     popup.setStyleSheet(
         f"#{_COMBO_POPUP_NAME} {{ background: {background}; "
-        f"border: 1px solid {border}; border-radius: 6px; }} "
+        f"border: 1px solid {border}; border-radius: {popup_radius}; }} "
         f"#{_COMBO_POPUP_NAME} QListView {{ background: transparent; "
         f"color: {foreground}; border: none; border-radius: 0; "
         "padding: 4px; outline: 0; } "
         f"#{_COMBO_POPUP_NAME} QListView::item {{ min-height: 28px; "
-        "padding: 2px 8px; border: none; border-radius: 4px; } "
+        f"padding: 2px 8px; border: none; border-radius: {item_radius}; }} "
         f"#{_COMBO_POPUP_NAME} QListView::item:selected {{ "
         f"background: {accent}; color: {accent_foreground}; }}"
     )
@@ -821,6 +852,165 @@ def _sync_native_shadow(widget: Any, widgets: Any) -> None:
     _store_enhancement_state(widget, state)
 
 
+def _margin_values(target: Any) -> Tuple[int, int, int, int]:
+    margins = target.contentsMargins()
+    return (
+        margins.left(),
+        margins.top(),
+        margins.right(),
+        margins.bottom(),
+    )
+
+
+def _message_box_has_icon(widget: Any, widgets: Any) -> bool:
+    no_icon = getattr(widgets.QMessageBox, "NoIcon", None)
+    if no_icon is None:
+        no_icon = widgets.QMessageBox.Icon.NoIcon
+    return widget.icon() != no_icon
+
+
+def _message_box_icon_spacer(layout: Any) -> Any:
+    if layout is None:
+        return None
+    for index in range(layout.count()):
+        spacer = layout.itemAt(index).spacerItem()
+        if spacer is not None:
+            return spacer
+    return None
+
+
+def _sync_native_message_box(
+    widget: Any,
+    widgets: Any,
+    message_box: Dict[str, Any],
+) -> None:
+    layout = widget.layout()
+    if not isinstance(layout, widgets.QGridLayout):
+        return
+    button_box = widget.findChild(
+        widgets.QDialogButtonBox,
+        "qt_msgbox_buttonbox",
+    )
+    button_layout = button_box.layout() if button_box is not None else None
+    if button_layout is None:
+        return
+    changed = False
+    applied_margins = message_box["applied_margins"]
+    if _margin_values(widget) != applied_margins:
+        widget.setContentsMargins(*applied_margins)
+        changed = True
+
+    for (
+        object_name,
+        _original_alignment,
+        applied_alignment,
+    ) in message_box["labels"]:
+        label = widget.findChild(widgets.QLabel, object_name)
+        if label is not None and label.alignment() != applied_alignment:
+            label.setAlignment(applied_alignment)
+            changed = True
+
+    button_margins = message_box["applied_button_margins"]
+    if _margin_values(button_layout) != button_margins:
+        button_layout.setContentsMargins(*button_margins)
+        changed = True
+
+    spacer = _message_box_icon_spacer(layout)
+    if spacer is not None and "icon_spacer_size" in message_box:
+        original_size = message_box["icon_spacer_size"]
+        size_policy = message_box["icon_spacer_policy"]
+        target_size = (
+            original_size if _message_box_has_icon(widget, widgets) else (0, 0)
+        )
+        size_hint = spacer.sizeHint()
+        if (size_hint.width(), size_hint.height()) != target_size:
+            if target_size == (0, 0):
+                fixed = getattr(widgets.QSizePolicy, "Fixed", None)
+                if fixed is None:
+                    fixed = widgets.QSizePolicy.Policy.Fixed
+                spacer.changeSize(
+                    0,
+                    0,
+                    fixed,
+                    fixed,
+                )
+            else:
+                spacer.changeSize(
+                    target_size[0],
+                    target_size[1],
+                    size_policy[0],
+                    size_policy[1],
+                )
+            changed = True
+
+    if changed:
+        layout.invalidate()
+        button_layout.invalidate()
+        widget.updateGeometry()
+
+
+def _enhance_native_message_box(
+    widget: Any,
+    core: Any,
+    widgets: Any,
+    state: Dict[str, Any],
+) -> None:
+    if "message_box" in state:
+        return
+    layout = widget.layout()
+    if not isinstance(layout, widgets.QGridLayout):
+        return
+    title = widget.findChild(widgets.QLabel, "qt_msgbox_label")
+    information = widget.findChild(
+        widgets.QLabel,
+        "qt_msgbox_informativelabel",
+    )
+    button_box = widget.findChild(
+        widgets.QDialogButtonBox,
+        "qt_msgbox_buttonbox",
+    )
+    if title is None or information is None or button_box is None:
+        return
+    button_layout = button_box.layout()
+    if button_layout is None:
+        return
+
+    horizontal_center = _qt_enum(core, "AlignHCenter", "AlignmentFlag")
+    align_left = _qt_enum(core, "AlignLeft", "AlignmentFlag")
+    vertical_center = _qt_enum(core, "AlignVCenter", "AlignmentFlag")
+    title_alignment = horizontal_center | vertical_center
+    information_alignment = align_left | vertical_center
+    message_box = {
+        "applied_button_margins": (0, 16, 0, 0),
+        "applied_margins": (24, 24, 24, 24),
+        "button_margins": _margin_values(button_layout),
+        "contents_margins": _margin_values(widget),
+        "labels": (
+            ("qt_msgbox_label", title.alignment(), title_alignment),
+            (
+                "qt_msgbox_informativelabel",
+                information.alignment(),
+                information_alignment,
+            ),
+        ),
+    }
+    spacer = _message_box_icon_spacer(layout)
+    if spacer is not None:
+        size = spacer.sizeHint()
+        policy = spacer.sizePolicy()
+        message_box.update(
+            {
+                "icon_spacer_policy": (
+                    policy.horizontalPolicy(),
+                    policy.verticalPolicy(),
+                ),
+                "icon_spacer_size": (size.width(), size.height()),
+            }
+        )
+    state["message_box"] = message_box
+    _sync_native_message_box(widget, widgets, message_box)
+
+
 def _enhancement_filter_type() -> Any:
     global _ENHANCEMENT_FILTER_TYPE
     if _ENHANCEMENT_FILTER_TYPE is not None:
@@ -831,12 +1021,15 @@ def _enhancement_filter_type() -> Any:
     palette_change = getattr(core.QEvent, "PaletteChange", None)
     mouse_press = getattr(core.QEvent, "MouseButtonPress", None)
     mouse_release = getattr(core.QEvent, "MouseButtonRelease", None)
+    layout_request = getattr(core.QEvent, "LayoutRequest", None)
     resize = getattr(core.QEvent, "Resize", None)
     show = getattr(core.QEvent, "Show", None)
     if paint is None:
         paint = core.QEvent.Type.Paint
         resize = core.QEvent.Type.Resize
         show = core.QEvent.Type.Show
+    if layout_request is None:
+        layout_request = core.QEvent.Type.LayoutRequest
     if palette_change is None:
         palette_change = core.QEvent.Type.PaletteChange
     if mouse_press is None:
@@ -848,6 +1041,30 @@ def _enhancement_filter_type() -> Any:
             if not watched.property(_ADOPTED_PROPERTY):
                 return False
             event_type = event.type()
+            if isinstance(watched, widgets.QMessageBox) and event_type in {
+                layout_request,
+                show,
+            }:
+                state = _enhancement_state(watched)
+                message_box = state.get("message_box") if state is not None else None
+                if state is not None:
+                    try:
+                        if message_box is None:
+                            _enhance_native_message_box(
+                                watched,
+                                core,
+                                widgets,
+                                state,
+                            )
+                            _store_enhancement_state(watched, state)
+                        else:
+                            _sync_native_message_box(
+                                watched,
+                                widgets,
+                                message_box,
+                            )
+                    except RuntimeError:
+                        pass
             if isinstance(watched, widgets.QComboBox) and event_type in {
                 mouse_press,
                 mouse_release,
@@ -907,6 +1124,8 @@ def _enhance_widget(widget: Any, widgets: Any) -> None:
             _mark_native_calendar_popup(widget, state)
         if isinstance(widget, widgets.QTabWidget):
             _enhance_native_tab_pane(widget, state)
+        if isinstance(widget, widgets.QMessageBox):
+            _enhance_native_message_box(widget, core, widgets, state)
         _add_native_shadow(widget, gui, widgets, state)
         if isinstance(
             widget,
@@ -915,6 +1134,7 @@ def _enhance_widget(widget: Any, widgets: Any) -> None:
                 widgets.QRadioButton,
                 widgets.QComboBox,
                 widgets.QAbstractSpinBox,
+                widgets.QMessageBox,
             ),
         ):
             event_filter = _enhancement_filter_type()(widget)
@@ -948,6 +1168,46 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
     state = _enhancement_state(widget)
     if state is None:
         return
+    message_box = state.get("message_box")
+    if message_box is not None and isinstance(widget, widgets.QMessageBox):
+        try:
+            if _margin_values(widget) == message_box["applied_margins"]:
+                widget.setContentsMargins(*message_box["contents_margins"])
+            for (
+                object_name,
+                original_alignment,
+                applied_alignment,
+            ) in message_box["labels"]:
+                label = widget.findChild(widgets.QLabel, object_name)
+                if (
+                    label is not None
+                    and label.alignment() == applied_alignment
+                ):
+                    label.setAlignment(original_alignment)
+            layout = widget.layout()
+            button_box = widget.findChild(
+                widgets.QDialogButtonBox,
+                "qt_msgbox_buttonbox",
+            )
+            button_layout = button_box.layout() if button_box is not None else None
+            if button_layout is not None:
+                if (
+                    _margin_values(button_layout)
+                    == message_box["applied_button_margins"]
+                ):
+                    button_layout.setContentsMargins(
+                        *message_box["button_margins"]
+                    )
+                button_layout.invalidate()
+            spacer = _message_box_icon_spacer(layout)
+            if spacer is not None and "icon_spacer_size" in message_box:
+                width, height = message_box["icon_spacer_size"]
+                horizontal, vertical = message_box["icon_spacer_policy"]
+                spacer.changeSize(width, height, horizontal, vertical)
+            layout.invalidate()
+            widget.updateGeometry()
+        except RuntimeError:
+            pass
     calendar = state.get("calendar")
     if calendar is not None and isinstance(widget, widgets.QCalendarWidget):
         view = widget.findChild(widgets.QTableView, "qt_calendar_calendarview")

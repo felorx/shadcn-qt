@@ -3,6 +3,32 @@
 All notable changes to shadcn-qt Core are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## 0.2.5 - 2026-08-18
+
+### Added
+
+- Added an interactive launcher to the Gallery's `QMessageBox` preview so the
+  real styled top-level dialog can be inspected without blocking the Gallery.
+- Added `radius_base` to theme creation, global configuration, stylesheet
+  rendering, and application theming. One pixel value now derives the complete
+  `sm/md/lg/xl` radius family while preserving explicit per-tier overrides.
+- Added a live global radius control and `--radius-base` option to the Gallery.
+
+### Changed
+
+- Connected custom-painted Checkbox, Calendar, DatePicker, Combo popup, and
+  TabPane corners to the active semantic radius tokens. Shape-defining radio,
+  slider, progress, scrollbar, and switch circles or pills remain geometric.
+
+### Fixed
+
+- Centered adopted `QMessageBox` titles while keeping supporting text
+  left-aligned, balanced all four content margins, removed the empty icon
+  column when no icon is present, and separated messages from action buttons.
+- Removed duplicated right-side reservations from native and Core ComboBox,
+  Date/Time editor, and SpinBox families, preserving usable value-editing
+  areas at compact widths without shrinking their dropdown or step buttons.
+
 ## 0.2.4 - 2026-08-15
 
 ### Changed

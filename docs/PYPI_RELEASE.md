@@ -49,6 +49,12 @@ the active title-to-page connection open, and removes blank seams where the
 lower shoulder curves join the exposed top border. See `CHANGELOG.md` for the
 complete release notes.
 
+Version 0.2.5 was published on 2026-08-18 (Asia/Shanghai). It adds one-value
+proportional semantic radius scaling across QSS, custom-painted components,
+and adopted native widgets; restores usable compact ComboBox, Date/Time, and
+SpinBox editing areas; and aligns the adopted `QMessageBox` title, description,
+margins, and actions. See `CHANGELOG.md` for the complete release notes.
+
 Release files:
 
 | File | SHA-256 |

@@ -5,7 +5,11 @@ from __future__ import annotations
 from typing import Any
 
 from shadcn_qt import _qt
-from shadcn_qt.widgets._style import enable_antialiasing, semantic_color
+from shadcn_qt.widgets._style import (
+    enable_antialiasing,
+    semantic_color,
+    semantic_radius,
+)
 
 QtCore, QtGui, QtWidgets = _qt.qt_modules()
 
@@ -52,7 +56,11 @@ def _tab_body_rect(bar: Any, index: int) -> Any:
     return rect
 
 
-def _active_tab_paths(body_rect: Any, bar_rect: Any) -> tuple[Any, Any]:
+def _active_tab_paths(
+    body_rect: Any,
+    bar_rect: Any,
+    top_radius: float = 8.0,
+) -> tuple[Any, Any]:
     """Return Chrome's connected fill and its bottomless visible outline."""
 
     shoulder = 10.0
@@ -60,7 +68,7 @@ def _active_tab_paths(body_rect: Any, bar_rect: Any) -> tuple[Any, Any]:
     bottom = bar_rect.bottom() + 1.0
     left = max(body_rect.left(), bar_rect.left() + shoulder + 0.5)
     right = min(body_rect.right(), bar_rect.right() - shoulder - 0.5)
-    top_radius = 8.0
+    top_radius = max(0.0, min(top_radius, body_rect.height() / 2.0))
 
     outline = QtGui.QPainterPath()
     outline.moveTo(left - shoulder, bottom)
@@ -194,7 +202,7 @@ def paint_tab_pane_frame(tab_widget: Any, paint_device: Any = None) -> None:
             min(frame.right(), bar_left + connection_right),
         )
 
-    radius = min(8.0, frame.height() / 2.0)
+    radius = min(semantic_radius(tab_widget, "lg"), frame.height() / 2.0)
     outline = QtGui.QPainterPath()
     outline.moveTo(gap_right, frame.top())
     outline.lineTo(frame.right(), frame.top())
@@ -419,6 +427,7 @@ def paint_tab_bar(bar: Any) -> None:
         hover_path, hover_outline = _active_tab_paths(
             _tab_body_rect(bar, hovered_inactive_index),
             QtCore.QRectF(bar.rect()),
+            semantic_radius(bar, "lg"),
         )
         painter.setPen(_qt_enum("NoPen", "PenStyle"))
         painter.setBrush(accent)
@@ -432,6 +441,7 @@ def paint_tab_bar(bar: Any) -> None:
         active_path, active_outline = _active_tab_paths(
             selected_rect,
             QtCore.QRectF(bar.rect()),
+            semantic_radius(bar, "lg"),
         )
         painter.setPen(_qt_enum("NoPen", "PenStyle"))
         painter.setBrush(page_surface)

@@ -12,12 +12,12 @@ Last verified: 2026-08-15.
 | Designer Property Editor | Available | Custom Qt properties include variants, sizes, validation, expansion, side, direction, chart type/data, typography level, and inherited Qt properties |
 | Designer Widget Box | Available | Registration catalog, container metadata, DOM XML, and `shadcn-qt-designer` launcher |
 | `.ui` runtime loading | Available | Unified `load_ui()` path for PyQt `uic` and PySide `QUiLoader` |
-| Global themes | Available | Light/dark, semantic token overrides, radius/font overrides, custom QSS, reusable Theme objects, JSON loader |
+| Global themes | Available | Light/dark, one-value proportional radius scaling, semantic token overrides, font overrides, custom QSS, reusable Theme objects, JSON loader |
 | Existing-project compatibility | Available | QtWidgets-wide automatic styling with component/native-kind mappings, QSS plus reversible painting/delegate/glyph/elevation enhancements, dynamic coverage, scoped adoption, semantic overrides, per-widget opt-out, and cleanup |
 | Token generation | Available | One renderer generates packaged Python and embedded C++ QSS |
 | Python automated tests | Passing | Imports, themes, all 66 constructors, QtWidgets family coverage and reversible enhancements, composites, Gallery, Designer metadata, and real `.ui` reconstruction are covered; current full-suite result is recorded in the implementing commit |
 | Designer host smoke test | Passing on macOS | `pyside6-designer` opened a custom-widget `.ui` offscreen with no registration/import errors |
-| Python package | Published | Core 0.2.4 is on PyPI; wheel and sdist pass metadata/content checks, exclude private Pro implementation, and are verified through isolated PySide6 and PyQt installation tests |
+| Python package | Published | Core 0.2.5 is on PyPI; wheel and sdist pass metadata/content checks, exclude private Pro implementation, and are verified through isolated PySide6 and PyQt installation tests |
 | Component gallery | Available | Searchable light/dark application provides interactive previews for all 66 public Core components plus four pages made only from stock QtWidgets |
 | C++ foundation | Available | Button, Input, Card, CMake install package, generated QSS resources; compiled with Qt 6.9 |
 | Documentation | Passing | VitePress production build succeeds |

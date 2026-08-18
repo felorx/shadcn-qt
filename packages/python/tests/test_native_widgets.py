@@ -658,6 +658,183 @@ def test_native_stylesheet_has_dedicated_family_rules(runtime):
     assert "color: #18181b" in selected_rule
 
 
+def test_native_compound_editors_keep_usable_field_at_compact_width(runtime):
+    app, QtWidgets = runtime
+    from shadcn_qt import (
+        adopt_native_widgets,
+        apply_theme,
+        disable_native_widget_styling,
+    )
+
+    disable_native_widget_styling(app, clear=True)
+    apply_theme(app, "light")
+    style = QtWidgets.QStyle
+    spin_control = getattr(style, "CC_SpinBox", None)
+    spin_edit_field = getattr(style, "SC_SpinBoxEditField", None)
+    combo_control = getattr(style, "CC_ComboBox", None)
+    combo_edit_field = getattr(style, "SC_ComboBoxEditField", None)
+    if spin_control is None:
+        spin_control = style.ComplexControl.CC_SpinBox
+        spin_edit_field = style.SubControl.SC_SpinBoxEditField
+        combo_control = style.ComplexControl.CC_ComboBox
+        combo_edit_field = style.SubControl.SC_ComboBoxEditField
+
+    adopted_widgets = []
+    for spin_type in (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox):
+        spin = spin_type()
+        spin.resize(80, 36)
+        assert adopt_native_widgets(spin) >= 1
+        spin.show()
+        adopted_widgets.append(spin)
+        app.processEvents()
+
+        option = QtWidgets.QStyleOptionSpinBox()
+        spin.initStyleOption(option)
+        editor_rect = spin.style().subControlRect(
+            spin_control,
+            option,
+            spin_edit_field,
+            spin,
+        )
+        assert editor_rect.width() == 32
+        assert spin.lineEdit().geometry() == editor_rect
+
+    combos = (
+        QtWidgets.QComboBox(),
+        QtWidgets.QComboBox(),
+        QtWidgets.QFontComboBox(),
+    )
+    combos[1].setEditable(True)
+    for combo in combos:
+        combo.addItems(("One", "Two"))
+        combo.resize(80, 36)
+        assert adopt_native_widgets(combo) >= 1
+        combo.show()
+        adopted_widgets.append(combo)
+        app.processEvents()
+
+        option = QtWidgets.QStyleOptionComboBox()
+        combo.initStyleOption(option)
+        editor_rect = combo.style().subControlRect(
+            combo_control,
+            option,
+            combo_edit_field,
+            combo,
+        )
+        assert editor_rect.width() == 32
+        if combo.isEditable():
+            assert combo.lineEdit().geometry() == editor_rect
+
+    date = QtWidgets.QDateEdit()
+    date.setCalendarPopup(True)
+    temporal_editors = (
+        QtWidgets.QDateEdit(),
+        date,
+        QtWidgets.QTimeEdit(),
+        QtWidgets.QDateTimeEdit(),
+    )
+    for editor in temporal_editors:
+        editor.resize(80, 36)
+        assert adopt_native_widgets(editor) >= 1
+        editor.show()
+        adopted_widgets.append(editor)
+        app.processEvents()
+        assert editor.lineEdit().geometry().width() >= 32
+
+    disable_native_widget_styling(app, clear=True)
+    for widget in adopted_widgets:
+        widget.close()
+
+
+def test_native_message_box_has_balanced_reversible_layout(runtime):
+    app, QtWidgets = runtime
+    from shadcn_qt import (
+        adopt_native_widgets,
+        apply_theme,
+        disable_native_widget_styling,
+    )
+    from shadcn_qt._qt import QtCore
+
+    disable_native_widget_styling(app, clear=True)
+    apply_theme(app, "light")
+    box = QtWidgets.QMessageBox()
+    box.setWindowTitle("Confirm workspace")
+    box.setText("Create the new workspace?")
+    box.setInformativeText("Existing files will remain unchanged.")
+    box.setStandardButtons(_message_box_buttons(QtWidgets, "Cancel", "Ok"))
+    title = box.findChild(QtWidgets.QLabel, "qt_msgbox_label")
+    information = box.findChild(
+        QtWidgets.QLabel,
+        "qt_msgbox_informativelabel",
+    )
+    button_box = box.findChild(
+        QtWidgets.QDialogButtonBox,
+        "qt_msgbox_buttonbox",
+    )
+    original_margins = _margins(box)
+    original_title_alignment = title.alignment()
+    original_information_alignment = information.alignment()
+    original_button_margins = _margins(button_box.layout())
+    original_spacer_size = _message_box_spacer(box).sizeHint()
+
+    assert adopt_native_widgets(box) >= 1
+    box.show()
+    app.processEvents()
+
+    assert _margins(box) == (24, 24, 24, 24)
+    horizontal_center = getattr(QtCore.Qt, "AlignHCenter", None)
+    align_left = getattr(QtCore.Qt, "AlignLeft", None)
+    if horizontal_center is None:
+        horizontal_center = QtCore.Qt.AlignmentFlag.AlignHCenter
+        align_left = QtCore.Qt.AlignmentFlag.AlignLeft
+    assert title.alignment() & horizontal_center
+    assert information.alignment() & align_left
+    assert not information.alignment() & horizontal_center
+    assert title.geometry().left() == box.contentsRect().left()
+    assert title.geometry().right() == box.contentsRect().right()
+    assert information.geometry().left() == box.contentsRect().left()
+    assert information.geometry().right() == box.contentsRect().right()
+    spacer = _message_box_spacer(box)
+    assert (spacer.sizeHint().width(), spacer.sizeHint().height()) == (0, 0)
+
+    first_button_top = min(
+        button_box.geometry().top() + button.geometry().top()
+        for button in button_box.buttons()
+    )
+    last_button_bottom = max(
+        button_box.geometry().top() + button.geometry().bottom()
+        for button in button_box.buttons()
+    )
+    assert first_button_top - information.geometry().bottom() - 1 == 24
+    assert title.geometry().top() == 24
+    assert box.rect().bottom() - last_button_bottom == 24
+
+    icon_scope = getattr(QtWidgets.QMessageBox, "Icon", QtWidgets.QMessageBox)
+    box.setIcon(getattr(icon_scope, "Warning"))
+    app.processEvents()
+    icon_label = box.findChild(QtWidgets.QLabel, "qt_msgboxex_icon_label")
+    assert icon_label.pixmap() is not None
+    assert not icon_label.pixmap().isNull()
+    assert _message_box_spacer(box).sizeHint() == original_spacer_size
+
+    assert disable_native_widget_styling(app, clear=True) >= 1
+    assert _margins(box) == original_margins
+    title = box.findChild(QtWidgets.QLabel, "qt_msgbox_label")
+    information = box.findChild(
+        QtWidgets.QLabel,
+        "qt_msgbox_informativelabel",
+    )
+    button_box = box.findChild(
+        QtWidgets.QDialogButtonBox,
+        "qt_msgbox_buttonbox",
+    )
+    assert title.alignment() == original_title_alignment
+    assert information.alignment() == original_information_alignment
+    assert _margins(button_box.layout()) == original_button_margins
+    assert _message_box_spacer(box).sizeHint() == original_spacer_size
+    box.close()
+
+
 def test_native_group_box_title_and_default_content_are_left_aligned(runtime):
     app, QtWidgets = runtime
     from shadcn_qt import (
@@ -711,3 +888,33 @@ def _standard_buttons(QtWidgets, *names):
         value = _standard_button(QtWidgets, name)
         result = value if result is None else result | value
     return result
+
+
+def _message_box_buttons(QtWidgets, *names):
+    scope = getattr(QtWidgets.QMessageBox, "StandardButton", None)
+    result = None
+    for name in names:
+        value = getattr(QtWidgets.QMessageBox, name, None)
+        if value is None:
+            value = getattr(scope, name)
+        result = value if result is None else result | value
+    return result
+
+
+def _margins(target):
+    margins = target.contentsMargins()
+    return (
+        margins.left(),
+        margins.top(),
+        margins.right(),
+        margins.bottom(),
+    )
+
+
+def _message_box_spacer(box):
+    layout = box.layout()
+    for index in range(layout.count()):
+        spacer = layout.itemAt(index).spacerItem()
+        if spacer is not None:
+            return spacer
+    raise AssertionError("QMessageBox icon spacer is missing")

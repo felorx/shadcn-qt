@@ -75,6 +75,8 @@ def test_gallery_search_and_theme_controls(gallery_runtime):
         assert surface_tokens <= set(preset["dark"])
     assert window.color_theme == "zinc"
     assert window.color_theme_select.currentText() == "Zinc"
+    assert window.radius_base == 6
+    assert window.radius_spin.value() == 6
     window.filter_components("message")
     assert window.visible_component_names() == [
         "Message",
@@ -106,6 +108,15 @@ def test_gallery_search_and_theme_controls(gallery_runtime):
         window_role = palette_type.ColorRole.Window
     assert app.palette().color(window_role).name() == "#100d16"
 
+    window.set_radius_base(9)
+    assert window.radius_base == 9
+    assert window.radius_spin.value() == 9
+    assert app.property("shadcn_qt_gallery_radius_base") == 9
+    assert app.property("shadcn_qt_radius_sm") == "6px"
+    assert app.property("shadcn_qt_radius_md") == "9px"
+    assert app.property("shadcn_qt_radius_lg") == "12px"
+    assert app.property("shadcn_qt_radius_xl") == "18px"
+
     window.color_theme_select.setCurrentText("Emerald")
     app.processEvents()
     assert window.color_theme == "emerald"
@@ -116,16 +127,28 @@ def test_gallery_search_and_theme_controls(gallery_runtime):
     assert app.property("shadcn_qt_color_input") == "#2b5a48"
     with pytest.raises(ValueError):
         window.set_color_theme("unknown")
+    with pytest.raises(ValueError):
+        window.set_radius_base(25)
     window.close()
 
 
 def test_gallery_color_theme_cli_option(gallery_runtime):
     _, gallery = gallery_runtime
     args = gallery._parse_args(
-        ["--theme", "dark", "--color-theme", "rose", "--component", "Button"]
+        [
+            "--theme",
+            "dark",
+            "--color-theme",
+            "rose",
+            "--radius-base",
+            "12",
+            "--component",
+            "Button",
+        ]
     )
     assert args.theme == "dark"
     assert args.color_theme == "rose"
+    assert args.radius_base == 12
     assert args.component == "Button"
 
 
@@ -332,3 +355,51 @@ def test_native_forms_overview_places_each_control_on_its_own_row(gallery_runtim
         assert type(parent_layout).__name__ == "QVBoxLayout"
         assert parent_layout.indexOf(control) >= 0
     preview.close()
+
+
+def test_gallery_qmessagebox_preview_opens_real_dialog(gallery_runtime):
+    app, gallery = gallery_runtime
+    QtWidgets = gallery.QtWidgets
+    window = gallery.GalleryWindow(component="QMessageBox")
+    window.show()
+    preview = window.show_component("QMessageBox")
+    app.processEvents()
+
+    embedded = preview.findChild(
+        QtWidgets.QMessageBox,
+        "nativeGalleryQMessageBox",
+    )
+    trigger = preview.findChild(
+        QtWidgets.QPushButton,
+        "nativeGalleryQMessageBoxTrigger",
+    )
+    assert embedded is not None
+    assert not embedded.isWindow()
+    assert trigger is not None
+
+    trigger.click()
+    app.processEvents()
+    popup = window.findChild(
+        QtWidgets.QMessageBox,
+        "nativeGalleryQMessageBoxPopup",
+    )
+    assert popup is not None
+    assert popup is not embedded
+    assert popup.isWindow()
+    assert popup.isVisible()
+    assert popup.text() == "Create the new workspace?"
+    assert popup.property("gallery_native_popup") is True
+    assert popup.property("shadcn_qt_native_adopted") is True
+    margins = popup.contentsMargins()
+    assert (
+        margins.left(),
+        margins.top(),
+        margins.right(),
+        margins.bottom(),
+    ) == (24, 24, 24, 24)
+    title = popup.findChild(QtWidgets.QLabel, "qt_msgbox_label")
+    assert title.geometry().left() == popup.contentsRect().left()
+    assert title.geometry().right() == popup.contentsRect().right()
+
+    popup.close()
+    window.close()

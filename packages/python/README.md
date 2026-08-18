@@ -1,6 +1,6 @@
 # shadcn-qt (Python)
 
-The free Core package is published at
+shadcn-qt Core 0.2.5 is published at
 [PyPI](https://pypi.org/project/shadcn-qt/). The distribution name is
 `shadcn-qt`; its normalized Python import name is `shadcn_qt`. Python 3.9 or
 newer is required.
@@ -51,13 +51,20 @@ brand = create_theme(
     "brand",
     base="light",
     colors={"primary": "#7c3aed", "ring": "#8b5cf6"},
-    radius={"md": "10px"},
+    radius_base=9,
+    radius={"xl": "20px"},
 )
 configure(theme=brand, extra_qss="QWidget#sidebar { border: none; }")
 apply_theme()  # uses the current QApplication
 ```
 
 JSON theme files can be loaded with `load_theme("brand.json")`.
+
+`radius_base` is a single pixel value for the `md` tier. It derives
+`sm/md/lg/xl` using `2/3 : 1 : 4/3 : 2`, so `radius_base=9` yields
+`6px / 9px / 12px / 18px`. Explicit entries in `radius` take precedence.
+Shape-defining circles and pills retain their geometry instead of being
+distorted by the semantic surface radius.
 
 ## High-DPI startup
 

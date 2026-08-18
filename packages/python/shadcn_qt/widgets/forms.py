@@ -20,6 +20,7 @@ from shadcn_qt.widgets._style import (
     position_combo_popup,
     position_popup_below,
     semantic_color,
+    semantic_radius,
     style_combo_popup,
     with_alpha,
 )
@@ -550,10 +551,20 @@ class DatePicker(QtWidgets.QDateEdit):
                 no_pen = QtCore.Qt.PenStyle.NoPen
             painter.setPen(no_pen)
             painter.setBrush(semantic_color(self, "accent"))
+            hover_rect = QtCore.QRectF(
+                self.width() - 30.0,
+                4.0,
+                26.0,
+                self.height() - 8.0,
+            )
+            hover_radius = min(
+                semantic_radius(self, "sm"),
+                hover_rect.height() / 2.0,
+            )
             painter.drawRoundedRect(
-                QtCore.QRectF(self.width() - 30.0, 4.0, 26.0, self.height() - 8.0),
-                4.0,
-                4.0,
+                hover_rect,
+                hover_radius,
+                hover_radius,
             )
         color_name = "accentForeground" if hover_active else "mutedForeground"
         color = semantic_color(self, color_name)

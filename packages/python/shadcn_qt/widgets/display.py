@@ -10,6 +10,7 @@ from shadcn_qt.widgets._icons import _VectorIconButton, _VectorIconGlyph
 from shadcn_qt.widgets._style import (
     enable_antialiasing,
     semantic_color,
+    semantic_radius,
     with_alpha,
 )
 from shadcn_qt.widgets.button import Button
@@ -403,15 +404,19 @@ class _CalendarDelegate(QtWidgets.QStyledItemDelegate):
         )
         hovered = bool(option.state & _style_state("State_MouseOver"))
         enabled = bool(option.state & _style_state("State_Enabled"))
+        day_radius = min(
+            semantic_radius(view, "md"),
+            day_rect.height() / 2.0,
+        )
         if selected:
             painter.setPen(_qt_pen_none())
             painter.setBrush(primary)
-            painter.drawRoundedRect(day_rect, 6, 6)
+            painter.drawRoundedRect(day_rect, day_radius, day_radius)
             painter.setPen(primary_foreground)
         elif hovered:
             painter.setPen(_qt_pen_none())
             painter.setBrush(accent)
-            painter.drawRoundedRect(day_rect, 6, 6)
+            painter.drawRoundedRect(day_rect, day_radius, day_radius)
             painter.setPen(foreground)
         else:
             painter.setPen(foreground if enabled else muted_foreground)

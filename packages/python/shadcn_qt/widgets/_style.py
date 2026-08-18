@@ -5,8 +5,11 @@ from __future__ import annotations
 from typing import Any, Optional
 
 from shadcn_qt import _qt
+from shadcn_qt._radius import format_radius, radius_pixels
 
 QtCore, QtGui, QtWidgets = _qt.qt_modules()
+
+_DEFAULT_RADIUS = {"sm": 4.0, "md": 6.0, "lg": 8.0, "xl": 12.0}
 
 
 def _palette_role(name: str) -> Any:
@@ -31,6 +34,31 @@ def semantic_color(
     if color.isValid():
         return color
     return widget.palette().color(_palette_role(fallback_role))
+
+
+def semantic_radius(
+    widget: Any,
+    name: str = "md",
+    *,
+    fallback: Optional[float] = None,
+) -> float:
+    """Return the active semantic radius for custom-painted geometry."""
+
+    default = _DEFAULT_RADIUS.get(name, 0.0) if fallback is None else fallback
+    app = QtWidgets.QApplication.instance()
+    value = app.property(f"shadcn_qt_radius_{name}") if app is not None else None
+    if value is None:
+        return float(default)
+    try:
+        return radius_pixels(str(value), name=f"radius[{name!r}]")
+    except (TypeError, ValueError):
+        return float(default)
+
+
+def semantic_radius_css(widget: Any, name: str = "md") -> str:
+    """Return a semantic radius formatted for an inline Qt Style Sheet."""
+
+    return format_radius(semantic_radius(widget, name))
 
 
 def with_alpha(color: Any, alpha: int) -> Any:
@@ -82,10 +110,11 @@ def style_combo_popup(widget: Any) -> Any:
     popup.setObjectName("shadcnQtComboPopup")
     background = semantic_color(widget, "popover").name()
     border = semantic_color(widget, "border").name()
+    radius = semantic_radius_css(widget, "md")
     popup.setStyleSheet(
         "#shadcnQtComboPopup { "
         f"background: {background}; border: 1px solid {border}; "
-        "border-radius: 6px; }"
+        f"border-radius: {radius}; }}"
     )
     popup.setFixedWidth(max(1, widget.width()))
     scroll_off = getattr(QtCore.Qt, "ScrollBarAlwaysOff", None)

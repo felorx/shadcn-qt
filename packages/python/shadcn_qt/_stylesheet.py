@@ -277,14 +277,21 @@ QComboBox[shadcn_qt_component="native-select"],
 QDateTimeEdit[shadcn_qt_component="date-picker"],
 QAbstractSpinBox[shadcn_qt_component="spin-box"] {{
   background: {c["background"]}; color: {c["foreground"]}; border: 1px solid {c["input"]};
-  border-radius: {r_md}; padding: 6px 32px 6px 12px; min-height: 22px;
+  border-radius: {r_md}; min-height: 22px;
   selection-background-color: {c["primary"]}; selection-color: {c["primaryForeground"]};
 }}
+/* Qt already removes each complex control's button subcontrol from its edit
+   field. Keep only the visual gap here instead of reserving that width twice. */
+QComboBox[shadcn_qt_component="select"],
+QComboBox[shadcn_qt_component="combobox"],
+QComboBox[shadcn_qt_component="native-select"],
+QDateTimeEdit[shadcn_qt_component="date-picker"] {{ padding: 6px 2px 6px 12px; }}
+QAbstractSpinBox[shadcn_qt_component="spin-box"] {{ padding: 6px 4px 6px 12px; }}
 QComboBox[shadcn_qt_component]:focus,
 QDateTimeEdit[shadcn_qt_component="date-picker"]:focus,
 QAbstractSpinBox[shadcn_qt_component="spin-box"]:focus {{ border-color: {c["ring"]}; }}
 QComboBox[shadcn_qt_component]::drop-down {{
-  subcontrol-origin: border; subcontrol-position: top right; width: 32px;
+  subcontrol-origin: border; subcontrol-position: top right; width: 28px;
   margin: 2px; border: none; border-radius: {r_sm}; background: transparent;
 }}
 QComboBox[shadcn_qt_component]::drop-down:hover,
@@ -654,7 +661,12 @@ QDialog[shadcn_qt_component="native-dialog"] {{
 }}
 QDialog[shadcn_qt_component="native-dialog"] QLabel {{ background: transparent; }}
 QDialog[shadcn_qt_component="native-dialog"] QFrame {{ border-color: {c["border"]}; }}
-QDialog[shadcn_qt_component="native-dialog"][nativeKind="message-box"] QLabel {{ font-weight: 400; }}
+QDialog[shadcn_qt_component="native-dialog"][nativeKind="message-box"] QLabel#qt_msgbox_label {{
+  font-size: 16px; font-weight: 600;
+}}
+QDialog[shadcn_qt_component="native-dialog"][nativeKind="message-box"] QLabel#qt_msgbox_informativelabel {{
+  color: {c["mutedForeground"]}; font-size: 14px; font-weight: 400;
+}}
 QDialog[shadcn_qt_component="native-dialog"][nativeKind="progress-dialog"] QProgressBar {{ min-height: 8px; }}
 QDialog[shadcn_qt_component="native-dialog"][nativeKind="file-dialog"] QTreeView,
 QDialog[shadcn_qt_component="native-dialog"][nativeKind="file-dialog"] QListView {{

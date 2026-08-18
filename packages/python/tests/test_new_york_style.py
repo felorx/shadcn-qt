@@ -69,6 +69,52 @@ def test_new_york_control_geometry(runtime):
     assert all(control.height() == 36 for control in controls)
 
 
+def test_compound_editors_keep_usable_field_at_compact_width(runtime):
+    from shadcn_qt import (
+        Combobox,
+        DatePicker,
+        NativeSelect,
+        Select,
+        apply_theme,
+    )
+
+    app, _, QtWidgets = runtime
+    apply_theme(app, "light")
+    style = QtWidgets.QStyle
+    combo_control = getattr(style, "CC_ComboBox", None)
+    combo_edit_field = getattr(style, "SC_ComboBoxEditField", None)
+    if combo_control is None:
+        combo_control = style.ComplexControl.CC_ComboBox
+        combo_edit_field = style.SubControl.SC_ComboBoxEditField
+
+    for control_type in (Select, NativeSelect, Combobox):
+        control = control_type()
+        control.addItems(("One", "Two"))
+        control.resize(80, 36)
+        control.show()
+        app.processEvents()
+
+        option = QtWidgets.QStyleOptionComboBox()
+        control.initStyleOption(option)
+        editor_rect = control.style().subControlRect(
+            combo_control,
+            option,
+            combo_edit_field,
+            control,
+        )
+        assert editor_rect.width() == 32
+        if control.isEditable():
+            assert control.lineEdit().geometry() == editor_rect
+        control.close()
+
+    picker = DatePicker()
+    picker.resize(80, 36)
+    picker.show()
+    app.processEvents()
+    assert picker.lineEdit().geometry().width() == 32
+    picker.close()
+
+
 def test_choice_controls_use_shadow_xs_contract(runtime):
     del runtime
     from shadcn_qt import native

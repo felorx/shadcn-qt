@@ -2,8 +2,8 @@
 
 This interactive application covers every public shadcn-qt Core component. It
 provides category navigation, component search, light/dark theme switching,
-one-click coordinated color themes, and real interactions for dialogs, menus,
-popovers, tooltips, and notifications.
+one-click coordinated color themes, live global corner-radius scaling, and
+real interactions for dialogs, menus, popovers, tooltips, and notifications.
 Every preview uses the classic `new-york` component profile with the Zinc
 light/dark palette. The **Native QtWidgets** section adds four full-family
 pages made exclusively from stock Qt classes, demonstrating the reversible
@@ -22,6 +22,7 @@ Open a particular component or theme directly:
 python examples/python_gallery/run.py --component DataTable --theme dark
 python examples/python_gallery/run.py --component "Native Forms" --theme dark
 python examples/python_gallery/run.py --component Button --color-theme violet
+python examples/python_gallery/run.py --component Card --radius-base 12
 ```
 
 The header color selector includes Zinc, Blue, Violet, Emerald, Orange, and
@@ -30,6 +31,10 @@ low-saturation window, card, popover, secondary, muted, border, and input
 surfaces. Each preset has coordinated light and dark values, so changing the
 mode keeps the chosen color family while preserving readable contrast. Zinc
 remains the default classic `new-york` baseline.
+
+The header radius control changes one base pixel value and derives the
+`sm/md/lg/xl` semantic corner family proportionally across Core and adopted
+native widgets. Circular and pill-shaped control geometry remains circular.
 
 Generate a screenshot without keeping the window open:
 

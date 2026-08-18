@@ -54,7 +54,7 @@ See [Core and Pro architecture](docs/PRO.md) and [license tiers](docs/TIERS.md).
 
 ## Install the free Core package (Python)
 
-shadcn-qt Core 0.2.4 is available from
+shadcn-qt Core 0.2.5 is available from
 [PyPI](https://pypi.org/project/shadcn-qt/). It is publicly downloadable at no
 cost for GPL-3.0-compatible use; proprietary applications require a commercial
 Core license. Pro is a separate private package.
@@ -106,7 +106,7 @@ from shadcn_qt import (
 )
 from shadcn_qt._qt import QtWidgets
 
-configure(theme="dark", colors={"primary": "#7c3aed"}, radius={"md": "10px"})
+configure(theme="dark", colors={"primary": "#7c3aed"}, radius_base=9)
 configure_high_dpi()  # before QApplication; preserves Windows 125%/150%/175%
 app = QtWidgets.QApplication([])
 apply_theme(app)
@@ -114,6 +114,13 @@ apply_theme(app)
 button = Button("Save", variant="outline", size="sm")
 field = Input()
 ```
+
+`radius_base` is the `md` corner radius in pixels. One value derives every
+semantic component radius using the built-in `sm/md/lg/xl` ratio
+`2/3 : 1 : 4/3 : 2`. For example, `radius_base=9` produces
+`6px / 9px / 12px / 18px`. Use `radius={"xl": "20px"}` together with it
+when one tier needs an explicit override. Circular and pill-shaped geometry
+such as radio indicators, slider handles, and switch tracks remains circular.
 
 Style an existing application without replacing its native widget classes:
 
@@ -169,6 +176,9 @@ theme switching:
 python examples/python_gallery/run.py
 ```
 
+The Gallery header includes a live base-radius control. You can also launch a
+specific radius directly with `--radius-base 12`.
+
 See the [component gallery guide](examples/python_gallery/README.md) for direct
 component selection and screenshot options.
 
@@ -180,7 +190,7 @@ cmake --build build
 ```
 
 Use Qt 5.15 by pointing `CMAKE_PREFIX_PATH` at a Qt5 kit; the same `CMakeLists.txt` selects Qt5 or Qt6 automatically.
-Installed packages expose version `0.2.4`, so downstream projects can require
+Installed packages expose version `0.2.5`, so downstream projects can require
 `find_package(ShadcnQt 0.2 CONFIG REQUIRED)`.
 
 ## Docs
