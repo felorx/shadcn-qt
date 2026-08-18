@@ -980,9 +980,13 @@ def _sync_native_message_box(
     if spacer is not None and "icon_spacer_size" in message_box:
         original_size = message_box["icon_spacer_size"]
         size_policy = message_box["icon_spacer_policy"]
-        target_size = original_size if has_icon else (0, 0)
         size_hint = spacer.sizeHint()
-        if (size_hint.width(), size_hint.height()) != target_size:
+        current_size = (size_hint.width(), size_hint.height())
+        if has_icon:
+            target_size = original_size if current_size == (0, 0) else current_size
+        else:
+            target_size = (0, 0)
+        if current_size != target_size:
             if target_size == (0, 0):
                 fixed = getattr(widgets.QSizePolicy, "Fixed", None)
                 if fixed is None:
@@ -1312,9 +1316,11 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
                 button_layout.invalidate()
             spacer = _message_box_icon_spacer(layout)
             if spacer is not None and "icon_spacer_size" in message_box:
-                width, height = message_box["icon_spacer_size"]
-                horizontal, vertical = message_box["icon_spacer_policy"]
-                spacer.changeSize(width, height, horizontal, vertical)
+                size = spacer.sizeHint()
+                if (size.width(), size.height()) == (0, 0):
+                    width, height = message_box["icon_spacer_size"]
+                    horizontal, vertical = message_box["icon_spacer_policy"]
+                    spacer.changeSize(width, height, horizontal, vertical)
             layout.invalidate()
             widget.updateGeometry()
         except RuntimeError:
