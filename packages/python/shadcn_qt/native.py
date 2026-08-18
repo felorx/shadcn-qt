@@ -43,7 +43,8 @@ def _refresh_style(widget: Any) -> None:
     if style is not None:
         style.unpolish(widget)
         style.polish(widget)
-    widget.update()
+    _, _, widgets = _qt.qt_modules()
+    widgets.QWidget.update(widget)
 
 
 def _is_internal_widget(widget: Any, widgets: Any) -> bool:
@@ -869,16 +870,6 @@ def _message_box_has_icon(widget: Any, widgets: Any) -> bool:
     return widget.icon() != no_icon
 
 
-def _message_box_icon_spacer(layout: Any) -> Any:
-    if layout is None:
-        return None
-    for index in range(layout.count()):
-        spacer = layout.itemAt(index).spacerItem()
-        if spacer is not None:
-            return spacer
-    return None
-
-
 def _sync_native_message_box(
     widget: Any,
     widgets: Any,
@@ -909,59 +900,38 @@ def _sync_native_message_box(
         changed = True
 
     has_icon = _message_box_has_icon(widget, widgets)
-    horizontal_spacing = message_box["horizontal_spacing"] if has_icon else 0
-    if layout.horizontalSpacing() != horizontal_spacing:
-        layout.setHorizontalSpacing(horizontal_spacing)
-        changed = True
+    labels = []
     for (
         object_name,
         _original_alignment,
         applied_alignment,
     ) in message_box["labels"]:
         label = widget.findChild(widgets.QLabel, object_name)
-        if label is not None and label.alignment() != applied_alignment:
-            label.setAlignment(applied_alignment)
-            changed = True
+        if label is not None:
+            labels.append(label)
+            if label.alignment() != applied_alignment:
+                label.setAlignment(applied_alignment)
+                changed = True
 
     button_margins = message_box["applied_button_margins"]
     if _margin_values(button_layout) != button_margins:
         button_layout.setContentsMargins(*button_margins)
         changed = True
 
-    spacer = _message_box_icon_spacer(layout)
-    if spacer is not None and "icon_spacer_size" in message_box:
-        original_size = message_box["icon_spacer_size"]
-        size_policy = message_box["icon_spacer_policy"]
-        size_hint = spacer.sizeHint()
-        current_size = (size_hint.width(), size_hint.height())
-        if has_icon:
-            target_size = original_size if current_size == (0, 0) else current_size
-        else:
-            target_size = (0, 0)
-        if current_size != target_size:
-            if target_size == (0, 0):
-                fixed = getattr(widgets.QSizePolicy, "Fixed", None)
-                if fixed is None:
-                    fixed = widgets.QSizePolicy.Policy.Fixed
-                spacer.changeSize(
-                    0,
-                    0,
-                    fixed,
-                    fixed,
-                )
-            else:
-                spacer.changeSize(
-                    target_size[0],
-                    target_size[1],
-                    size_policy[0],
-                    size_policy[1],
-                )
-            changed = True
-
     if changed:
         layout.invalidate()
         button_layout.invalidate()
+        layout.activate()
+        button_layout.activate()
         widget.updateGeometry()
+    if not has_icon:
+        contents = widget.contentsRect()
+        for label in labels:
+            geometry = label.geometry()
+            geometry.setLeft(contents.left())
+            geometry.setRight(contents.right())
+            if label.geometry() != geometry:
+                label.setGeometry(geometry)
 
 
 def _enhance_native_message_box(
@@ -1002,7 +972,6 @@ def _enhance_native_message_box(
         "applied_vertical_spacing": 8,
         "button_margins": _margin_values(button_layout),
         "contents_margins": _margin_values(widget),
-        "horizontal_spacing": layout.horizontalSpacing(),
         "layout_margins": _margin_values(layout),
         "vertical_spacing": layout.verticalSpacing(),
         "labels": (
@@ -1014,19 +983,6 @@ def _enhance_native_message_box(
             ),
         ),
     }
-    spacer = _message_box_icon_spacer(layout)
-    if spacer is not None:
-        size = spacer.sizeHint()
-        policy = spacer.sizePolicy()
-        message_box.update(
-            {
-                "icon_spacer_policy": (
-                    policy.horizontalPolicy(),
-                    policy.verticalPolicy(),
-                ),
-                "icon_spacer_size": (size.width(), size.height()),
-            }
-        )
     state["message_box"] = message_box
     _sync_native_message_box(widget, widgets, message_box)
 
@@ -1063,6 +1019,7 @@ def _enhancement_filter_type() -> Any:
             event_type = event.type()
             if isinstance(watched, widgets.QMessageBox) and event_type in {
                 layout_request,
+                resize,
                 show,
             }:
                 state = _enhancement_state(watched)
@@ -1083,6 +1040,26 @@ def _enhancement_filter_type() -> Any:
                                 widgets,
                                 message_box,
                             )
+                        if (
+                            message_box is not None
+                            and not message_box.get("sync_pending", False)
+                        ):
+                            message_box["sync_pending"] = True
+
+                            def sync_message_box() -> None:
+                                message_box["sync_pending"] = False
+                                try:
+                                    if not watched.property(_ADOPTED_PROPERTY):
+                                        return
+                                    _sync_native_message_box(
+                                        watched,
+                                        widgets,
+                                        message_box,
+                                    )
+                                except RuntimeError:
+                                    pass
+
+                            core.QTimer.singleShot(0, sync_message_box)
                     except RuntimeError:
                         pass
             if isinstance(watched, widgets.QComboBox) and event_type in {
@@ -1188,6 +1165,10 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
     state = _enhancement_state(widget)
     if state is None:
         return
+    event_filter = state.get("event_filter")
+    if event_filter is not None:
+        widget.removeEventFilter(event_filter)
+        event_filter.deleteLater()
     message_box = state.get("message_box")
     if message_box is not None and isinstance(widget, widgets.QMessageBox):
         try:
@@ -1215,13 +1196,6 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
                 == message_box["applied_vertical_spacing"]
             ):
                 layout.setVerticalSpacing(message_box["vertical_spacing"])
-            applied_horizontal_spacing = (
-                message_box["horizontal_spacing"]
-                if _message_box_has_icon(widget, widgets)
-                else 0
-            )
-            if layout.horizontalSpacing() == applied_horizontal_spacing:
-                layout.setHorizontalSpacing(message_box["horizontal_spacing"])
             button_box = widget.findChild(
                 widgets.QDialogButtonBox,
                 "qt_msgbox_buttonbox",
@@ -1236,14 +1210,8 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
                         *message_box["button_margins"]
                     )
                 button_layout.invalidate()
-            spacer = _message_box_icon_spacer(layout)
-            if spacer is not None and "icon_spacer_size" in message_box:
-                size = spacer.sizeHint()
-                if (size.width(), size.height()) == (0, 0):
-                    width, height = message_box["icon_spacer_size"]
-                    horizontal, vertical = message_box["icon_spacer_policy"]
-                    spacer.changeSize(width, height, horizontal, vertical)
             layout.invalidate()
+            layout.activate()
             widget.updateGeometry()
         except RuntimeError:
             pass
@@ -1329,10 +1297,6 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
             pass
     for glyph in state.get("glyphs", ()):
         glyph.deleteLater()
-    event_filter = state.get("event_filter")
-    if event_filter is not None:
-        widget.removeEventFilter(event_filter)
-        event_filter.deleteLater()
     shadow = state.get("shadow")
     if shadow is not None and widget.graphicsEffect() is shadow:
         # Qt owns and deletes the old effect when it is detached.

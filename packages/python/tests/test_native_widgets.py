@@ -91,6 +91,17 @@ def test_adopt_native_widgets_preserves_explicit_choices(runtime):
     assert disable_native_widget_styling(app, clear=True) >= adopted
 
 
+def test_native_item_view_refresh_uses_qwidget_overload(runtime):
+    app, QtWidgets = runtime
+    from shadcn_qt import adopt_native_widgets, disable_native_widget_styling
+
+    disable_native_widget_styling(app, clear=True)
+    view = QtWidgets.QListView()
+    assert adopt_native_widgets(view) >= 1
+    assert disable_native_widget_styling(app, clear=True) >= 1
+    view.close()
+
+
 def test_native_combo_popup_has_one_outer_border(runtime):
     app, QtWidgets = runtime
     from shadcn_qt import (
@@ -777,7 +788,6 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
     original_title_position = _layout_position(box.layout(), title)
     original_information_position = _layout_position(box.layout(), information)
     original_layout_margins = _margins(box.layout())
-    original_horizontal_spacing = box.layout().horizontalSpacing()
     original_vertical_spacing = box.layout().verticalSpacing()
     original_button_margins = _margins(button_box.layout())
 
@@ -787,7 +797,6 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
 
     assert _margins(box) == (24, 24, 24, 24)
     assert _margins(box.layout()) == (0, 0, 0, 0)
-    assert box.layout().horizontalSpacing() == 0
     assert box.layout().verticalSpacing() == 8
     horizontal_center = getattr(QtCore.Qt, "AlignHCenter", None)
     align_left = getattr(QtCore.Qt, "AlignLeft", None)
@@ -806,9 +815,6 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
         _layout_position(box.layout(), information)
         == original_information_position
     )
-    spacer = _message_box_spacer(box)
-    assert (spacer.sizeHint().width(), spacer.sizeHint().height()) == (0, 0)
-
     first_button_top = min(
         button_box.geometry().top() + button.geometry().top()
         for button in button_box.buttons()
@@ -827,9 +833,6 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
     icon_label = box.findChild(QtWidgets.QLabel, "qt_msgboxex_icon_label")
     assert icon_label.pixmap() is not None
     assert not icon_label.pixmap().isNull()
-    icon_spacer_size = _message_box_spacer(box).sizeHint()
-    assert icon_spacer_size.width() > 0
-    assert box.layout().horizontalSpacing() == original_horizontal_spacing
     icon_title_position = _layout_position(box.layout(), title)
     icon_information_position = _layout_position(box.layout(), information)
     assert icon_title_position[1] > 0
@@ -849,10 +852,8 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
     assert title.alignment() == original_title_alignment
     assert information.alignment() == original_information_alignment
     assert _margins(box.layout()) == original_layout_margins
-    assert box.layout().horizontalSpacing() == original_horizontal_spacing
     assert box.layout().verticalSpacing() == original_vertical_spacing
     assert _margins(button_box.layout()) == original_button_margins
-    assert _message_box_spacer(box).sizeHint() == icon_spacer_size
     assert _layout_position(box.layout(), title) == icon_title_position
     assert _layout_position(box.layout(), information) == icon_information_position
     box.close()
@@ -938,12 +939,3 @@ def _layout_position(layout, widget):
     index = layout.indexOf(widget)
     assert index >= 0
     return tuple(layout.getItemPosition(index))
-
-
-def _message_box_spacer(box):
-    layout = box.layout()
-    for index in range(layout.count()):
-        spacer = layout.itemAt(index).spacerItem()
-        if spacer is not None:
-            return spacer
-    raise AssertionError("QMessageBox icon spacer is missing")
