@@ -776,6 +776,7 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
     original_information_alignment = information.alignment()
     original_title_position = _layout_position(box.layout(), title)
     original_information_position = _layout_position(box.layout(), information)
+    original_layout_margins = _margins(box.layout())
     original_button_margins = _margins(button_box.layout())
     original_spacer_size = _message_box_spacer(box).sizeHint()
 
@@ -784,6 +785,7 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
     app.processEvents()
 
     assert _margins(box) == (24, 24, 24, 24)
+    assert _margins(box.layout()) == (0, 0, 0, 0)
     horizontal_center = getattr(QtCore.Qt, "AlignHCenter", None)
     align_left = getattr(QtCore.Qt, "AlignLeft", None)
     if horizontal_center is None:
@@ -848,6 +850,7 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
     )
     assert title.alignment() == original_title_alignment
     assert information.alignment() == original_information_alignment
+    assert _margins(box.layout()) == original_layout_margins
     assert _margins(button_box.layout()) == original_button_margins
     assert _message_box_spacer(box).sizeHint() == original_spacer_size
     assert _layout_position(box.layout(), title) == icon_title_position

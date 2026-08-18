@@ -923,6 +923,10 @@ def _sync_native_message_box(
     if _margin_values(widget) != applied_margins:
         widget.setContentsMargins(*applied_margins)
         changed = True
+    applied_layout_margins = message_box["applied_layout_margins"]
+    if _margin_values(layout) != applied_layout_margins:
+        layout.setContentsMargins(*applied_layout_margins)
+        changed = True
 
     has_icon = _message_box_has_icon(widget, widgets)
     for (
@@ -1037,9 +1041,11 @@ def _enhance_native_message_box(
         return
     message_box = {
         "applied_button_margins": (0, 16, 0, 0),
+        "applied_layout_margins": (0, 0, 0, 0),
         "applied_margins": (24, 24, 24, 24),
         "button_margins": _margin_values(button_layout),
         "contents_margins": _margin_values(widget),
+        "layout_margins": _margin_values(layout),
         "labels": (
             (
                 "qt_msgbox_label",
@@ -1250,6 +1256,11 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
                 ):
                     label.setAlignment(original_alignment)
             layout = widget.layout()
+            if (
+                _margin_values(layout)
+                == message_box["applied_layout_margins"]
+            ):
+                layout.setContentsMargins(*message_box["layout_margins"])
             for (
                 object_name,
                 _original_alignment,

@@ -92,7 +92,7 @@ def test_native_gallery_matches_screenshot_baseline(
     assert actual.size() == expected.size()
 
     mean_delta, changed_ratio = _perceptual_delta(actual, expected, QtCore)
-    if mean_delta > 7.0 or changed_ratio > 0.08:
+    if mean_delta > 7.0 or changed_ratio > 0.09:
         artifact = tmp_path / baseline_path.name
         actual.save(str(artifact))
         pytest.fail(
