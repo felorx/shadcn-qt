@@ -1019,6 +1019,7 @@ def _enhancement_filter_type() -> Any:
             event_type = event.type()
             if isinstance(watched, widgets.QMessageBox) and event_type in {
                 layout_request,
+                paint,
                 resize,
                 show,
             }:
@@ -1040,26 +1041,6 @@ def _enhancement_filter_type() -> Any:
                                 widgets,
                                 message_box,
                             )
-                        if (
-                            message_box is not None
-                            and not message_box.get("sync_pending", False)
-                        ):
-                            message_box["sync_pending"] = True
-
-                            def sync_message_box() -> None:
-                                message_box["sync_pending"] = False
-                                try:
-                                    if not watched.property(_ADOPTED_PROPERTY):
-                                        return
-                                    _sync_native_message_box(
-                                        watched,
-                                        widgets,
-                                        message_box,
-                                    )
-                                except RuntimeError:
-                                    pass
-
-                            core.QTimer.singleShot(0, sync_message_box)
                     except RuntimeError:
                         pass
             if isinstance(watched, widgets.QComboBox) and event_type in {
