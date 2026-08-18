@@ -11,7 +11,7 @@ for version 0.1.0 used an authorized local API token after the complete release
 checks and an isolated installation test. Version 0.2.0 was likewise published
 with `uv publish` and the existing scoped token after the full release workflow
 validated its tests and artifacts; clean PySide6 and PyQt6 installs were then
-verified from the production index. Versions 0.2.1 through 0.2.4 follow the
+verified from the production index. Versions 0.2.1 through 0.2.5 follow the
 same direct, maintainer-approved `uv publish` fallback. Version 0.2.5 adds
 single-value proportional radius scaling, fixes compact native complex-control
 editing geometry, and polishes the adopted `QMessageBox` layout and Gallery

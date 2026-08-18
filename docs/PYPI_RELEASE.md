@@ -71,6 +71,8 @@ Release files:
 | `shadcn_qt-0.2.3.tar.gz` | `e2ca65b29924ba7172a248e95f05ec058399f59661e122d83802df1c4cf0863c` |
 | `shadcn_qt-0.2.4-py3-none-any.whl` | `8ef820ce6162961c7b13091ece3ba24494f563bcc154919ccbbaa80434b2a587` |
 | `shadcn_qt-0.2.4.tar.gz` | `605300823eb4ecccbaa73d1c00f6c193d324e68f2f827e46d3a513a3ee46bc41` |
+| `shadcn_qt-0.2.5-py3-none-any.whl` | `390845ac4ddcdf8cf97f32e5f96cc3df91ecd07ce8249785ed29da7c4e71d22a` |
+| `shadcn_qt-0.2.5.tar.gz` | `9f0fb25da1e033163cd5cd525d73f067b983af48dacf0fc6cd50130ba85e3404` |
 
 ## One-time publisher setup
 
@@ -132,7 +134,7 @@ already uploaded to PyPI; PyPI release files are immutable.
 
 ## TestPyPI and production
 
-Versions 0.1.0 through 0.2.4 used a scoped local PyPI API token
+Versions 0.1.0 through 0.2.5 used a scoped local PyPI API token
 after all release checks and isolated wheel smoke tests. Version 0.2.0 was uploaded with
 `uv publish` after the tag workflow passed its tests, build, metadata, license,
 and distribution-content jobs but could not exchange OIDC because the PyPI
