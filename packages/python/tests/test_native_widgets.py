@@ -777,6 +777,7 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
     original_title_position = _layout_position(box.layout(), title)
     original_information_position = _layout_position(box.layout(), information)
     original_layout_margins = _margins(box.layout())
+    original_horizontal_spacing = box.layout().horizontalSpacing()
     original_vertical_spacing = box.layout().verticalSpacing()
     original_button_margins = _margins(button_box.layout())
 
@@ -786,6 +787,7 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
 
     assert _margins(box) == (24, 24, 24, 24)
     assert _margins(box.layout()) == (0, 0, 0, 0)
+    assert box.layout().horizontalSpacing() == 0
     assert box.layout().verticalSpacing() == 8
     horizontal_center = getattr(QtCore.Qt, "AlignHCenter", None)
     align_left = getattr(QtCore.Qt, "AlignLeft", None)
@@ -799,17 +801,10 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
     assert title.geometry().right() == box.contentsRect().right()
     assert information.geometry().left() == box.contentsRect().left()
     assert information.geometry().right() == box.contentsRect().right()
-    assert _layout_position(box.layout(), title) == (
-        original_title_position[0],
-        0,
-        original_title_position[2],
-        original_title_position[1] + original_title_position[3],
-    )
-    assert _layout_position(box.layout(), information) == (
-        original_information_position[0],
-        0,
-        original_information_position[2],
-        original_information_position[1] + original_information_position[3],
+    assert _layout_position(box.layout(), title) == original_title_position
+    assert (
+        _layout_position(box.layout(), information)
+        == original_information_position
     )
     spacer = _message_box_spacer(box)
     assert (spacer.sizeHint().width(), spacer.sizeHint().height()) == (0, 0)
@@ -834,6 +829,7 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
     assert not icon_label.pixmap().isNull()
     icon_spacer_size = _message_box_spacer(box).sizeHint()
     assert icon_spacer_size.width() > 0
+    assert box.layout().horizontalSpacing() == original_horizontal_spacing
     icon_title_position = _layout_position(box.layout(), title)
     icon_information_position = _layout_position(box.layout(), information)
     assert icon_title_position[1] > 0
@@ -853,6 +849,7 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
     assert title.alignment() == original_title_alignment
     assert information.alignment() == original_information_alignment
     assert _margins(box.layout()) == original_layout_margins
+    assert box.layout().horizontalSpacing() == original_horizontal_spacing
     assert box.layout().verticalSpacing() == original_vertical_spacing
     assert _margins(button_box.layout()) == original_button_margins
     assert _message_box_spacer(box).sizeHint() == icon_spacer_size

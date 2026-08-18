@@ -879,30 +879,6 @@ def _message_box_icon_spacer(layout: Any) -> Any:
     return None
 
 
-def _message_box_item_position(layout: Any, widget: Any) -> Any:
-    index = layout.indexOf(widget)
-    if index < 0:
-        return None
-    return (
-        tuple(layout.getItemPosition(index)),
-        layout.itemAt(index).alignment(),
-    )
-
-
-def _set_message_box_item_position(
-    layout: Any,
-    widget: Any,
-    position: Tuple[int, int, int, int],
-    alignment: Any,
-) -> bool:
-    current = _message_box_item_position(layout, widget)
-    if current is None or current[0] == position:
-        return False
-    layout.removeWidget(widget)
-    layout.addWidget(widget, *position, alignment)
-    return True
-
-
 def _sync_native_message_box(
     widget: Any,
     widgets: Any,
@@ -933,43 +909,19 @@ def _sync_native_message_box(
         changed = True
 
     has_icon = _message_box_has_icon(widget, widgets)
+    horizontal_spacing = message_box["horizontal_spacing"] if has_icon else 0
+    if layout.horizontalSpacing() != horizontal_spacing:
+        layout.setHorizontalSpacing(horizontal_spacing)
+        changed = True
     for (
         object_name,
         _original_alignment,
         applied_alignment,
-        original_position,
-        layout_alignment,
     ) in message_box["labels"]:
         label = widget.findChild(widgets.QLabel, object_name)
-        if label is not None:
-            if label.alignment() != applied_alignment:
-                label.setAlignment(applied_alignment)
-                changed = True
-            row, column, row_span, column_span = original_position
-            no_icon_position = (
-                row,
-                0,
-                row_span,
-                column + column_span,
-            )
-            current_position = _message_box_item_position(layout, label)[0]
-            if has_icon:
-                target_position = (
-                    original_position
-                    if current_position == no_icon_position
-                    else current_position
-                )
-            else:
-                target_position = no_icon_position
-            changed = (
-                _set_message_box_item_position(
-                    layout,
-                    label,
-                    target_position,
-                    layout_alignment,
-                )
-                or changed
-            )
+        if label is not None and label.alignment() != applied_alignment:
+            label.setAlignment(applied_alignment)
+            changed = True
 
     button_margins = message_box["applied_button_margins"]
     if _margin_values(button_layout) != button_margins:
@@ -1043,10 +995,6 @@ def _enhance_native_message_box(
     vertical_center = _qt_enum(core, "AlignVCenter", "AlignmentFlag")
     title_alignment = horizontal_center | vertical_center
     information_alignment = align_left | vertical_center
-    title_position = _message_box_item_position(layout, title)
-    information_position = _message_box_item_position(layout, information)
-    if title_position is None or information_position is None:
-        return
     message_box = {
         "applied_button_margins": (0, 16, 0, 0),
         "applied_layout_margins": (0, 0, 0, 0),
@@ -1054,22 +1002,15 @@ def _enhance_native_message_box(
         "applied_vertical_spacing": 8,
         "button_margins": _margin_values(button_layout),
         "contents_margins": _margin_values(widget),
+        "horizontal_spacing": layout.horizontalSpacing(),
         "layout_margins": _margin_values(layout),
         "vertical_spacing": layout.verticalSpacing(),
         "labels": (
-            (
-                "qt_msgbox_label",
-                title.alignment(),
-                title_alignment,
-                title_position[0],
-                title_position[1],
-            ),
+            ("qt_msgbox_label", title.alignment(), title_alignment),
             (
                 "qt_msgbox_informativelabel",
                 information.alignment(),
                 information_alignment,
-                information_position[0],
-                information_position[1],
             ),
         ),
     }
@@ -1256,8 +1197,6 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
                 object_name,
                 original_alignment,
                 applied_alignment,
-                original_position,
-                layout_alignment,
             ) in message_box["labels"]:
                 label = widget.findChild(widgets.QLabel, object_name)
                 if (
@@ -1276,30 +1215,13 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
                 == message_box["applied_vertical_spacing"]
             ):
                 layout.setVerticalSpacing(message_box["vertical_spacing"])
-            for (
-                object_name,
-                _original_alignment,
-                _applied_alignment,
-                original_position,
-                layout_alignment,
-            ) in message_box["labels"]:
-                label = widget.findChild(widgets.QLabel, object_name)
-                if label is not None:
-                    row, column, row_span, column_span = original_position
-                    no_icon_position = (
-                        row,
-                        0,
-                        row_span,
-                        column + column_span,
-                    )
-                    current = _message_box_item_position(layout, label)
-                    if current is not None and current[0] == no_icon_position:
-                        _set_message_box_item_position(
-                            layout,
-                            label,
-                            original_position,
-                            layout_alignment,
-                        )
+            applied_horizontal_spacing = (
+                message_box["horizontal_spacing"]
+                if _message_box_has_icon(widget, widgets)
+                else 0
+            )
+            if layout.horizontalSpacing() == applied_horizontal_spacing:
+                layout.setHorizontalSpacing(message_box["horizontal_spacing"])
             button_box = widget.findChild(
                 widgets.QDialogButtonBox,
                 "qt_msgbox_buttonbox",
