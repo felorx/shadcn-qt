@@ -774,6 +774,8 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
     original_margins = _margins(box)
     original_title_alignment = title.alignment()
     original_information_alignment = information.alignment()
+    original_title_position = _layout_position(box.layout(), title)
+    original_information_position = _layout_position(box.layout(), information)
     original_button_margins = _margins(button_box.layout())
     original_spacer_size = _message_box_spacer(box).sizeHint()
 
@@ -794,6 +796,18 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
     assert title.geometry().right() == box.contentsRect().right()
     assert information.geometry().left() == box.contentsRect().left()
     assert information.geometry().right() == box.contentsRect().right()
+    assert _layout_position(box.layout(), title) == (
+        original_title_position[0],
+        0,
+        original_title_position[2],
+        original_title_position[1] + original_title_position[3],
+    )
+    assert _layout_position(box.layout(), information) == (
+        original_information_position[0],
+        0,
+        original_information_position[2],
+        original_information_position[1] + original_information_position[3],
+    )
     spacer = _message_box_spacer(box)
     assert (spacer.sizeHint().width(), spacer.sizeHint().height()) == (0, 0)
 
@@ -816,6 +830,10 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
     assert icon_label.pixmap() is not None
     assert not icon_label.pixmap().isNull()
     assert _message_box_spacer(box).sizeHint() == original_spacer_size
+    icon_title_position = _layout_position(box.layout(), title)
+    icon_information_position = _layout_position(box.layout(), information)
+    assert icon_title_position[1] > 0
+    assert icon_information_position[1] > 0
 
     assert disable_native_widget_styling(app, clear=True) >= 1
     assert _margins(box) == original_margins
@@ -832,6 +850,8 @@ def test_native_message_box_has_balanced_reversible_layout(runtime):
     assert information.alignment() == original_information_alignment
     assert _margins(button_box.layout()) == original_button_margins
     assert _message_box_spacer(box).sizeHint() == original_spacer_size
+    assert _layout_position(box.layout(), title) == icon_title_position
+    assert _layout_position(box.layout(), information) == icon_information_position
     box.close()
 
 
@@ -909,6 +929,12 @@ def _margins(target):
         margins.right(),
         margins.bottom(),
     )
+
+
+def _layout_position(layout, widget):
+    index = layout.indexOf(widget)
+    assert index >= 0
+    return tuple(layout.getItemPosition(index))
 
 
 def _message_box_spacer(box):
