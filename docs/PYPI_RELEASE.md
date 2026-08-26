@@ -79,6 +79,8 @@ Release files:
 | `shadcn_qt-0.2.4.tar.gz` | `605300823eb4ecccbaa73d1c00f6c193d324e68f2f827e46d3a513a3ee46bc41` |
 | `shadcn_qt-0.2.5-py3-none-any.whl` | `390845ac4ddcdf8cf97f32e5f96cc3df91ecd07ce8249785ed29da7c4e71d22a` |
 | `shadcn_qt-0.2.5.tar.gz` | `9f0fb25da1e033163cd5cd525d73f067b983af48dacf0fc6cd50130ba85e3404` |
+| `shadcn_qt-0.2.6-py3-none-any.whl` | `ff1941c4ede1f32cfa297ac4a866d56435ab46ebc6ad86fedf08c93c35e5f3aa` |
+| `shadcn_qt-0.2.6.tar.gz` | `e50f2cd0ae24b8468b031957464617116d1f1dacd86ed33f5c77572cc6ce65a8` |
 
 ## One-time publisher setup
 
@@ -142,9 +144,11 @@ already uploaded to PyPI; PyPI release files are immutable.
 Versions 0.1.0 through 0.2.5 used a scoped local PyPI API token after all
 release checks and isolated wheel smoke tests. Version 0.2.0 was uploaded with
 `uv publish` after the tag workflow passed its tests, build, metadata, license,
-and distribution-content jobs. The GitHub workflows now read project-scoped
-credentials from their protected `pypi` and `testpypi` environments. Retain
-direct `uv publish` as an explicit maintainer-approved fallback.
+and distribution-content jobs. Version 0.2.6 was published by `release.yml`
+with project-scoped credentials from the protected `pypi` environment. The
+GitHub workflows now read the same credential shape from their protected
+`pypi` and `testpypi` environments. Retain direct `uv publish` as an explicit
+maintainer-approved fallback.
 
 For that fallback, pass the token through `UV_PUBLISH_TOKEN` without placing it
 on the command line or in logs:
