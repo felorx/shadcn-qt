@@ -16,17 +16,19 @@ same direct, maintainer-approved `uv publish` fallback. Version 0.2.6 aligns
 Core and adopted native combo popup rows with the 32px `new-york` minimum while
 preserving larger application-defined rows and custom delegate behavior.
 
-Future releases use PyPI Trusted Publishing rather than a stored API token:
+GitHub Actions releases use environment-scoped PyPI credentials:
 
 1. configure protected GitHub environments `testpypi` and `pypi`;
-2. register the exact repository/workflow/environment as Trusted Publishers;
+2. set `PYPI_USERNAME` as an environment variable and `PYPI_API_TOKEN` as an
+   environment secret in each environment, using credentials for the matching
+   package index;
 3. run the manual TestPyPI workflow;
 4. update the matching versions in `packages/python/pyproject.toml` and
    `packages/cpp/shadcn_qt/CMakeLists.txt`, then tag exactly `v<version>`;
 5. approve the protected `pypi` deployment after tests and artifact checks.
 
 An explicitly maintainer-approved direct production release may instead use
-`uv publish` with `UV_PUBLISH_TOKEN` when the Trusted Publisher is unavailable.
+`uv publish` with `UV_PUBLISH_TOKEN` when GitHub Actions is unavailable.
 Never print the token or pass it as a command-line argument.
 
 The workflow validates GPL/commercial metadata and confirms that all license
@@ -35,6 +37,5 @@ files are inside both the wheel and sdist. See the repository's
 
 Publisher metadata is configured for Felorx. Keep
 `https://github.com/felorx/shadcn-qt` public, configure its protected
-environments and Trusted Publishers before the next release, and replace the
-temporary Felorx homepage commercial link when a dedicated sales page is
-available.
+environments before the next release, and replace the temporary Felorx
+homepage commercial link when a dedicated sales page is available.

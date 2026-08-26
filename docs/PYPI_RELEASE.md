@@ -89,23 +89,22 @@ Release files:
 2. Create protected GitHub environments named `testpypi` and `pypi`. Require a
    reviewer for `pypi`, restrict deployment branches/tags, and prevent
    self-review where the organization supports it.
-3. On TestPyPI, configure a Trusted Publisher for project `shadcn-qt`, the
-   exact GitHub owner/repository, workflow `testpypi.yml`, and environment
-   `testpypi`.
-4. On PyPI, configure the existing `shadcn-qt` project with workflow
-   `release.yml` and environment `pypi` as its Trusted Publisher.
+3. In the `testpypi` environment, set variable `PYPI_USERNAME` and secret
+   `PYPI_API_TOKEN` from credentials scoped to the TestPyPI project.
+4. In the `pypi` environment, set variable `PYPI_USERNAME` and secret
+   `PYPI_API_TOKEN` from credentials scoped to the production PyPI project.
 5. Enable two-factor authentication and give at least two trusted owners access
-   to the PyPI project. Do not put PyPI passwords or long-lived API tokens in
-   GitHub secrets when Trusted Publishing is available.
+   to the PyPI project. Use project-scoped API tokens, rotate them when access
+   changes, and never expose them in workflow logs.
 
 The upload workflows intentionally run `tools/check_release_readiness.py` and
 require the Felorx publisher identity, public `Source`, `Documentation`, and
 `Commercial` HTTPS URLs, and a real public `origin` remote. This prevents an
 anonymous or misdirected commercial release. The checker cannot create the
-GitHub repository or verify ownership, so confirm both before enabling Trusted
-Publishing.
+GitHub repository or verify ownership, so confirm both before enabling
+publishing.
 
-Official setup documentation:
+For a future migration from stored tokens to Trusted Publishing:
 
 - [PyPI Trusted Publishers](https://docs.pypi.org/trusted-publishers/)
 - [Publishing from GitHub Actions](https://docs.pypi.org/trusted-publishers/using-a-publisher/)
@@ -140,13 +139,12 @@ already uploaded to PyPI; PyPI release files are immutable.
 
 ## TestPyPI and production
 
-Versions 0.1.0 through 0.2.5 used a scoped local PyPI API token
-after all release checks and isolated wheel smoke tests. Version 0.2.0 was uploaded with
+Versions 0.1.0 through 0.2.5 used a scoped local PyPI API token after all
+release checks and isolated wheel smoke tests. Version 0.2.0 was uploaded with
 `uv publish` after the tag workflow passed its tests, build, metadata, license,
-and distribution-content jobs but could not exchange OIDC because the PyPI
-Trusted Publisher was not yet registered. Configure Trusted Publishing before
-the next release; retain direct `uv publish` as an explicit maintainer-approved
-fallback rather than requiring browser configuration during a release.
+and distribution-content jobs. The GitHub workflows now read project-scoped
+credentials from their protected `pypi` and `testpypi` environments. Retain
+direct `uv publish` as an explicit maintainer-approved fallback.
 
 For that fallback, pass the token through `UV_PUBLISH_TOKEN` without placing it
 on the command line or in logs:
@@ -174,8 +172,8 @@ git push origin v<version>
 
 The `release.yml` workflow verifies that the tag equals `v<package-version>`,
 runs tests, builds one wheel and one sdist, checks their metadata and legal
-files, and publishes through OIDC. The protected `pypi` environment is the
-manual approval gate.
+files, and publishes with the `PYPI_API_TOKEN` secret from the protected
+`pypi` environment. That environment remains the manual approval gate.
 
 After publication, verify the PyPI metadata and install in clean PySide6 and
 PyQt environments. Prefer yanking a broken release and publishing a new patch
