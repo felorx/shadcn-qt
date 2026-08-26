@@ -55,6 +55,12 @@ and adopted native widgets; restores usable compact ComboBox, Date/Time, and
 SpinBox editing areas; and aligns the adopted `QMessageBox` title, description,
 margins, and actions. See `CHANGELOG.md` for the complete release notes.
 
+Version 0.2.6 was published on 2026-08-26 (Asia/Shanghai). It enforces the 32px
+`new-york` minimum for Core and adopted native combo popup rows, preserves
+larger application-defined sizes and custom delegate behavior, and keeps
+`QFontComboBox` plus late delegate replacement stable across PySide and PyQt.
+See `CHANGELOG.md` for the complete release notes.
+
 Release files:
 
 | File | SHA-256 |

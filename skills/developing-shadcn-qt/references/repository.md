@@ -150,7 +150,7 @@ created later are adopted through its application event filter.
 ## Installation Guidance
 
 The public distribution name is `shadcn-qt`; the import name is `shadcn_qt`.
-The current published baseline is 0.2.5.
+The current published baseline is 0.2.6.
 
 ```bash
 # New environment: choose exactly one binding extra.

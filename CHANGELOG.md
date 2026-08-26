@@ -3,7 +3,7 @@
 All notable changes to shadcn-qt Core are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
-## Unreleased
+## 0.2.6 - 2026-08-26
 
 ### Fixed
 

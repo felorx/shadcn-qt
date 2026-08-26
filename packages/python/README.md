@@ -1,6 +1,6 @@
 # shadcn-qt (Python)
 
-shadcn-qt Core 0.2.5 is published at
+shadcn-qt Core 0.2.6 is published at
 [PyPI](https://pypi.org/project/shadcn-qt/). The distribution name is
 `shadcn-qt`; its normalized Python import name is `shadcn_qt`. Python 3.9 or
 newer is required.
