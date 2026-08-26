@@ -7,16 +7,17 @@ semantic choices such as Card vs Alert or Checkbox vs Switch remain explicit.
 
 from __future__ import annotations
 
+import weakref
 from typing import Any, Dict, Iterable, Optional, Tuple
 
 from shadcn_qt import _qt
 from shadcn_qt._radius import format_radius, radius_pixels
 
 _ADAPTER_ATTRIBUTE = "_shadcn_qt_native_widget_styling_adapter"
+_ADOPTED_WIDGETS_ATTRIBUTE = "_shadcn_qt_native_adopted_widgets"
 _ADOPTED_PROPERTY = "shadcn_qt_native_adopted"
 _ADDED_PROPERTIES = "shadcn_qt_native_properties"
 _ENHANCEMENTS_PROPERTY = "shadcn_qt_native_enhancements"
-_COMBO_STATE_TOKEN_PROPERTY = "shadcn_qt_combo_state_token"
 _PREFERENCE_PROPERTY = "shadcn_qt_native_styling"
 _COMBO_POPUP_NAME = "shadcnQtNativeComboPopup"
 _COMBO_POPUP_VIEW_NAME = "shadcnQtNativeComboPopupView"
@@ -37,11 +38,10 @@ _ENHANCEMENT_FILTER_TYPE: Optional[Any] = None
 _NATIVE_GLYPH_TYPE: Optional[Any] = None
 _POPUP_POSITION_FILTER_TYPE: Optional[Any] = None
 _TAB_PANE_FILTER_TYPE: Optional[Any] = None
-_COMBO_STATES: Dict[str, Dict[str, Any]] = {}
 
 
-class _ComboState(dict):
-    """Mark state containing combo popup wrappers unsafe for QVariant."""
+class _EnhancementState(dict):
+    """Keep Python-owned Qt wrappers opaque inside dynamic properties."""
 
 
 def _refresh_style(widget: Any) -> None:
@@ -51,6 +51,32 @@ def _refresh_style(widget: Any) -> None:
         style.polish(widget)
     _, _, widgets = _qt.qt_modules()
     widgets.QWidget.update(widget)
+
+
+def _track_adopted_widget(widget: Any) -> None:
+    """Retain a non-owning record for deterministic adapter cleanup."""
+
+    _, _, widgets = _qt.qt_modules()
+    app = widgets.QApplication.instance()
+    if app is None:
+        return
+    adopted = getattr(app, _ADOPTED_WIDGETS_ATTRIBUTE, None)
+    if adopted is None:
+        adopted = {}
+        setattr(app, _ADOPTED_WIDGETS_ATTRIBUTE, adopted)
+    adopted[id(widget)] = weakref.ref(widget)
+
+
+def _forget_adopted_widget(widget: Any) -> None:
+    _, _, widgets = _qt.qt_modules()
+    app = widgets.QApplication.instance()
+    adopted = (
+        getattr(app, _ADOPTED_WIDGETS_ATTRIBUTE, None)
+        if app is not None
+        else None
+    )
+    if adopted is not None:
+        adopted.pop(id(widget), None)
 
 
 def _is_internal_widget(widget: Any, widgets: Any) -> bool:
@@ -553,12 +579,6 @@ def _native_glyph_type() -> Any:
 
 
 def _enhancement_state(widget: Any) -> Optional[Dict[str, Any]]:
-    token = widget.property(_COMBO_STATE_TOKEN_PROPERTY)
-    if token:
-        state = _COMBO_STATES.get(str(token))
-        if state is not None:
-            widget._shadcn_qt_native_enhancements = state
-            return state
     state = getattr(widget, "_shadcn_qt_native_enhancements", None)
     if state is not None:
         return state
@@ -570,21 +590,8 @@ def _enhancement_state(widget: Any) -> Optional[Dict[str, Any]]:
 
 
 def _store_enhancement_state(widget: Any, state: Dict[str, Any]) -> None:
+    _track_adopted_widget(widget)
     widget._shadcn_qt_native_enhancements = state
-    if isinstance(state, _ComboState):
-        token = widget.property(_COMBO_STATE_TOKEN_PROPERTY)
-        token = str(token) if token else f"{id(state):x}"
-        if token not in _COMBO_STATES:
-            widget.destroyed.connect(
-                lambda *_args: _COMBO_STATES.pop(token, None)
-            )
-        _COMBO_STATES[token] = state
-        widget.setProperty(_COMBO_STATE_TOKEN_PROPERTY, token)
-        widget.setProperty(
-            _ENHANCEMENTS_PROPERTY,
-            {"combo_state_token": token},
-        )
-        return
     # Qt dynamic properties belong to the C++ object, so this state remains
     # reachable even when a binding creates a replacement Python wrapper while
     # constructing a complex subclass such as QFontComboBox.
@@ -1194,11 +1201,7 @@ def _enhance_widget(widget: Any, widgets: Any) -> None:
     core, gui, _ = _qt.qt_modules()
     state = _enhancement_state(widget)
     if state is None:
-        state = (
-            _ComboState()
-            if isinstance(widget, widgets.QComboBox)
-            else {}
-        )
+        state = _EnhancementState()
         widget._shadcn_qt_native_enhancements = state
         _add_native_glyphs(widget, widgets, state)
         if isinstance(widget, widgets.QComboBox):
@@ -1406,10 +1409,6 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
         widget.setGraphicsEffect(None)
     if hasattr(widget, "_shadcn_qt_combo_click_pending"):
         delattr(widget, "_shadcn_qt_combo_click_pending")
-    token = widget.property(_COMBO_STATE_TOKEN_PROPERTY)
-    if token:
-        _COMBO_STATES.pop(str(token), None)
-    widget.setProperty(_COMBO_STATE_TOKEN_PROPERTY, None)
     widget.setProperty(_ENHANCEMENTS_PROPERTY, None)
     if hasattr(widget, "_shadcn_qt_native_enhancements"):
         delattr(widget, "_shadcn_qt_native_enhancements")
@@ -1450,6 +1449,7 @@ def _adopt_widget(widget: Any, widgets: Any, *, refresh: bool) -> bool:
 
     widget.setProperty(_ADOPTED_PROPERTY, True)
     widget.setProperty(_ADDED_PROPERTIES, ",".join(added))
+    _track_adopted_widget(widget)
     _enhance_widget(widget, widgets)
     if refresh:
         _refresh_style(widget)
@@ -1457,7 +1457,13 @@ def _adopt_widget(widget: Any, widgets: Any, *, refresh: bool) -> bool:
 
 
 def _clear_widget(widget: Any, widgets: Any, *, refresh: bool) -> bool:
-    if not widget.property(_ADOPTED_PROPERTY):
+    try:
+        adopted = widget.property(_ADOPTED_PROPERTY)
+    except RuntimeError:
+        _forget_adopted_widget(widget)
+        return False
+    if not adopted:
+        _forget_adopted_widget(widget)
         return False
     _restore_widget(widget, widgets)
     defaults = _native_defaults(widget, widgets) or {}
@@ -1471,12 +1477,23 @@ def _clear_widget(widget: Any, widgets: Any, *, refresh: bool) -> bool:
     widget.setProperty(_ADDED_PROPERTIES, None)
     if refresh:
         _refresh_style(widget)
+    _forget_adopted_widget(widget)
     return True
 
 
 def _widgets_below(root: Any, widgets: Any, *, recursive: bool) -> Iterable[Any]:
     if isinstance(root, widgets.QApplication):
-        return tuple(root.allWidgets())
+        # QApplication.allWidgets() can expose wrappers whose C++ objects are
+        # already pending deferred deletion. Shiboken may segfault while
+        # materializing that global list after popup-heavy test/application
+        # activity. Every live widget is either a top-level widget or one of
+        # its descendants, so build the same practical snapshot from stable
+        # ownership trees instead.
+        snapshot = []
+        for top_level in tuple(root.topLevelWidgets()):
+            snapshot.append(top_level)
+            snapshot.extend(top_level.findChildren(widgets.QWidget))
+        return tuple(snapshot)
     if isinstance(root, widgets.QWidget):
         if not recursive:
             return (root,)
@@ -1617,8 +1634,15 @@ def disable_native_widget_styling(app: Any = None, *, clear: bool = True) -> int
 
     cleared = 0
     if clear:
-        for widget in tuple(app.allWidgets()):
+        adopted = getattr(app, _ADOPTED_WIDGETS_ATTRIBUTE, ())
+        references = adopted.values() if isinstance(adopted, dict) else ()
+        for reference in tuple(references):
+            widget = reference()
+            if widget is None:
+                continue
             cleared += int(_clear_widget(widget, widgets, refresh=True))
+        if hasattr(app, _ADOPTED_WIDGETS_ATTRIBUTE):
+            delattr(app, _ADOPTED_WIDGETS_ATTRIBUTE)
     return cleared
 
 

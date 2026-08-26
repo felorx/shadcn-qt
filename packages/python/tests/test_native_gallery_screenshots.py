@@ -17,7 +17,22 @@ def screenshot_runtime():
     from examples.python_gallery import run as gallery
 
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    return app, QtCore, QtGui, gallery
+    original_top_levels = {id(widget) for widget in app.topLevelWidgets()}
+    yield app, QtCore, QtGui, gallery
+
+    from shadcn_qt import disable_native_widget_styling
+
+    disable_native_widget_styling(app, clear=True)
+    app.processEvents()
+    for widget in tuple(app.topLevelWidgets()):
+        if id(widget) in original_top_levels:
+            continue
+        widget.close()
+        widget.deleteLater()
+    QtCore.QCoreApplication.sendPostedEvents(
+        None,
+        QtCore.QEvent.Type.DeferredDelete,
+    )
 
 
 def _slug(name):
