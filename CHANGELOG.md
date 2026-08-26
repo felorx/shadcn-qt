@@ -3,6 +3,18 @@
 All notable changes to shadcn-qt Core are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Fixed
+
+- Enforced the 32px `new-york` minimum for Core and adopted native combo popup
+  rows even when a model `SizeHintRole`, custom delegate, `QFontComboBox`, or
+  late delegate replacement reports a smaller height. Explicitly larger rows,
+  custom delegate behavior, and reversible Native cleanup remain intact across
+  PySide and PyQt.
+- Applied native combo popup styling through `QAbstractItemView` so applications
+  using a custom popup view receive the same option geometry and visual states.
+
 ## 0.2.5 - 2026-08-18
 
 ### Added

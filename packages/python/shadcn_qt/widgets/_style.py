@@ -10,6 +10,180 @@ from shadcn_qt._radius import format_radius, radius_pixels
 QtCore, QtGui, QtWidgets = _qt.qt_modules()
 
 _DEFAULT_RADIUS = {"sm": 4.0, "md": 6.0, "lg": 8.0, "xl": 12.0}
+_COMBO_POPUP_DELEGATE_ATTRIBUTE = "_shadcn_qt_combo_popup_delegate"
+_COMBO_POPUP_ITEM_MIN_HEIGHT = 32
+_SIZE_HINT_ROLE = getattr(QtCore.Qt, "SizeHintRole", None)
+if _SIZE_HINT_ROLE is None:
+    _SIZE_HINT_ROLE = QtCore.Qt.ItemDataRole.SizeHintRole
+
+
+class _ComboPopupSourceDelegate(QtWidgets.QStyledItemDelegate):
+    """Expose the normalized Qt delegate through a Python-owned subclass."""
+
+
+class ComboPopupItemDelegate(QtWidgets.QAbstractItemDelegate):
+    """Preserve an existing delegate while enforcing the popup row minimum."""
+
+    def __init__(self, source: Any, parent: Any) -> None:
+        super().__init__(parent)
+        self.source_delegate = source
+        for signal_name in ("commitData", "closeEditor", "sizeHintChanged"):
+            source_signal = getattr(source, signal_name, None)
+            proxy_signal = getattr(self, signal_name, None)
+            if source_signal is None or proxy_signal is None:
+                continue
+            try:
+                source_signal.connect(proxy_signal.emit)
+            except (RuntimeError, TypeError):
+                pass
+
+    def paint(self, painter: Any, option: Any, index: Any) -> None:
+        self.source_delegate.paint(painter, option, index)
+
+    def sizeHint(self, option: Any, index: Any) -> Any:
+        hint = QtCore.QSize(self.source_delegate.sizeHint(option, index))
+        model_hint = index.data(_SIZE_HINT_ROLE)
+        model_height = (
+            model_hint.height()
+            if isinstance(model_hint, QtCore.QSize) and model_hint.isValid()
+            else -1
+        )
+        hint.setHeight(
+            max(
+                _COMBO_POPUP_ITEM_MIN_HEIGHT,
+                hint.height(),
+                model_height,
+            )
+        )
+        return hint
+
+    def createEditor(self, parent: Any, option: Any, index: Any) -> Any:
+        return self.source_delegate.createEditor(parent, option, index)
+
+    def destroyEditor(self, editor: Any, index: Any) -> None:
+        self.source_delegate.destroyEditor(editor, index)
+
+    def setEditorData(self, editor: Any, index: Any) -> None:
+        self.source_delegate.setEditorData(editor, index)
+
+    def setModelData(self, editor: Any, model: Any, index: Any) -> None:
+        self.source_delegate.setModelData(editor, model, index)
+
+    def updateEditorGeometry(
+        self,
+        editor: Any,
+        option: Any,
+        index: Any,
+    ) -> None:
+        self.source_delegate.updateEditorGeometry(editor, option, index)
+
+    def editorEvent(
+        self,
+        event: Any,
+        model: Any,
+        option: Any,
+        index: Any,
+    ) -> bool:
+        try:
+            return self.source_delegate.editorEvent(event, model, option, index)
+        except RuntimeError as error:
+            # SIP rejects protected calls on delegates constructed in C++.
+            # The view still needs the base behavior so popup activation can
+            # proceed without allowing the exception to escape into Qt.
+            if "protected" not in str(error):
+                raise
+            return super().editorEvent(event, model, option, index)
+
+    def helpEvent(
+        self,
+        event: Any,
+        view: Any,
+        option: Any,
+        index: Any,
+    ) -> bool:
+        try:
+            return self.source_delegate.helpEvent(event, view, option, index)
+        except RuntimeError as error:
+            if "protected" not in str(error):
+                raise
+            return super().helpEvent(event, view, option, index)
+
+    def eventFilter(self, watched: Any, event: Any) -> bool:
+        try:
+            return self.source_delegate.eventFilter(watched, event)
+        except RuntimeError as error:
+            if "protected" not in str(error):
+                raise
+            return super().eventFilter(watched, event)
+
+
+def install_combo_popup_delegate(widget: Any) -> Any:
+    """Wrap a combo's delegate with the 32px shadcn popup-row contract."""
+
+    view = widget.view()
+    delegate = view.itemDelegate()
+    if isinstance(delegate, ComboPopupItemDelegate):
+        setattr(view, _COMBO_POPUP_DELEGATE_ATTRIBUTE, delegate)
+        setattr(
+            widget,
+            _COMBO_POPUP_DELEGATE_ATTRIBUTE,
+            (view, delegate),
+        )
+        return delegate
+    installed = getattr(widget, _COMBO_POPUP_DELEGATE_ATTRIBUTE, None)
+    previous = installed[1] if installed is not None else None
+    if previous is None:
+        previous = getattr(view, _COMBO_POPUP_DELEGATE_ATTRIBUTE, None)
+    if previous is not None and previous is not delegate:
+        try:
+            previous.deleteLater()
+        except RuntimeError:
+            pass
+    source = delegate
+    owns_source = type(delegate) is QtWidgets.QAbstractItemDelegate
+    if owns_source:
+        # Qt exposes its private QComboMenuDelegate through the abstract base
+        # wrapper. Its menu-oriented width calculation can exceed the popup,
+        # so retain the existing QStyledItemDelegate normalization for this
+        # one private implementation. User delegates are always preserved.
+        source = _ComboPopupSourceDelegate()
+    replacement = ComboPopupItemDelegate(source, view)
+    if owns_source:
+        source.setParent(replacement)
+    view.setItemDelegate(replacement)
+    # SIP can otherwise recreate a base-class wrapper and lose Python method
+    # overrides even though Qt still owns the C++ objects. Retain the proxy on
+    # both wrappers: ordinary combos keep the public wrapper stable, while
+    # complex subclasses can recreate it and keep their popup view stable.
+    setattr(view, _COMBO_POPUP_DELEGATE_ATTRIBUTE, replacement)
+    setattr(
+        widget,
+        _COMBO_POPUP_DELEGATE_ATTRIBUTE,
+        (view, replacement),
+    )
+    return replacement
+
+
+def restore_combo_popup_delegate(
+    widget: Any,
+    view: Any,
+    replacement: Any,
+    original: Any,
+) -> None:
+    """Remove an installed row-height proxy without clobbering later changes."""
+
+    if view.itemDelegate() is replacement:
+        view.setItemDelegate(original)
+    installed = getattr(view, _COMBO_POPUP_DELEGATE_ATTRIBUTE, None)
+    if installed is replacement:
+        delattr(view, _COMBO_POPUP_DELEGATE_ATTRIBUTE)
+    installed = getattr(widget, _COMBO_POPUP_DELEGATE_ATTRIBUTE, None)
+    if installed is not None and installed[1] is replacement:
+        delattr(widget, _COMBO_POPUP_DELEGATE_ATTRIBUTE)
+    try:
+        replacement.deleteLater()
+    except RuntimeError:
+        pass
 
 
 def _palette_role(name: str) -> Any:
@@ -126,9 +300,7 @@ def style_combo_popup(widget: Any) -> Any:
     view.setHorizontalScrollBarPolicy(scroll_off)
     view.setTextElideMode(elide_right)
     view.setMouseTracking(True)
-    delegate = view.itemDelegate()
-    if type(delegate) is QtWidgets.QAbstractItemDelegate:
-        view.setItemDelegate(QtWidgets.QStyledItemDelegate(view))
+    install_combo_popup_delegate(widget)
     return popup
 
 
@@ -228,14 +400,17 @@ def text_width(metrics: Any, text: str) -> int:
 
 
 __all__ = [
+    "ComboPopupItemDelegate",
     "animate_window_opacity",
     "clear_graphics_effect",
     "enable_antialiasing",
     "handle_combo_mouse_press",
     "handle_combo_mouse_release",
     "install_shadow",
+    "install_combo_popup_delegate",
     "position_combo_popup",
     "position_popup_below",
+    "restore_combo_popup_delegate",
     "semantic_color",
     "style_combo_popup",
     "text_width",

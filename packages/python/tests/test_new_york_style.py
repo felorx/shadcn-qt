@@ -272,6 +272,35 @@ def test_combo_family_popups_use_one_outer_border(runtime):
     assert "QComboBox[shadcn_qt_component]::drop-down:hover" in qss
 
 
+def test_combo_popup_rows_enforce_minimum_and_preserve_larger_hints(runtime):
+    from shadcn_qt import Combobox, NativeSelect, Select, apply_theme
+
+    app, QtCore, _ = runtime
+    size_hint_role = getattr(QtCore.Qt, "SizeHintRole", None)
+    if size_hint_role is None:
+        size_hint_role = QtCore.Qt.ItemDataRole.SizeHintRole
+    apply_theme(app, "light")
+
+    for control_type in (Select, Combobox, NativeSelect):
+        control = control_type()
+        control.addItems(["Compact", "Default", "Spacious"])
+        control.setItemData(0, QtCore.QSize(80, 16), size_hint_role)
+        control.setItemData(2, QtCore.QSize(80, 40), size_hint_role)
+        control.resize(260, 36)
+        control.show()
+        control.showPopup()
+        app.processEvents()
+
+        heights = [
+            control.view().visualRect(control.model().index(row, 0)).height()
+            for row in range(3)
+        ]
+        assert heights == [32, 32, 40]
+
+        control.hidePopup()
+        control.close()
+
+
 def test_dropdown_menu_opens_left_aligned_directly_below(runtime):
     from shadcn_qt import Button, DropdownMenu
 

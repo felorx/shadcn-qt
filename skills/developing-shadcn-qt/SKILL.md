@@ -75,6 +75,11 @@ Designer, Gallery, and documentation.
 - Position combo and calendar popups left-aligned immediately below their
   trigger. Give the popup one outer border; do not frame its internal view a
   second time.
+- Enforce a 32px minimum for combo popup rows even when `SizeHintRole` or a
+  custom delegate reports less. Preserve explicitly larger rows and all custom
+  delegate painting/editing behavior, re-wrap delegates replaced after native
+  adoption, retain Python delegate wrappers across PySide/PyQt ownership
+  differences, and restore the latest original delegate during cleanup.
 
 ### Gallery and Visual Regression
 

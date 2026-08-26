@@ -117,8 +117,22 @@ def test_native_combo_popup_has_one_outer_border(runtime):
     apply_theme(app, "light")
     combo = QtWidgets.QComboBox()
     combo.addItems(["PySide6", "PyQt6", "PySide2", "PyQt5"])
+    size_hint_role = getattr(QtCore.Qt, "SizeHintRole", None)
+    if size_hint_role is None:
+        size_hint_role = QtCore.Qt.ItemDataRole.SizeHintRole
+    combo.setItemData(1, QtCore.QSize(80, 40), size_hint_role)
     combo.resize(300, 36)
     view = combo.view()
+
+    class CompactLegacyDelegate(QtWidgets.QStyledItemDelegate):
+        def sizeHint(self, option, index):
+            hint = super().sizeHint(option, index)
+            if index.row() == 0:
+                hint.setHeight(16)
+            return hint
+
+    original_delegate = CompactLegacyDelegate(view)
+    view.setItemDelegate(original_delegate)
     popup = view.window()
     original_popup_name = popup.objectName()
     original_popup_stylesheet = popup.styleSheet()
@@ -131,8 +145,11 @@ def test_native_combo_popup_has_one_outer_border(runtime):
     assert view.objectName() == "shadcnQtNativeComboPopupView"
     assert view.property("shadcn_qt_native_adopted") is None
     assert popup.styleSheet().count("border: 1px solid") == 1
-    assert "QListView { background: transparent" in popup.styleSheet()
+    assert "QAbstractItemView { background: transparent" in popup.styleSheet()
     assert "border: none" in popup.styleSheet()
+    replacement_delegate = view.itemDelegate()
+    assert replacement_delegate is not original_delegate
+    assert replacement_delegate.source_delegate is original_delegate
 
     combo.show()
     app.processEvents()
@@ -150,16 +167,23 @@ def test_native_combo_popup_has_one_outer_border(runtime):
     assert popup.pos() == expected_popup_position
     assert popup.width() == combo.width()
     assert view.frameWidth() == 4
+    assert view.visualRect(combo.model().index(0, 0)).height() == 32
+    assert view.visualRect(combo.model().index(1, 0)).height() == 40
+    assert view.visualRect(combo.model().index(2, 0)).height() == 32
     image = popup.grab().toImage()
     center_x = image.width() // 2
-    assert image.pixelColor(center_x, 0) != image.pixelColor(center_x, 1)
-    assert image.pixelColor(center_x, 1) == image.pixelColor(center_x, 2)
-    assert image.pixelColor(center_x, image.height() - 1) != image.pixelColor(
-        center_x, image.height() - 2
+    assert image.pixelColor(center_x, 0) != image.pixelColor(center_x, 2)
+    _assert_color_close(
+        image.pixelColor(center_x, 2).name(),
+        image.pixelColor(center_x, 3).name(),
     )
-    assert image.pixelColor(
-        center_x, image.height() - 2
-    ) == image.pixelColor(center_x, image.height() - 3)
+    assert image.pixelColor(center_x, image.height() - 1) != image.pixelColor(
+        center_x, image.height() - 3
+    )
+    _assert_color_close(
+        image.pixelColor(center_x, image.height() - 3).name(),
+        image.pixelColor(center_x, image.height() - 4).name(),
+    )
 
     apply_theme(app, "dark")
     app.processEvents()
@@ -173,6 +197,43 @@ def test_native_combo_popup_has_one_outer_border(runtime):
     assert popup.minimumWidth() == original_popup_minimum_width
     assert popup.maximumWidth() == original_popup_maximum_width
     assert view.objectName() == original_view_name
+    assert view.itemDelegate() is original_delegate
+    combo.close()
+
+
+def test_native_combo_rewraps_delegate_replaced_after_adoption(runtime):
+    app, QtWidgets = runtime
+    from shadcn_qt import adopt_native_widgets, disable_native_widget_styling
+
+    disable_native_widget_styling(app, clear=True)
+    combo = QtWidgets.QComboBox()
+    combo.addItems(["Compact", "Default"])
+    combo.resize(260, 36)
+    assert adopt_native_widgets(combo) >= 1
+    combo.show()
+    app.processEvents()
+
+    view = combo.view()
+
+    class LateCompactDelegate(QtWidgets.QStyledItemDelegate):
+        def sizeHint(self, option, index):
+            hint = super().sizeHint(option, index)
+            hint.setHeight(16)
+            return hint
+
+    late_delegate = LateCompactDelegate(view)
+    view.setItemDelegate(late_delegate)
+    combo.showPopup()
+    app.processEvents()
+
+    replacement = view.itemDelegate()
+    assert replacement is not late_delegate
+    assert replacement.source_delegate is late_delegate
+    assert view.visualRect(combo.model().index(0, 0)).height() == 32
+
+    combo.hidePopup()
+    assert disable_native_widget_styling(app, clear=True) >= 1
+    assert view.itemDelegate() is late_delegate
     combo.close()
 
 
@@ -267,6 +328,10 @@ def test_future_font_combo_restores_runtime_enhancements(runtime):
     disable_native_widget_styling(app, clear=True)
     enable_native_widget_styling(app)
     combo = QtWidgets.QFontComboBox()
+    size_hint_role = getattr(QtCore.Qt, "SizeHintRole", None)
+    if size_hint_role is None:
+        size_hint_role = QtCore.Qt.ItemDataRole.SizeHintRole
+    combo.setItemData(0, QtCore.QSize(80, 16), size_hint_role)
     combo.resize(300, 36)
     combo.show()
     app.processEvents()
@@ -282,6 +347,8 @@ def test_future_font_combo_restores_runtime_enhancements(runtime):
     popup = combo.view().window()
     expected_popup_position = combo.mapToGlobal(QtCore.QPoint(0, combo.height()))
     assert popup.pos() == expected_popup_position
+    first_row = combo.view().visualRect(combo.model().index(0, 0))
+    assert first_row.height() == 32
     combo.hidePopup()
 
     disable_native_widget_styling(app, clear=True)

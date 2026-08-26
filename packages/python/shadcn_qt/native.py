@@ -38,6 +38,10 @@ _POPUP_POSITION_FILTER_TYPE: Optional[Any] = None
 _TAB_PANE_FILTER_TYPE: Optional[Any] = None
 
 
+class _EnhancementState(dict):
+    """Keep Python-owned Qt wrappers opaque inside dynamic properties."""
+
+
 def _refresh_style(widget: Any) -> None:
     style = widget.style()
     if style is not None:
@@ -619,12 +623,12 @@ def _style_native_combo_popup(widget: Any) -> None:
     popup.setStyleSheet(
         f"#{_COMBO_POPUP_NAME} {{ background: {background}; "
         f"border: 1px solid {border}; border-radius: {popup_radius}; }} "
-        f"#{_COMBO_POPUP_NAME} QListView {{ background: transparent; "
+        f"#{_COMBO_POPUP_NAME} QAbstractItemView {{ background: transparent; "
         f"color: {foreground}; border: none; border-radius: 0; "
         "padding: 4px; outline: 0; } "
-        f"#{_COMBO_POPUP_NAME} QListView::item {{ min-height: 28px; "
+        f"#{_COMBO_POPUP_NAME} QAbstractItemView::item {{ min-height: 28px; "
         f"padding: 2px 8px; border: none; border-radius: {item_radius}; }} "
-        f"#{_COMBO_POPUP_NAME} QListView::item:selected {{ "
+        f"#{_COMBO_POPUP_NAME} QAbstractItemView::item:selected {{ "
         f"background: {accent}; color: {accent_foreground}; }}"
     )
     popup.setFixedWidth(max(1, widget.width()))
@@ -647,7 +651,7 @@ def _popup_position_filter_type() -> Any:
     if _POPUP_POSITION_FILTER_TYPE is not None:
         return _POPUP_POSITION_FILTER_TYPE
 
-    core, _, _ = _qt.qt_modules()
+    core, _, widgets = _qt.qt_modules()
     show = getattr(core.QEvent, "Show", None)
     if show is None:
         show = core.QEvent.Type.Show
@@ -661,6 +665,10 @@ def _popup_position_filter_type() -> Any:
             if event.type() == show:
                 anchor = watched.parentWidget()
                 if anchor is not None:
+                    if isinstance(anchor, widgets.QComboBox):
+                        state = _enhancement_state(anchor)
+                        if state is not None:
+                            _ensure_native_combo_popup_delegate(anchor, state)
                     _position_native_popup_below(
                         anchor,
                         watched,
@@ -672,7 +680,14 @@ def _popup_position_filter_type() -> Any:
     return _POPUP_POSITION_FILTER_TYPE
 
 
-def _mark_native_combo_popup(widget: Any, state: Dict[str, Any]) -> None:
+def _mark_native_combo_popup(
+    widget: Any,
+    state: Dict[str, Any],
+    *,
+    defer_font_delegate: bool = True,
+) -> None:
+    from shadcn_qt.widgets._style import install_combo_popup_delegate
+
     _, _, widgets = _qt.qt_modules()
     view = widget.view()
     popup = view.window()
@@ -686,17 +701,72 @@ def _mark_native_combo_popup(widget: Any, state: Dict[str, Any]) -> None:
         "view": view,
         "view_name": view.objectName(),
     }
-    delegate = view.itemDelegate()
-    if type(delegate) is widgets.QAbstractItemDelegate:
-        replacement = widgets.QStyledItemDelegate(view)
-        view.setItemDelegate(replacement)
-        state["combo_popup"]["replacement_delegate"] = replacement
+    # QFontComboBox is polished while its constructor is still replacing its
+    # internal model and delegate on some bindings. Defer the proxy until the
+    # control or popup is shown, when those internals are stable.
+    if not defer_font_delegate or not isinstance(widget, widgets.QFontComboBox):
+        install_combo_popup_delegate(widget)
     popup.setObjectName(_COMBO_POPUP_NAME)
     view.setObjectName(_COMBO_POPUP_VIEW_NAME)
     position_filter = _popup_position_filter_type()(popup, match_width=True)
     popup.installEventFilter(position_filter)
     state["combo_popup"]["position_filter"] = position_filter
     _style_native_combo_popup(widget)
+
+
+def _ensure_native_combo_popup_delegate(
+    widget: Any,
+    state: Dict[str, Any],
+) -> None:
+    """Re-wrap a popup delegate replaced after native adoption."""
+
+    combo_popup = state.get("combo_popup")
+    if combo_popup is None:
+        return
+    view = widget.view()
+    original_view = combo_popup["view"]
+    try:
+        same_view = view is original_view or view == original_view
+    except RuntimeError:
+        same_view = False
+    if not same_view:
+        _mark_native_combo_popup(
+            widget,
+            state,
+            defer_font_delegate=False,
+        )
+        return
+    current = view.itemDelegate()
+    from shadcn_qt.widgets._style import ComboPopupItemDelegate
+
+    if isinstance(current, ComboPopupItemDelegate):
+        return
+
+    from shadcn_qt.widgets._style import install_combo_popup_delegate
+
+    install_combo_popup_delegate(widget)
+    combo_popup["delegate"] = current
+
+
+def _resync_native_combo_enhancements(
+    widget: Any,
+    state: Dict[str, Any],
+) -> None:
+    """Repair filters or delegates replaced during complex construction."""
+
+    event_filter = state.get("event_filter")
+    if event_filter is not None:
+        widget.removeEventFilter(event_filter)
+        widget.installEventFilter(event_filter)
+    _ensure_native_combo_popup_delegate(widget, state)
+    combo_popup = state.get("combo_popup")
+    if combo_popup is not None:
+        position_filter = combo_popup.get("position_filter")
+        if position_filter is not None:
+            combo_popup["popup"].removeEventFilter(position_filter)
+            combo_popup["popup"].installEventFilter(position_filter)
+    _style_native_combo_popup(widget)
+    _store_enhancement_state(widget, state)
 
 
 def _mark_native_calendar_popup(widget: Any, state: Dict[str, Any]) -> None:
@@ -1068,12 +1138,21 @@ def _enhancement_filter_type() -> Any:
                             else event.pos()
                         )
                         if watched.rect().contains(point):
+                            state = _enhancement_state(watched)
+                            if state is not None:
+                                _ensure_native_combo_popup_delegate(
+                                    watched,
+                                    state,
+                                )
                             watched.showPopup()
                     event.accept()
                     return True
             if event_type in {resize, show}:
                 _layout_native_glyphs(watched)
                 if isinstance(watched, widgets.QComboBox):
+                    state = _enhancement_state(watched)
+                    if state is not None:
+                        _ensure_native_combo_popup_delegate(watched, state)
                     _style_native_combo_popup(watched)
             elif event_type == palette_change and isinstance(
                 watched, widgets.QComboBox
@@ -1093,7 +1172,7 @@ def _enhance_widget(widget: Any, widgets: Any) -> None:
     core, gui, _ = _qt.qt_modules()
     state = _enhancement_state(widget)
     if state is None:
-        state = {}
+        state = _EnhancementState()
         widget._shadcn_qt_native_enhancements = state
         _add_native_glyphs(widget, widgets, state)
         if isinstance(widget, widgets.QComboBox):
@@ -1229,10 +1308,27 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
                 combo_popup["popup_maximum_width"]
             )
             combo_popup["view"].setObjectName(combo_popup["view_name"])
-            combo_popup["view"].setItemDelegate(combo_popup["delegate"])
-            replacement = combo_popup.get("replacement_delegate")
+            installed = getattr(
+                widget,
+                "_shadcn_qt_combo_popup_delegate",
+                None,
+            )
+            replacement = installed[1] if installed is not None else getattr(
+                combo_popup["view"],
+                "_shadcn_qt_combo_popup_delegate",
+                None,
+            )
             if replacement is not None:
-                replacement.deleteLater()
+                from shadcn_qt.widgets._style import (
+                    restore_combo_popup_delegate,
+                )
+
+                restore_combo_popup_delegate(
+                    widget,
+                    combo_popup["view"],
+                    replacement,
+                    combo_popup["delegate"],
+                )
         except RuntimeError:
             pass
     tab_pane = state.get("tab_pane")
@@ -1398,9 +1494,12 @@ def _adapter_type() -> Any:
     core, _, widgets = _qt.qt_modules()
     polish = getattr(core.QEvent, "Polish", None)
     dynamic_change = getattr(core.QEvent, "DynamicPropertyChange", None)
+    show = getattr(core.QEvent, "Show", None)
     if polish is None:
         polish = core.QEvent.Type.Polish
         dynamic_change = core.QEvent.Type.DynamicPropertyChange
+    if show is None:
+        show = core.QEvent.Type.Show
 
     class NativeWidgetStylingAdapter(core.QObject):
         def eventFilter(self, watched: Any, event: Any) -> bool:
@@ -1417,6 +1516,14 @@ def _adapter_type() -> Any:
                     if state is not None:
                         _mark_native_calendar_popup(parent, state)
                         _store_enhancement_state(parent, state)
+            elif (
+                event.type() == show
+                and isinstance(watched, widgets.QComboBox)
+                and watched.property(_ADOPTED_PROPERTY)
+            ):
+                state = _enhancement_state(watched)
+                if state is not None:
+                    _resync_native_combo_enhancements(watched, state)
             elif (
                 event.type() == dynamic_change
                 and _event_property_name(event) == _PREFERENCE_PROPERTY

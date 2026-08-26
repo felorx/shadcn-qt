@@ -25,7 +25,7 @@ apply_theme(app, "light")
 | Actions | QPushButton, QCommandLinkButton, QToolButton, QDialogButtonBox | new-york geometry, semantic variants, states, elevation |
 | Choices | QCheckBox, QRadioButton | antialiased check/radio glyphs, focus and disabled states |
 | Editors | QLineEdit, QTextEdit, QKeySequenceEdit, SpinBox and date/time editors | input geometry, validation, focus, themed arrows |
-| Selection | QComboBox, QFontComboBox, QSlider, QDial, QScrollBar | themed controls, tracks, handles, popups, arrows |
+| Selection | QComboBox, QFontComboBox, QSlider, QDial, QScrollBar | themed controls, tracks, handles, 32px-minimum popup options, arrows |
 | Data | List, Tree, Table, Column, Header and Calendar widgets | selection hierarchy, headers, scrollbars, compact calendar delegate |
 | Containers | Chrome-style TabPane/QTabWidget, ToolBox, StackedWidget, GroupBox, Splitter, ScrollArea, GraphicsView, MDI | document-tab states, borders, surfaces, disclosure states, handles |
 | Window chrome | QMenuBar, QMenu, QToolBar, QStatusBar, QDockWidget | themed menus, actions, separators and dock controls |
@@ -41,8 +41,13 @@ without subclassing.
 Some official shapes cannot be expressed reliably in QSS. The adapter uses an
 application event filter to paint checkbox/radio indicators and installs a
 calendar delegate, themed editor arrows, and subtle elevation where needed.
-`disable_native_widget_styling(app)` restores the original calendar delegate,
-removes adapter glyphs/effects, and clears only unchanged adapter defaults.
+Combo popups use a delegate proxy to enforce the 32px `new-york` row minimum,
+including when a model or custom delegate requests a smaller size. Larger
+business-defined rows and custom painting/editing behavior are preserved, and
+delegates replaced after adoption are detected when the control or popup is
+shown. `disable_native_widget_styling(app)` restores the current original combo
+and calendar delegates, removes adapter glyphs/effects, and clears only
+unchanged adapter defaults.
 
 Set `shadcn_qt_native_styling=False` on custom-painted or third-party controls
 that should remain untouched.
