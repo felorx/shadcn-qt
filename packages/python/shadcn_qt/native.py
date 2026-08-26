@@ -16,6 +16,7 @@ _ADAPTER_ATTRIBUTE = "_shadcn_qt_native_widget_styling_adapter"
 _ADOPTED_PROPERTY = "shadcn_qt_native_adopted"
 _ADDED_PROPERTIES = "shadcn_qt_native_properties"
 _ENHANCEMENTS_PROPERTY = "shadcn_qt_native_enhancements"
+_COMBO_STATE_TOKEN_PROPERTY = "shadcn_qt_combo_state_token"
 _PREFERENCE_PROPERTY = "shadcn_qt_native_styling"
 _COMBO_POPUP_NAME = "shadcnQtNativeComboPopup"
 _COMBO_POPUP_VIEW_NAME = "shadcnQtNativeComboPopupView"
@@ -36,10 +37,11 @@ _ENHANCEMENT_FILTER_TYPE: Optional[Any] = None
 _NATIVE_GLYPH_TYPE: Optional[Any] = None
 _POPUP_POSITION_FILTER_TYPE: Optional[Any] = None
 _TAB_PANE_FILTER_TYPE: Optional[Any] = None
+_COMBO_STATES: Dict[str, Dict[str, Any]] = {}
 
 
-class _EnhancementState(dict):
-    """Keep Python-owned Qt wrappers opaque inside dynamic properties."""
+class _ComboState(dict):
+    """Mark state containing combo popup wrappers unsafe for QVariant."""
 
 
 def _refresh_style(widget: Any) -> None:
@@ -551,6 +553,12 @@ def _native_glyph_type() -> Any:
 
 
 def _enhancement_state(widget: Any) -> Optional[Dict[str, Any]]:
+    token = widget.property(_COMBO_STATE_TOKEN_PROPERTY)
+    if token:
+        state = _COMBO_STATES.get(str(token))
+        if state is not None:
+            widget._shadcn_qt_native_enhancements = state
+            return state
     state = getattr(widget, "_shadcn_qt_native_enhancements", None)
     if state is not None:
         return state
@@ -563,6 +571,20 @@ def _enhancement_state(widget: Any) -> Optional[Dict[str, Any]]:
 
 def _store_enhancement_state(widget: Any, state: Dict[str, Any]) -> None:
     widget._shadcn_qt_native_enhancements = state
+    if isinstance(state, _ComboState):
+        token = widget.property(_COMBO_STATE_TOKEN_PROPERTY)
+        token = str(token) if token else f"{id(state):x}"
+        if token not in _COMBO_STATES:
+            widget.destroyed.connect(
+                lambda *_args: _COMBO_STATES.pop(token, None)
+            )
+        _COMBO_STATES[token] = state
+        widget.setProperty(_COMBO_STATE_TOKEN_PROPERTY, token)
+        widget.setProperty(
+            _ENHANCEMENTS_PROPERTY,
+            {"combo_state_token": token},
+        )
+        return
     # Qt dynamic properties belong to the C++ object, so this state remains
     # reachable even when a binding creates a replacement Python wrapper while
     # constructing a complex subclass such as QFontComboBox.
@@ -1172,7 +1194,11 @@ def _enhance_widget(widget: Any, widgets: Any) -> None:
     core, gui, _ = _qt.qt_modules()
     state = _enhancement_state(widget)
     if state is None:
-        state = _EnhancementState()
+        state = (
+            _ComboState()
+            if isinstance(widget, widgets.QComboBox)
+            else {}
+        )
         widget._shadcn_qt_native_enhancements = state
         _add_native_glyphs(widget, widgets, state)
         if isinstance(widget, widgets.QComboBox):
@@ -1380,6 +1406,10 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
         widget.setGraphicsEffect(None)
     if hasattr(widget, "_shadcn_qt_combo_click_pending"):
         delattr(widget, "_shadcn_qt_combo_click_pending")
+    token = widget.property(_COMBO_STATE_TOKEN_PROPERTY)
+    if token:
+        _COMBO_STATES.pop(str(token), None)
+    widget.setProperty(_COMBO_STATE_TOKEN_PROPERTY, None)
     widget.setProperty(_ENHANCEMENTS_PROPERTY, None)
     if hasattr(widget, "_shadcn_qt_native_enhancements"):
         delattr(widget, "_shadcn_qt_native_enhancements")
