@@ -162,13 +162,27 @@ def _button_variant(widget: Any, widgets: Any) -> str:
     return "default"
 
 
+def _enum_member(owner: Any, name: str, group: str) -> Any:
+    """Resolve ``owner.name`` across binding enum spellings."""
+
+    direct = getattr(owner, name, None)
+    if direct is not None:
+        return direct
+    return getattr(getattr(owner, group, None), name, None)
+
+
 def _frame_kind(widget: Any, widgets: Any) -> str:
+    # PyQt5 exposes frame shapes as plain ints without a ``name`` attribute and
+    # PyQt6 drops the short aliases, so resolve members through the binding
+    # instead of reading the enum.
     shape = widget.frameShape()
-    shape_name = getattr(shape, "name", str(shape)).split(".")[-1]
-    if shape_name in {"HLine", "VLine"}:
-        return shape_name.casefold()
-    if shape_name in {"Panel", "StyledPanel", "Box", "WinPanel"}:
-        return "panel"
+    frame = widgets.QFrame
+    for name in ("HLine", "VLine"):
+        if shape == _enum_member(frame, name, "Shape"):
+            return name.casefold()
+    for name in ("Panel", "StyledPanel", "Box", "WinPanel"):
+        if shape == _enum_member(frame, name, "Shape"):
+            return "panel"
     return "plain"
 
 
@@ -1246,7 +1260,13 @@ def _enhance_widget(widget: Any, widgets: Any) -> None:
             view.setMouseTracking(True)
             view.verticalHeader().setMinimumSectionSize(36)
             view.verticalHeader().setDefaultSectionSize(36)
-            view.setItemDelegate(_calendar_delegate_type()(view))
+            applied_delegate = _calendar_delegate_type()(view)
+            # Qt does not take ownership of an item delegate. Keep the proxy
+            # reachable from the enhancement state, otherwise PyQt releases it
+            # as soon as this function returns and the view falls back to a
+            # plain QStyledItemDelegate.
+            state["calendar"]["applied_delegate"] = applied_delegate
+            view.setItemDelegate(applied_delegate)
     _store_enhancement_state(widget, state)
 
 
@@ -1310,6 +1330,7 @@ def _restore_widget(widget: Any, widgets: Any) -> None:
         if view is not None:
             view.setItemDelegate(calendar["delegate"])
             view.verticalHeader().setDefaultSectionSize(calendar["section_size"])
+        calendar.pop("applied_delegate", None)
         widget.setGridVisible(calendar["grid"])
         widget.setVerticalHeaderFormat(calendar["vertical_header"])
     calendar_popup = state.get("calendar_popup")
