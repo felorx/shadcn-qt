@@ -6,6 +6,8 @@ from types import SimpleNamespace
 
 import pytest
 
+import qt_env
+
 
 def test_qt5_defaults_enable_scaling_and_preserve_fractional_dpr():
     from shadcn_qt._qt import _configure_high_dpi_defaults
@@ -91,6 +93,7 @@ def test_qt6_defaults_leave_scaling_enabled_and_preserve_fractional_dpr():
 
 
 def test_fractional_scale_stays_fractional_in_real_qt_process():
+    qt_env.require_qt_binding()
     package_root = Path(__file__).resolve().parents[1]
     env = dict(os.environ)
     env["QT_QPA_PLATFORM"] = "offscreen"

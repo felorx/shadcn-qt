@@ -4,6 +4,8 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import pytest
 
+import qt_env
+
 
 def _assert_color_close(actual, expected, tolerance=6):
     actual_channels = tuple(
@@ -88,7 +90,13 @@ def test_adopt_native_widgets_preserves_explicit_choices(runtime):
     # Clear markers added by the scoped operation before the global test.
     from shadcn_qt import disable_native_widget_styling
 
-    assert disable_native_widget_styling(app, clear=True) >= adopted
+    # The adapter tracks adopted widgets through weak references because it must
+    # never keep wrappers alive, so Qt-owned children may already be gone by the
+    # time cleanup runs. Assert on the widgets this test still holds.
+    cleared = disable_native_widget_styling(app, clear=True)
+    assert cleared >= 5
+    for widget in (button, line_edit, checkbox, combo, spin):
+        assert widget.property("shadcn_qt_native_adopted") is None
 
 
 def test_native_item_view_refresh_uses_qwidget_overload(runtime):
@@ -324,6 +332,10 @@ def test_future_font_combo_restores_runtime_enhancements(runtime):
     app, QtWidgets = runtime
     from shadcn_qt import disable_native_widget_styling, enable_native_widget_styling
     from shadcn_qt._qt import QtCore
+
+    # QFontComboBox builds its model from the font database, so a fontless
+    # platform never opens a popup and cannot exercise popup placement.
+    qt_env.require_font_database("QFontComboBox popup placement")
 
     disable_native_widget_styling(app, clear=True)
     enable_native_widget_styling(app)
@@ -825,6 +837,7 @@ def test_native_compound_editors_keep_usable_field_at_compact_width(runtime):
 
 
 def test_native_message_box_has_balanced_reversible_layout(runtime):
+    qt_env.require_offscreen_dialog_support("native message box layout")
     app, QtWidgets = runtime
     from shadcn_qt import (
         adopt_native_widgets,

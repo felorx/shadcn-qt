@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
-"""Regenerate the native QtWidgets Gallery screenshot baselines."""
+"""Regenerate the native QtWidgets Gallery screenshot baselines.
+
+Baselines are stored per operating system in
+``packages/python/tests/baselines/native_gallery/<platform>`` because Qt renders
+text and antialiasing differently on every platform.  The flat files directly in
+``native_gallery`` predate that split and are still honoured as a fallback.
+"""
 
 from __future__ import annotations
 
+import argparse
 import os
 import sys
 from pathlib import Path
@@ -23,16 +30,33 @@ def _slug(name: str) -> str:
     return name.casefold().replace(" ", "_")
 
 
-def main() -> int:
+def _platform_slug() -> str:
+    if sys.platform.startswith("win"):
+        return "windows"
+    if sys.platform == "darwin":
+        return "macos"
+    return "linux"
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--platform",
+        default=_platform_slug(),
+        help="platform directory to write (default: the host platform)",
+    )
+    args = parser.parse_args(argv)
+
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    BASELINE_DIR.mkdir(parents=True, exist_ok=True)
+    target_dir = BASELINE_DIR / args.platform
+    target_dir.mkdir(parents=True, exist_ok=True)
     for theme in ("light", "dark"):
         for name in gallery.native_overview_names():
             window = gallery.GalleryWindow(theme=theme, component=name)
             window.show()
             for _ in range(4):
                 app.processEvents()
-            target = BASELINE_DIR / f"{theme}_{_slug(name)}.png"
+            target = target_dir / f"{theme}_{_slug(name)}.png"
             if not window.save_screenshot(target):
                 raise RuntimeError(f"Could not save screenshot to {target}")
             window.close()

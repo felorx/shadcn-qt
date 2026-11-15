@@ -78,6 +78,10 @@ def validate_wheel(path: Path, version: str) -> list[str]:
             failures.append(f"wheel is missing license files: {sorted(missing)}")
         if not any(name == "shadcn_qt/__init__.py" for name in names):
             failures.append("wheel does not contain the shadcn_qt import package")
+        if "shadcn_qt/py.typed" not in names:
+            failures.append(
+                "wheel does not ship the shadcn_qt/py.typed marker (PEP 561)"
+            )
         if PUBLIC_PRO_BRIDGE not in names:
             failures.append("wheel does not contain the public Pro compatibility bridge")
         leaked_private_files = [

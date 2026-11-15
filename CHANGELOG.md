@@ -3,6 +3,42 @@
 All notable changes to shadcn-qt Core are documented here. The project follows
 [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Added
+
+- Shipped the PEP 561 `py.typed` marker so type checkers read the inline
+  annotations; the distribution checks now fail when the wheel lacks it.
+- Added a Windows CI job (PySide6, `offscreen`) and extended CI with a `ruff`
+  job, a generated-artifact drift job, a package-content job, and a Qt binding
+  matrix covering PySide6 and PyQt6. See `docs/STATUS.md`.
+- Added reusable environment probes in `packages/python/tests/qt_env.py` so
+  assertions about font metrics or rendered pixels skip instead of failing when
+  the Qt platform exposes no font database.
+- Screenshot baselines are now stored per platform
+  (`tests/baselines/native_gallery/<platform>/`), with the existing flat files
+  kept as the macOS and Linux fallback; `tools/update_native_gallery_baselines.py`
+  gained a `--platform` option.
+
+### Changed
+
+- `SHADCN_QT_BINDING` now matches binding names case-insensitively, so
+  `pyqt6` selects `PyQt6` instead of raising `ValueError`.
+
+### Fixed
+
+- Kept the adopted calendar item delegate alive for the lifetime of the
+  enhancement. Qt does not take ownership of an item delegate, so PyQt released
+  the proxy immediately and `QCalendarWidget` silently fell back to
+  `QStyledItemDelegate`.
+- Detected `HLine`/`VLine` `QFrame` separators through the binding's enum
+  members instead of reading a `.name` attribute. PyQt5 exposes frame shapes as
+  plain integers and PyQt6 drops the short aliases, so separators were adopted
+  as generic frames on both bindings.
+- Guarded the high-DPI subprocess test against a missing Qt binding, which was
+  the single failure that turned every CI run red after the binding-free check
+  job ran the suite.
+
 ## 0.2.6 - 2026-08-26
 
 ### Fixed

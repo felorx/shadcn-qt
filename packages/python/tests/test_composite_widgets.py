@@ -5,6 +5,8 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import pytest
 
+import qt_env
+
 
 @pytest.fixture(scope="module")
 def runtime():
@@ -208,7 +210,11 @@ def test_form_compositions(runtime):
         line_edit_contents, option, selected_slot
     )
     assert content_rect.width() >= 28
-    assert content_rect.width() >= selected_slot.fontMetrics().horizontalAdvance("8") * 3
+    if qt_env.font_family_count():
+        # Without a font database Qt reports a synthetic em square, so the
+        # glyph-fit assertion below only means something on a real font stack.
+        glyph = selected_slot.fontMetrics().horizontalAdvance("8")
+        assert content_rect.width() >= glyph * 3
 
     input_group = InputGroup()
     input_group.prefix = "@"

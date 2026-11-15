@@ -62,25 +62,38 @@ def _load(binding: str) -> None:
     _BINDING = binding
 
 
+def _canonical_binding(name: str) -> str:
+    """Return the documented spelling of ``name``, ignoring case and padding."""
+
+    candidate_name = name.strip().casefold()
+    for candidate in _ORDER:
+        if candidate.casefold() == candidate_name:
+            return candidate
+    return name
+
+
 def detect_binding(preferred: Optional[str] = None) -> str:
     """Load and return the active Qt binding.
 
     ``preferred`` and ``SHADCN_QT_BINDING`` are strict: a requested binding
-    is never silently replaced by another one.
+    is never silently replaced by another one. The spelling is matched
+    case-insensitively, so ``pyqt6`` selects ``PyQt6``.
     """
 
     if _BINDING is not None:
-        if preferred is not None and preferred != _BINDING:
+        if preferred is not None and _canonical_binding(preferred) != _BINDING:
             raise RuntimeError(
                 f"Qt binding {_BINDING} is already loaded; cannot switch to {preferred}."
             )
         return _BINDING
 
-    requested = preferred or os.environ.get("SHADCN_QT_BINDING")
-    if requested:
+    requested_name = preferred or os.environ.get("SHADCN_QT_BINDING")
+    if requested_name:
+        requested = _canonical_binding(requested_name)
         if requested not in _VALID:
             raise ValueError(
-                f"SHADCN_QT_BINDING must be one of {sorted(_VALID)}, got {requested!r}"
+                f"SHADCN_QT_BINDING must be one of {sorted(_VALID)}, "
+                f"got {requested_name!r}"
             )
         try:
             _load(requested)

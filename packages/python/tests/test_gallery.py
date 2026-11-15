@@ -5,6 +5,8 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import pytest
 
+import qt_env
+
 
 @pytest.fixture(scope="module")
 def gallery_runtime():
@@ -333,7 +335,12 @@ def test_gallery_exposes_stock_qtwidgets_previews(gallery_runtime):
                 qtwidget_subclasses.add(class_name)
         except TypeError:
             continue
-    assert set(individual_names) == qtwidget_subclasses - abstract_bases
+    # Qt 6 moved QOpenGLWidget to the QtOpenGL module.  Qt 5 still exposes it
+    # from QtWidgets, where the gallery - which follows the Qt 6 module layout -
+    # does not showcase it.
+    uncovered = qtwidget_subclasses - abstract_bases - set(individual_names)
+    assert uncovered <= {"QOpenGLWidget"}
+    assert set(individual_names) <= qtwidget_subclasses
     for name in gallery.native_preview_names():
         preview = window.show_component(name)
         app.processEvents()
@@ -373,6 +380,7 @@ def test_native_forms_overview_places_each_control_on_its_own_row(gallery_runtim
 
 
 def test_gallery_qmessagebox_preview_opens_real_dialog(gallery_runtime):
+    qt_env.require_offscreen_dialog_support("gallery QMessageBox preview")
     app, gallery = gallery_runtime
     QtWidgets = gallery.QtWidgets
     window = gallery.GalleryWindow(component="QMessageBox")
